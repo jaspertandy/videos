@@ -1,6 +1,7 @@
 <?php
 /**
  * @link      https://dukt.net/videos/
+ *
  * @copyright Copyright (c) 2021, Dukt
  * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
@@ -14,19 +15,18 @@ use dukt\videos\errors\ApiResponseException;
 use dukt\videos\errors\GatewayMethodNotFoundException;
 use dukt\videos\errors\JsonParsingException;
 use dukt\videos\errors\VideoNotFoundException;
-use dukt\videos\Plugin as Videos;
 use dukt\videos\Plugin;
-use dukt\videos\records\Token as TokenRecord;
-use GuzzleHttp\Exception\BadResponseException;
+use dukt\videos\Plugin as Videos;
 use Exception;
+use GuzzleHttp\Exception\BadResponseException;
 use Psr\Http\Message\ResponseInterface;
 use yii\web\Response;
-
 
 /**
  * Gateway is the base class for classes representing video gateways.
  *
  * @author Dukt <support@dukt.net>
+ *
  * @since  1.0
  */
 abstract class Gateway implements GatewayInterface
@@ -35,22 +35,21 @@ abstract class Gateway implements GatewayInterface
     // =========================================================================
 
     /**
-     * Return the handle of the gateway based on its class name
+     * Return the handle of the gateway based on its class name.
      *
      * @return string
      */
     public function getHandle(): string
     {
         $handle = \get_class($this);
-        $handle = strtolower(substr($handle, strrpos($handle, "\\") + 1));
 
-        return $handle;
+        return strtolower(substr($handle, strrpos($handle, '\\') + 1));
     }
 
     /**
      * Returns the icon URL.
      *
-     * @return string|false|null
+     * @return null|false|string
      */
     public function getIconUrl()
     {
@@ -67,6 +66,7 @@ abstract class Gateway implements GatewayInterface
      * OAuth Connect.
      *
      * @return Response
+     *
      * @throws \craft\errors\MissingComponentException
      * @throws \yii\base\InvalidConfigException
      */
@@ -94,6 +94,7 @@ abstract class Gateway implements GatewayInterface
      * Returns the gateway's OAuth provider.
      *
      * @return mixed
+     *
      * @throws \yii\base\InvalidConfigException
      */
     public function getOauthProvider()
@@ -124,9 +125,9 @@ abstract class Gateway implements GatewayInterface
     }
 
     /**
-     * OAuth Scope
+     * OAuth Scope.
      *
-     * @return array|null
+     * @return null|array
      */
     public function getOauthScope()
     {
@@ -134,9 +135,9 @@ abstract class Gateway implements GatewayInterface
     }
 
     /**
-     * OAuth Authorization Options
+     * OAuth Authorization Options.
      *
-     * @return array|null
+     * @return null|array
      */
     public function getOauthAuthorizationOptions()
     {
@@ -144,9 +145,10 @@ abstract class Gateway implements GatewayInterface
     }
 
     /**
-     * OAuth Callback
+     * OAuth Callback.
      *
      * @return Response
+     *
      * @throws \craft\errors\MissingComponentException
      * @throws \yii\base\InvalidConfigException
      */
@@ -159,7 +161,7 @@ abstract class Gateway implements GatewayInterface
         try {
             // Try to get an access token (using the authorization code grant)
             $token = $provider->getAccessToken('authorization_code', [
-                'code' => $code
+                'code' => $code,
             ]);
 
             // Save token
@@ -184,9 +186,10 @@ abstract class Gateway implements GatewayInterface
     }
 
     /**
-     * Has Token
+     * Has Token.
      *
      * @return bool
+     *
      * @throws \yii\base\InvalidConfigException
      */
     public function hasToken(): bool
@@ -204,6 +207,7 @@ abstract class Gateway implements GatewayInterface
      * Returns the gateway's OAuth token.
      *
      * @return mixed
+     *
      * @throws \yii\base\InvalidConfigException
      */
     public function getOauthToken()
@@ -232,7 +236,7 @@ abstract class Gateway implements GatewayInterface
     public function getEmbedHtml($videoId, array $options = []): string
     {
         $embedAttributes = [
-            'title' => 'External video from ' . $this->getHandle(),
+            'title' => 'External video from '.$this->getHandle(),
             'frameborder' => '0',
             'allowfullscreen' => 'true',
             'allowscriptaccess' => 'true',
@@ -248,7 +252,7 @@ abstract class Gateway implements GatewayInterface
 
         $title = $options['title'] ?? false;
 
-        if($title) {
+        if ($title) {
             $this->parseEmbedAttribute($embedAttributes, $options, 'title', 'title');
         }
 
@@ -296,6 +300,7 @@ abstract class Gateway implements GatewayInterface
      * Returns the javascript origin URL.
      *
      * @return string
+     *
      * @throws \craft\errors\SiteNotFoundException
      */
     public function getJavascriptOrigin(): string
@@ -307,6 +312,7 @@ abstract class Gateway implements GatewayInterface
      * Returns the account.
      *
      * @return mixed
+     *
      * @throws Exception
      */
     public function getAccount()
@@ -337,6 +343,7 @@ abstract class Gateway implements GatewayInterface
      * @param $url
      *
      * @return mixed
+     *
      * @throws VideoNotFoundException
      */
     public function getVideoByUrl($url)
@@ -359,6 +366,7 @@ abstract class Gateway implements GatewayInterface
      * @param $options
      *
      * @return mixed
+     *
      * @throws GatewayMethodNotFoundException
      */
     public function getVideos($method, $options)
@@ -386,7 +394,9 @@ abstract class Gateway implements GatewayInterface
      * Returns the OAuth provider options.
      *
      * @param bool $parse
+     *
      * @return array
+     *
      * @throws \yii\base\InvalidConfigException
      */
     public function getOauthProviderOptions(bool $parse = true): array
@@ -414,6 +424,7 @@ abstract class Gateway implements GatewayInterface
      * @param array $options
      *
      * @return array
+     *
      * @throws ApiResponseException
      */
     protected function get($uri, array $options = []): array

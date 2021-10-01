@@ -1,6 +1,7 @@
 <?php
 /**
  * @link      https://dukt.net/videos/
+ *
  * @copyright Copyright (c) 2021, Dukt
  * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
@@ -8,11 +9,11 @@
 namespace dukt\videos\services;
 
 use dukt\videos\models\Token;
+use dukt\videos\Plugin;
 use Exception;
+use League\OAuth2\Client\Grant\RefreshToken;
 use League\OAuth2\Client\Token\AccessToken;
 use yii\base\Component;
-use dukt\videos\Plugin;
-use League\OAuth2\Client\Grant\RefreshToken;
 
 /**
  * Class Oauth service.
@@ -20,6 +21,7 @@ use League\OAuth2\Client\Grant\RefreshToken;
  * An instance of the Oauth service is globally accessible via [[Plugin::oauth `Plugin::$plugin->getOauth()`]].
  *
  * @author Dukt <support@dukt.net>
+ *
  * @since  2.0
  */
 class Oauth extends Component
@@ -32,7 +34,9 @@ class Oauth extends Component
      *
      * @param $gatewayHandle
      * @param bool $refresh
-     * @return AccessToken|null
+     *
+     * @return null|AccessToken
+     *
      * @throws \yii\base\InvalidConfigException
      */
     public function getToken($gatewayHandle, $refresh = true)
@@ -51,7 +55,9 @@ class Oauth extends Component
      *
      * @param $gatewayHandle
      * @param AccessToken $token
+     *
      * @return bool
+     *
      * @throws Exception
      */
     public function saveToken($gatewayHandle, AccessToken $token): bool
@@ -83,7 +89,9 @@ class Oauth extends Component
      * Deletes a token.
      *
      * @param $gatewayHandle
+     *
      * @return bool
+     *
      * @throws \Throwable
      * @throws \yii\base\InvalidConfigException
      * @throws \yii\db\StaleObjectException
@@ -109,7 +117,8 @@ class Oauth extends Component
      * @param array  $data
      * @param bool   $refreshToken
      *
-     * @return AccessToken|null
+     * @return null|AccessToken
+     *
      * @throws \yii\base\InvalidConfigException
      */
     private function createTokenFromData(string $gatewayHandle, array $data, $refreshToken = true)

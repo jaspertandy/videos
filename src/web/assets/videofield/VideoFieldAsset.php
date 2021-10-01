@@ -1,6 +1,7 @@
 <?php
 /**
  * @link      https://dukt.net/videos/
+ *
  * @copyright Copyright (c) 2021, Dukt
  * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
@@ -17,7 +18,7 @@ class VideoFieldAsset extends AssetBundle
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function init()
     {
@@ -27,7 +28,7 @@ class VideoFieldAsset extends AssetBundle
         // define the dependencies
         $this->depends = [
             CpAsset::class,
-            VideosAsset::class
+            VideosAsset::class,
         ];
 
         // define the relative path to CSS/JS files that should be registered with the page

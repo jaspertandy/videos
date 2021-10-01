@@ -1,6 +1,7 @@
 <?php
 /**
  * @link      https://dukt.net/videos/
+ *
  * @copyright Copyright (c) 2021, Dukt
  * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
@@ -20,6 +21,7 @@ use yii\base\Component;
  * An instance of the Tokens service is globally accessible via [[Plugin::oauth `VideosPlugin::$plugin->getTokens()`]].
  *
  * @author Dukt <support@dukt.net>
+ *
  * @since  2.0
  */
 class Tokens extends Component
@@ -31,13 +33,15 @@ class Tokens extends Component
      * Get a token by its gateway handle.
      *
      * @param $gatewayHandle
-     * @return Token|null
+     *
+     * @return null|Token
      */
     public function getToken($gatewayHandle)
     {
         $result = TokenRecord::find()
             ->where(['gateway' => $gatewayHandle])
-            ->one();
+            ->one()
+        ;
 
         if (!$result) {
             return null;
@@ -54,8 +58,10 @@ class Tokens extends Component
      * Saves a token.
      *
      * @param Token $token
-     * @param bool $runValidation
+     * @param bool  $runValidation
+     *
      * @return bool
+     *
      * @throws InvalidViewException
      */
     public function saveToken(Token $token, bool $runValidation = true): bool
@@ -69,7 +75,8 @@ class Tokens extends Component
         if ($token->id) {
             $tokenRecord = TokenRecord::find()
                 ->where(['id' => $token->id])
-                ->one();
+                ->one()
+            ;
 
             if (!$tokenRecord) {
                 throw new InvalidViewException("No token exists with the ID '{$token->id}'");
@@ -109,7 +116,9 @@ class Tokens extends Component
      * Deletes a token.
      *
      * @param int $id
+     *
      * @return bool
+     *
      * @throws \Throwable
      * @throws \yii\db\StaleObjectException
      */

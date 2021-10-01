@@ -12,7 +12,7 @@ use yii\helpers\Json;
 class m190601_092217_tokens extends Migration
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function safeUp()
     {
@@ -35,13 +35,22 @@ class m190601_092217_tokens extends Migration
 
                 'dateCreated' => $this->dateTime()->notNull(),
                 'dateUpdated' => $this->dateTime()->notNull(),
-                'uid' => $this->uid()
+                'uid' => $this->uid(),
             ]
         );
 
         $this->createIndex(null, '{{%videos_tokens}}', 'gateway', true);
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function safeDown()
+    {
+        echo "m190601_092217_tokens cannot be reverted.\n";
+
+        return false;
+    }
 
     private function updateOauthClient()
     {
@@ -54,14 +63,16 @@ class m190601_092217_tokens extends Migration
             ->select('*')
             ->from(['{{%oauth_providers}}'])
             ->where(['class' => ['google', 'vimeo']])
-            ->all();
+            ->all()
+        ;
 
         // Get plugin settings
         $result = (new Query())
             ->select('*')
             ->from(['{{%plugins}}'])
             ->where(['handle' => 'videos'])
-            ->one();
+            ->one()
+        ;
 
         if (!$result) {
             return true;
@@ -77,13 +88,19 @@ class m190601_092217_tokens extends Migration
             switch ($provider['class']) {
                 case 'dailymotion':
                     $providerHandle = 'dailymotion';
+
                     break;
+
                 case 'vimeo':
                     $providerHandle = 'vimeo';
+
                     break;
+
                 case 'google':
                     $providerHandle = 'youtube';
+
                     break;
+
                 default:
                     $providerHandle = null;
             }
@@ -97,14 +114,5 @@ class m190601_092217_tokens extends Migration
         }
 
         $this->update('{{%plugins}}', ['settings' => Json::encode($settings)], ['handle' => 'videos']);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function safeDown()
-    {
-        echo "m190601_092217_tokens cannot be reverted.\n";
-        return false;
     }
 }

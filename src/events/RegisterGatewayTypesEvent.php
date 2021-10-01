@@ -1,6 +1,7 @@
 <?php
 /**
  * @link      https://dukt.net/videos/
+ *
  * @copyright Copyright (c) 2021, Dukt
  * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
@@ -13,6 +14,7 @@ use yii\base\Event;
  * RegisterGatewayTypesEvent class.
  *
  * @author Dukt <support@dukt.net>
+ *
  * @since  2.0
  */
 class RegisterGatewayTypesEvent extends Event
@@ -21,7 +23,7 @@ class RegisterGatewayTypesEvent extends Event
     // =========================================================================
 
     /**
-     * @var array The registered login providers.
+     * @var array the registered login providers
      */
     public $gatewayTypes = [];
 }

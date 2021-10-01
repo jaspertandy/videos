@@ -1,6 +1,7 @@
 <?php
 /**
  * @link      https://dukt.net/videos/
+ *
  * @copyright Copyright (c) 2021, Dukt
  * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
@@ -17,7 +18,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
 /**
- * Settings controller
+ * Settings controller.
  */
 class SettingsController extends Controller
 {
@@ -25,6 +26,7 @@ class SettingsController extends Controller
      * Settings Index.
      *
      * @return Response
+     *
      * @throws InvalidConfigException
      */
     public function actionIndex(): Response
@@ -67,6 +69,7 @@ class SettingsController extends Controller
      * @param $gatewayHandle
      *
      * @return Response
+     *
      * @throws InvalidConfigException
      */
     public function actionGateway($gatewayHandle): Response
@@ -89,7 +92,7 @@ class SettingsController extends Controller
             'gatewayHandle' => $gatewayHandle,
             'gateway' => $gateway,
             'account' => $account,
-            'error' => $error ?? null
+            'error' => $error ?? null,
         ]);
     }
 
@@ -99,6 +102,7 @@ class SettingsController extends Controller
      * @param $gatewayHandle
      *
      * @return Response
+     *
      * @throws InvalidConfigException
      */
     public function actionGatewayOauth($gatewayHandle): Response
@@ -115,6 +119,7 @@ class SettingsController extends Controller
      * Save gateway.
      *
      * @return Response
+     *
      * @throws BadRequestHttpException
      * @throws InvalidConfigException
      * @throws \craft\errors\MissingComponentException
@@ -133,7 +138,7 @@ class SettingsController extends Controller
         ];
 
         $key = 'plugins.videos.settings.oauthProviderOptions';
-        $configPath = $key . '.' . $gateway->getHandle();
+        $configPath = $key.'.'.$gateway->getHandle();
 
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$gateway->getHandle()}” integration");
 

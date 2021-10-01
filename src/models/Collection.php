@@ -1,6 +1,7 @@
 <?php
 /**
  * @link      https://dukt.net/videos/
+ *
  * @copyright Copyright (c) 2021, Dukt
  * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
@@ -13,6 +14,7 @@ use craft\base\Model;
  * Collection model class.
  *
  * @author Dukt <support@dukt.net>
+ *
  * @since  2.0
  */
 class Collection extends Model
@@ -21,17 +23,17 @@ class Collection extends Model
     // =========================================================================
 
     /**
-     * @var string|null Name
+     * @var null|string Name
      */
     public $name;
 
     /**
-     * @var string|null Method
+     * @var null|string Method
      */
     public $method;
 
     /**
-     * @var mixed|null Options
+     * @var null|mixed Options
      */
     public $options;
 }

@@ -1,19 +1,19 @@
 <?php
 /**
  * @link      https://dukt.net/videos/
+ *
  * @copyright Copyright (c) 2021, Dukt
  * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\services;
 
-use Craft;
 use dukt\videos\base\Gateway;
 use dukt\videos\events\RegisterGatewayTypesEvent;
-use dukt\videos\Plugin;
-use yii\base\Component;
 use dukt\videos\gateways\Vimeo;
 use dukt\videos\gateways\YouTube;
+use dukt\videos\Plugin;
+use yii\base\Component;
 
 /**
  * Class Gateways service.
@@ -21,6 +21,7 @@ use dukt\videos\gateways\YouTube;
  * An instance of the Gateways service is globally accessible via [[Plugin::gateways `Videos::$plugin->getGateways()`]].
  *
  * @author Dukt <support@dukt.net>
+ *
  * @since  2.0
  */
 class Gateways extends Component
@@ -60,7 +61,7 @@ class Gateways extends Component
      * @param      $gatewayHandle
      * @param bool $enabledOnly
      *
-     * @return Gateway|null
+     * @return null|Gateway
      */
     public function getGateway($gatewayHandle, $enabledOnly = true)
     {
@@ -106,6 +107,7 @@ class Gateways extends Component
      * Load gateways.
      *
      * @return null
+     *
      * @throws \yii\base\InvalidConfigException
      */
     private function loadGateways()
@@ -170,7 +172,7 @@ class Gateways extends Component
         $eventName = self::EVENT_REGISTER_GATEWAY_TYPES;
 
         $event = new RegisterGatewayTypesEvent([
-            'gatewayTypes' => $gatewayTypes
+            'gatewayTypes' => $gatewayTypes,
         ]);
 
         $this->trigger($eventName, $event);
@@ -187,6 +189,6 @@ class Gateways extends Component
      */
     private function _createGateway($gatewayType)
     {
-        return new $gatewayType;
+        return new $gatewayType();
     }
 }

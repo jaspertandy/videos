@@ -1,6 +1,7 @@
 <?php
 /**
  * @link      https://dukt.net/videos/
+ *
  * @copyright Copyright (c) 2021, Dukt
  * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
@@ -15,9 +16,10 @@ use dukt\videos\models\Video;
 use GuzzleHttp\Client;
 
 /**
- * YouTube represents the YouTube gateway
+ * YouTube represents the YouTube gateway.
  *
  * @author    Dukt <support@dukt.net>
+ *
  * @since     1.0
  */
 class YouTube extends Gateway
@@ -26,7 +28,7 @@ class YouTube extends Gateway
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @return string
      */
@@ -36,7 +38,7 @@ class YouTube extends Gateway
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @return string
      */
@@ -66,7 +68,7 @@ class YouTube extends Gateway
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @return array
      */
@@ -76,12 +78,12 @@ class YouTube extends Gateway
             'https://www.googleapis.com/auth/userinfo.profile',
             'https://www.googleapis.com/auth/userinfo.email',
             'https://www.googleapis.com/auth/youtube',
-            'https://www.googleapis.com/auth/youtube.readonly'
+            'https://www.googleapis.com/auth/youtube.readonly',
         ];
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @return array
      */
@@ -94,13 +96,13 @@ class YouTube extends Gateway
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getOauthProviderOptions(bool $parse = true): array
     {
         $options = parent::getOauthProviderOptions($parse);
 
-        if(!isset($options['useOidcMode'])) {
+        if (!isset($options['useOidcMode'])) {
             $options['useOidcMode'] = true;
         }
 
@@ -108,7 +110,7 @@ class YouTube extends Gateway
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @param array $options
      *
@@ -120,15 +122,15 @@ class YouTube extends Gateway
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @return array
+     *
      * @throws \dukt\videos\errors\ApiResponseException
      */
     public function getExplorerSections(): array
     {
         $sections = [];
-
 
         // Library
 
@@ -142,10 +144,9 @@ class YouTube extends Gateway
                 new Collection([
                     'name' => 'Liked videos',
                     'method' => 'likes',
-                ])
-            ]
+                ]),
+            ],
         ]);
-
 
         // Playlists
 
@@ -172,11 +173,12 @@ class YouTube extends Gateway
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @param string $id
      *
      * @return Video
+     *
      * @throws VideoNotFoundException
      * @throws \dukt\videos\errors\ApiResponseException
      */
@@ -185,8 +187,8 @@ class YouTube extends Gateway
         $data = $this->get('videos', [
             'query' => [
                 'part' => 'snippet,statistics,contentDetails',
-                'id' => $id
-            ]
+                'id' => $id,
+            ],
         ]);
 
         $videos = $this->parseVideos($data['items']);
@@ -199,7 +201,7 @@ class YouTube extends Gateway
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @return string
      */
@@ -209,7 +211,7 @@ class YouTube extends Gateway
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @param $url
      *
@@ -241,7 +243,7 @@ class YouTube extends Gateway
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @return bool
      */
@@ -254,9 +256,10 @@ class YouTube extends Gateway
     // =========================================================================
 
     /**
-     * Returns an authenticated Guzzle client
+     * Returns an authenticated Guzzle client.
      *
      * @return Client
+     *
      * @throws \yii\base\InvalidConfigException
      */
     protected function createClient(): Client
@@ -264,8 +267,8 @@ class YouTube extends Gateway
         $options = [
             'base_uri' => $this->getApiUrl(),
             'headers' => [
-                'Authorization' => 'Bearer '.$this->getOauthToken()->getToken()
-            ]
+                'Authorization' => 'Bearer '.$this->getOauthToken()->getToken(),
+            ],
         ];
 
         return new Client($options);
@@ -277,6 +280,7 @@ class YouTube extends Gateway
      * @param array $params
      *
      * @return array
+     *
      * @throws \dukt\videos\errors\ApiResponseException
      */
     protected function getVideosLikes(array $params = []): array
@@ -301,6 +305,7 @@ class YouTube extends Gateway
      * @param array $params
      *
      * @return array
+     *
      * @throws \dukt\videos\errors\ApiResponseException
      */
     protected function getVideosPlaylist(array $params = []): array
@@ -320,7 +325,6 @@ class YouTube extends Gateway
             $videoId = $item['snippet']['resourceId']['videoId'];
             $videoIds[] = $videoId;
         }
-
 
         // Get videos from video IDs
 
@@ -342,6 +346,7 @@ class YouTube extends Gateway
      * @param array $params
      *
      * @return array
+     *
      * @throws \dukt\videos\errors\ApiResponseException
      */
     protected function getVideosSearch(array $params = []): array
@@ -361,11 +366,9 @@ class YouTube extends Gateway
             $videoIds[] = $item['id']['videoId'];
         }
 
-
         // Get videos from video IDs
 
         if (\count($videoIds) > 0) {
-
             $query = [];
             $query['part'] = 'snippet,statistics,contentDetails';
             $query['id'] = implode(',', $videoIds);
@@ -388,6 +391,7 @@ class YouTube extends Gateway
      * @param array $params
      *
      * @return array
+     *
      * @throws \dukt\videos\errors\ApiResponseException
      */
     protected function getVideosUploads(array $params = []): array
@@ -397,7 +401,6 @@ class YouTube extends Gateway
         if (!$uploadsPlaylistId) {
             return [];
         }
-
 
         // Retrieve video IDs
 
@@ -414,7 +417,6 @@ class YouTube extends Gateway
             $videoId = $item['snippet']['resourceId']['videoId'];
             $videoIds[] = $videoId;
         }
-
 
         // Retrieve videos from video IDs
 
@@ -444,6 +446,7 @@ class YouTube extends Gateway
 
     /**
      * @return array
+     *
      * @throws \dukt\videos\errors\ApiResponseException
      */
     private function getCollectionsPlaylists(): array
@@ -453,7 +456,7 @@ class YouTube extends Gateway
                 'part' => 'snippet',
                 'mine' => 'true',
                 'maxResults' => 50,
-            ]
+            ],
         ]);
 
         return $this->parseCollections($data['items']);
@@ -461,13 +464,14 @@ class YouTube extends Gateway
 
     /**
      * @return null|mixed
+     *
      * @throws \dukt\videos\errors\ApiResponseException
      */
     private function getSpecialPlaylists()
     {
         $channelsQuery = [
             'part' => 'contentDetails',
-            'mine' => 'true'
+            'mine' => 'true',
         ];
 
         $channelsResponse = $this->get('channels', ['query' => $channelsQuery]);
@@ -487,6 +491,7 @@ class YouTube extends Gateway
      * @param string $type
      *
      * @return null|mixed
+     *
      * @throws \dukt\videos\errors\ApiResponseException
      */
     private function getSpecialPlaylistId(string $type)
@@ -512,7 +517,7 @@ class YouTube extends Gateway
         $pagination = [
             'page' => 1,
             'perPage' => $this->getVideosPerPage(),
-            'moreToken' => false
+            'moreToken' => false,
         ];
 
         if (!empty($params['perPage'])) {
@@ -522,7 +527,6 @@ class YouTube extends Gateway
         if (!empty($params['moreToken'])) {
             $pagination['moreToken'] = $params['moreToken'];
         }
-
 
         // Query
 
@@ -553,7 +557,7 @@ class YouTube extends Gateway
         return [
             'prevPage' => $response['prevPageToken'] ?? null,
             'moreToken' => $response['nextPageToken'] ?? null,
-            'more' => $more
+            'more' => $more,
         ];
     }
 
@@ -594,11 +598,12 @@ class YouTube extends Gateway
      * @param $data
      *
      * @return Video
+     *
      * @throws \Exception
      */
     private function parseVideo($data): Video
     {
-        $video = new Video;
+        $video = new Video();
         $video->raw = $data;
         $video->authorName = $data['snippet']['channelTitle'];
         $video->authorUrl = 'http://youtube.com/channel/'.$data['snippet']['channelId'];
@@ -613,7 +618,7 @@ class YouTube extends Gateway
 
         // Video Duration
         $interval = new \DateInterval($data['contentDetails']['duration']);
-        $video->durationSeconds = (int) date_create('@0')->add($interval)->getTimestamp();
+        $video->durationSeconds = (int)date_create('@0')->add($interval)->getTimestamp();
         $video->duration8601 = $data['contentDetails']['duration'];
 
         // Thumbnails
@@ -631,6 +636,7 @@ class YouTube extends Gateway
      * Get the thumbnail source.
      *
      * @param array $thumbnails
+     *
      * @return null|string
      */
     private function getThumbnailSource(array $thumbnails)
@@ -646,6 +652,7 @@ class YouTube extends Gateway
      * Get the largest thumbnail from an array of thumbnails.
      *
      * @param array $thumbnails
+     *
      * @return null|string
      */
     private function getLargestThumbnail(array $thumbnails)
@@ -668,6 +675,7 @@ class YouTube extends Gateway
      * @param $data
      *
      * @return array
+     *
      * @throws \Exception
      */
     private function parseVideos($data): array

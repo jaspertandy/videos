@@ -1,6 +1,7 @@
 <?php
 /**
  * @link      https://dukt.net/videos/
+ *
  * @copyright Copyright (c) 2021, Dukt
  * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
@@ -22,6 +23,7 @@ class VideosVariable
      * @param array $embedOptions
      *
      * @return mixed
+     *
      * @throws \yii\base\InvalidConfigException
      */
     public function getEmbed($videoUrl, array $embedOptions = [])
@@ -36,7 +38,7 @@ class VideosVariable
      * @param bool $enableCache
      * @param int  $cacheExpiry
      *
-     * @return bool|null
+     * @return null|bool
      */
     public function getVideoByUrl($videoUrl, $enableCache = true, $cacheExpiry = 3600)
     {

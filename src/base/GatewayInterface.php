@@ -1,6 +1,7 @@
 <?php
 /**
  * @link      https://dukt.net/videos/
+ *
  * @copyright Copyright (c) 2021, Dukt
  * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
@@ -13,6 +14,7 @@ use dukt\videos\models\Video;
  * GatewayInterface defines the common interface to be implemented by gateway classes.
  *
  * @author Dukt <support@dukt.net>
+ *
  * @since  2.0
  */
 interface GatewayInterface
@@ -42,7 +44,7 @@ interface GatewayInterface
     public function getName(): string;
 
     /**
-     * Returns the sections for the explorer
+     * Returns the sections for the explorer.
      *
      * @return array
      */

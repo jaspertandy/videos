@@ -1,6 +1,7 @@
 <?php
 /**
  * @link      https://dukt.net/videos/
+ *
  * @copyright Copyright (c) 2021, Dukt
  * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
@@ -12,7 +13,7 @@ use craft\helpers\FileHelper;
 use dukt\videos\Plugin;
 
 /**
- * Videos helper
+ * Videos helper.
  */
 class VideosHelper
 {
@@ -46,7 +47,7 @@ class VideosHelper
     }
 
     /**
-     * Formats seconds to ISO 8601 duration
+     * Formats seconds to ISO 8601 duration.
      *
      * @param $seconds
      *
@@ -81,6 +82,7 @@ class VideosHelper
      * @param $size
      *
      * @return null|string
+     *
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \craft\errors\ImageException
      * @throws \yii\base\Exception
@@ -150,7 +152,8 @@ class VideosHelper
             FileHelper::createDirectory($dir);
             Craft::$app->getImages()->loadImage($originalPath, false, $size)
                 ->scaleToFit($size, $size)
-                ->saveAs(parse_url($path, PHP_URL_PATH));
+                ->saveAs(parse_url($path, PHP_URL_PATH))
+            ;
         } else {
             $name = pathinfo($file, PATHINFO_BASENAME);
         }

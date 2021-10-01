@@ -1,6 +1,7 @@
 <?php
 /**
  * @link      https://dukt.net/videos/
+ *
  * @copyright Copyright (c) 2021, Dukt
  * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
@@ -8,9 +9,9 @@
 namespace dukt\videos\services;
 
 use Craft;
+use DateInterval;
 use dukt\videos\Plugin as VideosPlugin;
 use yii\base\Component;
-use DateInterval;
 
 /**
  * Class Cache service.
@@ -18,6 +19,7 @@ use DateInterval;
  * An instance of the Cache service is globally accessible via [[Plugin::cache `VideosPlugin::$plugin->getCache()`]].
  *
  * @author Dukt <support@dukt.net>
+ *
  * @since  2.0
  */
 class Cache extends Component
@@ -48,12 +50,13 @@ class Cache extends Component
      * @param null $dependency
      * @param null $enableCache
      *
-     * @return bool|null
+     * @return null|bool
+     *
      * @throws \Exception
      */
     public function set($id, $value, $expire = null, $dependency = null, $enableCache = null)
     {
-        if (null === $enableCache) {
+        if ($enableCache === null) {
             $enableCache = VideosPlugin::$plugin->getSettings()->cacheDuration;
         }
 
@@ -76,7 +79,7 @@ class Cache extends Component
     // =========================================================================
 
     /**
-     * Return the cache key
+     * Return the cache key.
      *
      * @param array $request
      *

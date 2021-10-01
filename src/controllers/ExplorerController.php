@@ -1,6 +1,7 @@
 <?php
 /**
  * @link      https://dukt.net/videos/
+ *
  * @copyright Copyright (c) 2021, Dukt
  * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
@@ -17,7 +18,7 @@ use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use yii\web\Response;
 
 /**
- * Explorer controller
+ * Explorer controller.
  */
 class ExplorerController extends Controller
 {
@@ -36,6 +37,7 @@ class ExplorerController extends Controller
      * Get the explorer modal.
      *
      * @return Response
+     *
      * @throws \Twig_Error_Loader
      * @throws \yii\base\Exception
      * @throws \yii\base\InvalidConfigException
@@ -83,8 +85,8 @@ class ExplorerController extends Controller
                 'namespaceInputId' => $namespaceInputId,
                 'gateways' => $gateways,
                 'gatewaySections' => $gatewaySections,
-                'jsonGateways' => Json::encode($gateways)
-            ])
+                'jsonGateways' => Json::encode($gateways),
+            ]),
         ]);
     }
 
@@ -92,6 +94,7 @@ class ExplorerController extends Controller
      * Get videos.
      *
      * @return Response
+     *
      * @throws GatewayNotFoundException
      * @throws \Twig_Error_Loader
      * @throws \dukt\videos\errors\GatewayMethodNotFoundException
@@ -117,13 +120,13 @@ class ExplorerController extends Controller
         $videosResponse = $gateway->getVideos($method, $options);
 
         $html = Craft::$app->getView()->renderTemplate('videos/_elements/videos', [
-            'videos' => $videosResponse['videos']
+            'videos' => $videosResponse['videos'],
         ]);
 
         return $this->asJson([
             'html' => $html,
             'more' => $videosResponse['more'],
-            'moreToken' => $videosResponse['moreToken']
+            'moreToken' => $videosResponse['moreToken'],
         ]);
     }
 
@@ -131,6 +134,7 @@ class ExplorerController extends Controller
      * Field preview.
      *
      * @return Response
+     *
      * @throws VideoNotFoundException
      * @throws \Twig_Error_Loader
      * @throws \yii\base\Exception
@@ -158,7 +162,7 @@ class ExplorerController extends Controller
         return $this->asJson(
             [
                 'video' => $video,
-                'preview' => Craft::$app->getView()->renderTemplate('videos/_elements/fieldPreview', ['video' => $video])
+                'preview' => Craft::$app->getView()->renderTemplate('videos/_elements/fieldPreview', ['video' => $video]),
             ]
         );
     }
@@ -167,6 +171,7 @@ class ExplorerController extends Controller
      * Player.
      *
      * @return Response
+     *
      * @throws \Twig_Error_Loader
      * @throws \yii\base\Exception
      * @throws \yii\base\InvalidConfigException
@@ -182,11 +187,11 @@ class ExplorerController extends Controller
         $video = Videos::$plugin->getVideos()->getVideoById($gatewayHandle, $videoId);
 
         $html = Craft::$app->getView()->renderTemplate('videos/_elements/player', [
-            'video' => $video
+            'video' => $video,
         ]);
 
         return $this->asJson([
-            'html' => $html
+            'html' => $html,
         ]);
     }
 }

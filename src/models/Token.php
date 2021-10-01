@@ -1,6 +1,7 @@
 <?php
 /**
  * @link      https://dukt.net/videos/
+ *
  * @copyright Copyright (c) 2021, Dukt
  * @license   https://github.com/dukt/videos/blob/master/LICENSE.md
  */
@@ -16,33 +17,32 @@ class Token extends Model
     // =========================================================================
 
     /**
-     * @var int|null ID
+     * @var null|int ID
      */
     public $id;
 
     /**
-     * @var string|null Gateway
+     * @var null|string Gateway
      */
     public $gateway;
 
-
     /**
-     * @var string|null Access token
+     * @var null|string Access token
      */
     public $accessToken;
 
     /**
-     * @var \DateTime|null Date updated
+     * @var null|\DateTime Date updated
      */
     public $dateUpdated;
 
     /**
-     * @var \DateTime|null Date created
+     * @var null|\DateTime Date created
      */
     public $dateCreated;
 
     /**
-     * @var string|null Uid
+     * @var null|string Uid
      */
     public $uid;
 
@@ -50,7 +50,7 @@ class Token extends Model
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function init()
     {
@@ -62,7 +62,7 @@ class Token extends Model
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function rules()
     {

@@ -1,6 +1,7 @@
 <?php
 /**
  * @link      https://dukt.net/videos/
+ *
  * @copyright Copyright (c) 2021, Dukt
  * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
@@ -14,7 +15,7 @@ use yii\base\InvalidConfigException;
 use yii\web\Response;
 
 /**
- * OAuth controller
+ * OAuth controller.
  */
 class OauthController extends Controller
 {
@@ -25,6 +26,7 @@ class OauthController extends Controller
      * Connect.
      *
      * @return Response
+     *
      * @throws InvalidConfigException
      * @throws \craft\errors\MissingComponentException
      */
@@ -43,6 +45,7 @@ class OauthController extends Controller
      * Callback.
      *
      * @return Response
+     *
      * @throws InvalidConfigException
      * @throws \craft\errors\MissingComponentException
      */
@@ -59,6 +62,7 @@ class OauthController extends Controller
      * Disconnect.
      *
      * @return Response
+     *
      * @throws InvalidConfigException
      * @throws \craft\errors\MissingComponentException
      */
@@ -71,7 +75,6 @@ class OauthController extends Controller
 
         // set notice
         Craft::$app->getSession()->setNotice(Craft::t('videos', 'Disconnected.'));
-
 
         // redirect
 

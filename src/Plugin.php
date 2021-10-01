@@ -1,6 +1,7 @@
 <?php
 /**
  * @link      https://dukt.net/videos/
+ *
  * @copyright Copyright (c) 2021, Dukt
  * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
@@ -26,6 +27,7 @@ use yii\base\Event;
  * Videos plugin class.
  *
  * @author  Dukt <support@dukt.net>
+ *
  * @since   1.0
  */
 class Plugin extends \craft\base\Plugin
@@ -39,7 +41,7 @@ class Plugin extends \craft\base\Plugin
     // =========================================================================
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public $schemaVersion = '1.0.3';
 
@@ -49,7 +51,7 @@ class Plugin extends \craft\base\Plugin
     public $hasCpSettings = true;
 
     /**
-     * @var \dukt\videos\Plugin The plugin instance.
+     * @var \dukt\videos\Plugin the plugin instance
      */
     public static $plugin;
 
@@ -57,7 +59,7 @@ class Plugin extends \craft\base\Plugin
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function init()
     {
@@ -72,7 +74,7 @@ class Plugin extends \craft\base\Plugin
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getSettingsResponse()
     {
@@ -85,8 +87,10 @@ class Plugin extends \craft\base\Plugin
      * Get OAuth provider options.
      *
      * @param string $gatewayHandle
-     * @param bool $parse
+     * @param bool   $parse
+     *
      * @return null|array
+     *
      * @throws \yii\base\InvalidConfigException
      */
     public function getOauthProviderOptions(string $gatewayHandle, bool $parse = true)
@@ -117,7 +121,7 @@ class Plugin extends \craft\base\Plugin
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function createSettingsModel()
     {
@@ -146,7 +150,7 @@ class Plugin extends \craft\base\Plugin
      */
     private function _registerCpRoutes()
     {
-        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
+        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function (RegisterUrlRulesEvent $event) {
             $rules = [
                 'videos/settings' => 'videos/settings/index',
                 'videos/settings/<gatewayHandle:{handle}>' => 'videos/settings/gateway',
@@ -162,7 +166,7 @@ class Plugin extends \craft\base\Plugin
      */
     private function _registerFieldTypes()
     {
-        Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
+        Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function (RegisterComponentTypesEvent $event) {
             $event->types[] = VideoField::class;
         });
     }
@@ -172,11 +176,11 @@ class Plugin extends \craft\base\Plugin
      */
     private function _registerCacheOptions()
     {
-        Event::on(ClearCaches::class, ClearCaches::EVENT_REGISTER_CACHE_OPTIONS, function(RegisterCacheOptionsEvent $event) {
+        Event::on(ClearCaches::class, ClearCaches::EVENT_REGISTER_CACHE_OPTIONS, function (RegisterCacheOptionsEvent $event) {
             $event->options[] = [
                 'key' => 'videos-caches',
                 'label' => Craft::t('videos', 'Videos caches'),
-                'action' => Craft::$app->path->getRuntimePath().'/videos'
+                'action' => Craft::$app->path->getRuntimePath().'/videos',
             ];
         });
     }
@@ -186,11 +190,10 @@ class Plugin extends \craft\base\Plugin
      */
     private function _registerVariable()
     {
-        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function(Event $event) {
+        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function (Event $event) {
             /** @var CraftVariable $variable */
             $variable = $event->sender;
             $variable->set('videos', VideosVariable::class);
         });
     }
-
 }
