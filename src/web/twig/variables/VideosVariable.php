@@ -9,41 +9,45 @@
 namespace dukt\videos\web\twig\variables;
 
 use Craft;
-use dukt\videos\Plugin as Videos;
+use dukt\videos\models\Video;
+use dukt\videos\Plugin as VideosPlugin;
 
 class VideosVariable
 {
-    // Public Methods
-    // =========================================================================
-
     /**
-     * Get Embed.
+     * Get embed from a video url.
      *
-     * @param       $videoUrl
-     * @param array $embedOptions
+     * @param string $videoUrl
+     * @param array  $embedOptions
      *
-     * @return mixed
-     *
-     * @throws \yii\base\InvalidConfigException
+     * @return null|string
      */
-    public function getEmbed($videoUrl, array $embedOptions = [])
+    public function getEmbed(string $videoUrl, array $embedOptions = []): ?string
     {
-        return Videos::$plugin->getVideos()->getEmbed($videoUrl, $embedOptions);
+        try {
+            $video = VideosPlugin::$plugin->getVideos()->getVideoByUrl($videoUrl);
+
+            return $video->getEmbed($embedOptions);
+        } catch (\Exception $e) {
+            Craft::info('Couldn’t get video from its url ('.$videoUrl.'): '.$e->getMessage(), __METHOD__);
+        }
+
+        return null;
     }
 
     /**
      * Get a video from its URL.
      *
-     * @param      $videoUrl
-     * @param bool $enableCache
-     * @param int  $cacheExpiry
+     * @param string $videoUrl
+     * @param bool   $enableCache
+     * @param int    $cacheExpiry
      *
-     * @return null|bool
+     * @return null|Video
      */
-    public function getVideoByUrl($videoUrl, $enableCache = true, $cacheExpiry = 3600)
+    public function getVideoByUrl(string $videoUrl/*, $enableCache = true, $cacheExpiry = 3600*/): ?Video
     {
         try {
-            return Videos::$plugin->getVideos()->getVideoByUrl($videoUrl, $enableCache, $cacheExpiry);
+            return VideosPlugin::$plugin->getVideos()->getVideoByUrl($videoUrl);
         } catch (\Exception $e) {
             Craft::info('Couldn’t get video from its url ('.$videoUrl.'): '.$e->getMessage(), __METHOD__);
         }
@@ -54,12 +58,14 @@ class VideosVariable
     /**
      * Alias for the `getVideoByUrl()` method.
      *
-     * @param      $videoUrl
-     * @param bool $enableCache
-     * @param int  $cacheExpiry
+     * @param string $videoUrl
+     * @param bool   $enableCache
+     * @param int    $cacheExpiry
+     *
+     * @return null|Video
      */
-    public function url($videoUrl, $enableCache = true, $cacheExpiry = 3600)
+    public function url($videoUrl/*, $enableCache = true, $cacheExpiry = 3600*/): ?Video
     {
-        $this->getVideoByUrl($videoUrl, $enableCache, $cacheExpiry);
+        return $this->getVideoByUrl($videoUrl);
     }
 }

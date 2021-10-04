@@ -8,15 +8,17 @@
 
 namespace dukt\videos\services;
 
-use Craft;
-use dukt\analytics\errors\InvalidViewException;
+use dukt\videos\errors\OauthTokenDeleteException;
+use dukt\videos\errors\OauthTokenInvalidException;
+use dukt\videos\errors\OauthTokenNotFoundException;
+use dukt\videos\errors\OauthTokenSaveException;
 use dukt\videos\models\Token;
 use dukt\videos\records\Token as TokenRecord;
 use Exception;
 use yii\base\Component;
 
 /**
- * Class Tokens service.
+ * Tokens service.
  *
  * An instance of the Tokens service is globally accessible via [[Plugin::oauth `VideosPlugin::$plugin->getTokens()`]].
  *
@@ -26,28 +28,24 @@ use yii\base\Component;
  */
 class Tokens extends Component
 {
-    // Public Methods
-    // =========================================================================
-
     /**
-     * Get a token by its gateway handle.
+     * Get one token by its gateway handle.
      *
-     * @param $gatewayHandle
+     * @param string $gatewayHandle
      *
-     * @return null|Token
+     * @return Token
+     *
+     * @throws OauthTokenNotFoundException
      */
-    public function getToken($gatewayHandle)
+    public function getTokenByGatewayHandle(string $gatewayHandle): Token
     {
-        $result = TokenRecord::find()
-            ->where(['gateway' => $gatewayHandle])
-            ->one()
-        ;
+        $tokenRecord = TokenRecord::findOne(['gateway' => $gatewayHandle]);
 
-        if (!$result) {
-            return null;
+        if ($tokenRecord === null) {
+            throw new OauthTokenNotFoundException(/* TODO: more precise message */);
         }
 
-        return new Token($result->toArray([
+        return new Token($tokenRecord->toArray([
             'id',
             'gateway',
             'accessToken',
@@ -55,83 +53,63 @@ class Tokens extends Component
     }
 
     /**
-     * Saves a token.
+     * Save a token.
      *
      * @param Token $token
-     * @param bool  $runValidation
      *
-     * @return bool
+     * @return void
      *
-     * @throws InvalidViewException
+     * @throws OauthTokenSaveException
      */
-    public function saveToken(Token $token, bool $runValidation = true): bool
+    public function saveToken(Token $token): void
     {
-        if ($runValidation && !$token->validate()) {
-            Craft::info('Token not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
-        if ($token->id) {
-            $tokenRecord = TokenRecord::find()
-                ->where(['id' => $token->id])
-                ->one()
-            ;
-
-            if (!$tokenRecord) {
-                throw new InvalidViewException("No token exists with the ID '{$token->id}'");
-            }
-
-            $isNewToken = false;
-        } else {
-            $tokenRecord = new TokenRecord();
-            $isNewToken = true;
-        }
-
-        $tokenRecord->gateway = $token->gateway;
-        $tokenRecord->accessToken = $token->accessToken;
-
-        $transaction = Craft::$app->getDb()->beginTransaction();
-
         try {
-            // Is the event giving us the go-ahead?
-            $tokenRecord->save(false);
-
-            // Now that we have a view ID, save it on the model
-            if ($isNewToken) {
-                $token->id = $tokenRecord->id;
+            if ($token->validate() === false) {
+                throw new OauthTokenInvalidException(/* TODO: more precise message */);
             }
 
-            $transaction->commit();
+            $tokenRecord = new TokenRecord();
+
+            if ($token->id !== null) {
+                $tokenRecord = TokenRecord::findOne($token->id);
+
+                if ($tokenRecord === null) {
+                    throw new OauthTokenNotFoundException(/* TODO: more precise message */);
+                }
+            }
+
+            $tokenRecord->gateway = $token->gateway;
+            $tokenRecord->accessToken = $token->accessToken;
+
+            $tokenRecord->save(false);
         } catch (Exception $e) {
-            $transaction->rollBack();
-
-            throw $e;
+            throw new OauthTokenSaveException(/* TODO: more precise message */);
         }
-
-        return true;
     }
 
     /**
-     * Deletes a token.
+     * Delete a token by its gateway handle.
      *
-     * @param int $id
+     * @param string $gatewayHandle
      *
-     * @return bool
+     * @return void
      *
-     * @throws \Throwable
-     * @throws \yii\db\StaleObjectException
+     * @throws OauthTokenDeleteException
      */
-    public function deleteTokenById(int $id): bool
+    public function deleteTokenByGatewayHandle(string $gatewayHandle): void
     {
-        $tokenRecord = TokenRecord::findOne($id);
+        try {
+            $tokenRecord = TokenRecord::findOne(['gateway' => $gatewayHandle]);
 
-        if (!$tokenRecord) {
-            return true;
+            if ($tokenRecord === null) {
+                throw new OauthTokenNotFoundException(/* TODO: more precise message */);
+            }
+
+            if ($tokenRecord->delete() === false) {
+                throw new OauthTokenDeleteException(/* TODO: more precise message */);
+            }
+        } catch (Exception $e) {
+            throw new OauthTokenDeleteException(/* TODO: more precise message */);
         }
-
-        $tokenRecord->delete();
-
-        return true;
     }
 }

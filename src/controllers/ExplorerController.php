@@ -13,6 +13,7 @@ use craft\helpers\Json;
 use craft\web\Controller;
 use dukt\videos\errors\GatewayNotFoundException;
 use dukt\videos\errors\VideoNotFoundException;
+use dukt\videos\models\VideoError;
 use dukt\videos\Plugin as Videos;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use yii\web\Response;
@@ -111,7 +112,7 @@ class ExplorerController extends Controller
         $method = Craft::$app->getRequest()->getParam('method');
         $options = Craft::$app->getRequest()->getParam('options', []);
 
-        $gateway = Videos::$plugin->getGateways()->getGateway($gatewayHandle);
+        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
 
         if (!$gateway) {
             throw new GatewayNotFoundException('Gateway not found.');
@@ -147,16 +148,17 @@ class ExplorerController extends Controller
 
         $url = Craft::$app->getRequest()->getParam('url');
 
-        $video = Videos::$plugin->getCache()->get(['fieldPreview', $url]);
+        $video = null;
 
-        if (!$video) {
+        try {
             $video = Videos::$plugin->getVideos()->getVideoByUrl($url);
-
-            if (!$video) {
-                throw new VideoNotFoundException('Video not found.');
-            }
-
-            Videos::$plugin->getCache()->set(['fieldPreview', $url], $video);
+        } catch (\Exception $e) {
+            $video = new VideoError([
+                'url' => $url,
+                'errors' => [
+                    $e->getMessage(),
+                ],
+            ]);
         }
 
         return $this->asJson(
@@ -184,7 +186,7 @@ class ExplorerController extends Controller
         $gatewayHandle = strtolower(Craft::$app->getRequest()->getParam('gateway'));
         $videoId = Craft::$app->getRequest()->getParam('videoId');
 
-        $video = Videos::$plugin->getVideos()->getVideoById($gatewayHandle, $videoId);
+        $video = Videos::$plugin->getVideos()->getVideoByIdAndGateway($videoId, $gatewayHandle);
 
         $html = Craft::$app->getView()->renderTemplate('videos/_elements/player', [
             'video' => $video,

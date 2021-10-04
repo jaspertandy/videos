@@ -19,11 +19,13 @@ use yii\base\Event;
  */
 class RegisterGatewayTypesEvent extends Event
 {
-    // Properties
-    // =========================================================================
+    /**
+     * @var string name of the event
+     */
+    public const NAME = 'registerGatewayTypes';
 
     /**
-     * @var array the registered login providers
+     * @var array available gateway types
      */
-    public $gatewayTypes = [];
+    public array $gatewayTypes = [];
 }

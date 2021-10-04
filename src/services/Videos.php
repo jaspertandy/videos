@@ -8,15 +8,16 @@
 
 namespace dukt\videos\services;
 
-use Craft;
-use dukt\videos\models\VideoError;
+use dukt\videos\errors\GatewayNotFoundException;
+use dukt\videos\errors\VideoNotFoundException;
+use dukt\videos\models\Video;
 use dukt\videos\Plugin as VideosPlugin;
 use yii\base\Component;
 
 /**
- * Class Videos service.
+ * Videos service.
  *
- * An instance of the Videos service is globally accessible via [[Plugin::videos `Videos::$plugin->getVideos()`]].
+ * An instance of the videos service is globally accessible via [[Plugin::videos `Videos::$plugin->getVideos()`]].
  *
  * @author Dukt <support@dukt.net>
  *
@@ -24,187 +25,72 @@ use yii\base\Component;
  */
 class Videos extends Component
 {
-    // Public Methods
-    // =========================================================================
-
     /**
-     * Returns the HTML of the embed from a video URL.
+     * Get one video by its ID from a gateway.
      *
-     * @param       $videoUrl
-     * @param array $embedOptions
+     * @param string $videoId
+     * @param string $gatewayHandle
      *
-     * @return null|string
+     * @return Video
      *
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
+     * @throws GatewayNotFoundException
+     * @throws VideoNotFoundException
      */
-    public function getEmbed($videoUrl, array $embedOptions = [])
+    public function getVideoByIdAndGateway(string $videoId, string $gatewayHandle): Video
     {
-        $video = $this->getVideoByUrl($videoUrl);
+        if (VideosPlugin::$plugin->getCache()->isEnabled() === true) {
+            $video = VideosPlugin::$plugin->getCache()->get($this->_generateVideoCacheKey($videoId, $gatewayHandle));
 
-        if ($video) {
-            return $video->getEmbed($embedOptions);
-        }
-
-        return null;
-    }
-
-    /**
-     * Get video by ID.
-     *
-     * @param $gateway
-     * @param $id
-     *
-     * @return null|mixed|string
-     *
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function getVideoById($gateway, $id)
-    {
-        $video = $this->requestVideoById($gateway, $id);
-
-        if ($video) {
-            return $video;
-        }
-
-        return null;
-    }
-
-    /**
-     * Get video by URL.
-     *
-     * @param      $videoUrl
-     * @param bool $enableCache
-     * @param int  $cacheExpiry
-     *
-     * @return null|bool|mixed
-     *
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function getVideoByUrl($videoUrl, $enableCache = true, $cacheExpiry = 3600)
-    {
-        $video = $this->requestVideoByUrl($videoUrl, $enableCache, $cacheExpiry);
-
-        if ($video) {
-            return $video;
-        }
-
-        return null;
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Request video by ID.
-     *
-     * @param      $gatewayHandle
-     * @param      $id
-     * @param bool $enableCache
-     * @param int  $cacheExpiry
-     *
-     * @return \dukt\videos\models\Video|mixed
-     *
-     * @throws \yii\base\InvalidConfigException
-     */
-    private function requestVideoById($gatewayHandle, $id, $enableCache = true, $cacheExpiry = 3600)
-    {
-        $enableCache = VideosPlugin::$plugin->getSettings()->enableCache === false ? false : $enableCache;
-
-        if ($enableCache) {
-            $key = 'videos.video.'.$gatewayHandle.'.'.md5($id);
-
-            $response = VideosPlugin::$plugin->getCache()->get([$key]);
-
-            if ($response) {
-                return $response;
+            if ($video instanceof Video) {
+                return $video;
             }
         }
 
-        $gateway = VideosPlugin::$plugin->getGateways()->getGateway($gatewayHandle);
+        $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle); // TODO: if gateway is not found, must throw GatewayNotFoundException
 
-        if (!$gateway) {
-            return null;
+        $video = $gateway->getVideoById($videoId); // TODO: if video is not found, must throw VideoNotFoundException
+
+        if (VideosPlugin::$plugin->getCache()->isEnabled() === true) {
+            VideosPlugin::$plugin->getCache()->set($this->_generateVideoCacheKey($videoId, $gatewayHandle), $video);
         }
 
-        $response = $gateway->getVideoById($id);
-
-        if ($enableCache) {
-            VideosPlugin::$plugin->getCache()->set([$key], $response, $cacheExpiry);
-        }
-
-        return $response;
+        return $video;
     }
 
     /**
-     * Request video by URL.
+     * Get one video by its URL.
      *
-     * @param      $videoUrl
-     * @param bool $enableCache
-     * @param int  $cacheExpiry
+     * @param string $videoUrl
      *
-     * @return bool|mixed
+     * @return Video
      *
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
+     * @throws VideoNotFoundException
      */
-    private function requestVideoByUrl($videoUrl, $enableCache = true, $cacheExpiry = 3600)
+    public function getVideoByUrl(string $videoUrl): Video
     {
-        $key = 'videos.video.'.md5($videoUrl);
-        $enableCache = VideosPlugin::$plugin->getSettings()->enableCache === false ? false : $enableCache;
-
-        if ($enableCache) {
-            $response = VideosPlugin::$plugin->getCache()->get([$key]);
-
-            if ($response) {
-                return $response;
-            }
-        }
-
-        return $this->findVideoByUrl($videoUrl, $enableCache, $key, $cacheExpiry);
-    }
-
-    /**
-     * Find video by URL, by looping through all video gateways until a video if found.
-     *
-     * @param $videoUrl
-     * @param $enableCache
-     * @param $key
-     * @param $cacheExpiry
-     *
-     * @return bool|mixed
-     *
-     * @throws \yii\base\InvalidConfigException
-     */
-    private function findVideoByUrl($videoUrl, $enableCache, $key, $cacheExpiry)
-    {
-        $errorMessage = '';
-
         foreach (VideosPlugin::$plugin->getGateways()->getGateways() as $gateway) {
-            $params = [
-                'url' => $videoUrl,
-            ];
+            $videoId = $gateway->extractVideoIdFromUrl($videoUrl);
 
-            try {
-                $video = $gateway->getVideoByUrl($params);
-
-                if ($video) {
-                    if ($enableCache) {
-                        VideosPlugin::$plugin->getCache()->set([$key], $video, $cacheExpiry);
-                    }
-
-                    return $video;
-                }
-            } catch (\Exception $e) {
-                $errorMessage = 'Couldn’t get video: '.$e->getMessage();
-
-                Craft::info($errorMessage, __METHOD__);
+            if ($videoId !== false) {
+                return $this->getVideoByIdAndGateway($videoId, $gateway->getHandle());
             }
         }
 
-        return new VideoError([
-            'url' => $videoUrl,
-            'errors' => [
-                $errorMessage,
-            ],
-        ]);
+        throw new VideoNotFoundException(/* TODO: more precise message */);
+    }
+
+    /**
+     * Generate cache key for a video.
+     *
+     * @param string $videoId
+     * @param string $gatewayHandle
+     *
+     * @return string
+     */
+    private function _generateVideoCacheKey(string $videoId, string $gatewayHandle): string
+    {
+        return VideosPlugin::CACHE_KEY_PREFIX.'.'.Video::CACHE_KEY_PREFIX.'.'.$gatewayHandle.'.'.md5($videoId);
     }
 }

@@ -74,7 +74,7 @@ class SettingsController extends Controller
      */
     public function actionGateway($gatewayHandle): Response
     {
-        $gateway = Videos::$plugin->getGateways()->getGateway($gatewayHandle, false);
+        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, false);
         $account = null;
 
         try {
@@ -107,7 +107,7 @@ class SettingsController extends Controller
      */
     public function actionGatewayOauth($gatewayHandle): Response
     {
-        $gateway = Videos::$plugin->getGateways()->getGateway($gatewayHandle, false);
+        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, false);
 
         return $this->renderTemplate('videos/settings/_oauth', [
             'gatewayHandle' => $gatewayHandle,
@@ -127,7 +127,7 @@ class SettingsController extends Controller
     public function actionSaveGateway(): Response
     {
         $gatewayHandle = Craft::$app->getRequest()->getParam('gatewayHandle');
-        $gateway = Videos::$plugin->getGateways()->getGateway($gatewayHandle, false);
+        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, false);
 
         $clientId = Craft::$app->getRequest()->getParam('clientId');
         $clientSecret = Craft::$app->getRequest()->getParam('clientSecret');

@@ -110,7 +110,7 @@ class VideosHelper
 
             if (!$originalPath) {
                 // Copy the original thumbnail
-                $video = Plugin::$plugin->getVideos()->getVideoById($gatewayHandle, $videoId);
+                $video = Plugin::$plugin->getVideos()->getVideoByIdAndGateway($videoId, $gatewayHandle);
                 $url = $video->thumbnailSource;
 
                 $name = pathinfo($url, PATHINFO_BASENAME);

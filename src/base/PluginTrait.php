@@ -8,80 +8,79 @@
 
 namespace dukt\videos\base;
 
-use dukt\videos\Plugin as Videos;
+use dukt\videos\services\Cache;
+use dukt\videos\services\Gateways;
+use dukt\videos\services\Oauth;
+use dukt\videos\services\Tokens;
+use dukt\videos\services\Videos;
+use yii\base\InvalidConfigException;
 
 /**
  * PluginTrait implements the common methods and properties for plugin classes.
  *
- * @property \dukt\videos\services\Videos   $videos   The videos service
- * @property \dukt\videos\services\Cache    $cache    The cache service
- * @property \dukt\videos\services\Gateways $gateways The gateways service
- * @property \dukt\videos\services\Oauth    $oauth    The oauth service
+ * @author  Dukt <support@dukt.net>
+ *
+ * @since   2.0
  */
 trait PluginTrait
 {
     /**
-     * Returns the videos service.
-     *
-     * @return \dukt\videos\services\Videos The videos service
-     *
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function getVideos(): \dukt\videos\services\Videos
-    {
-        // @var Videos $this
-        return $this->get('videos');
-    }
-
-    /**
      * Returns the cache service.
      *
-     * @return \dukt\videos\services\Cache The cache service
+     * @return Cache
      *
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
-    public function getCache(): \dukt\videos\services\Cache
+    public function getCache(): Cache
     {
-        // @var Videos $this
         return $this->get('cache');
     }
 
     /**
      * Returns the gateways service.
      *
-     * @return \dukt\videos\services\Gateways The gateways service
+     * @return Gateways
      *
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
-    public function getGateways(): \dukt\videos\services\Gateways
+    public function getGateways(): Gateways
     {
-        // @var Videos $this
         return $this->get('gateways');
     }
 
     /**
      * Returns the oauth service.
      *
-     * @return \dukt\videos\services\Oauth The oauth service
+     * @return Oauth
      *
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
-    public function getOauth(): \dukt\videos\services\Oauth
+    public function getOauth(): Oauth
     {
-        // @var Videos $this
         return $this->get('oauth');
     }
 
     /**
      * Returns the tokens service.
      *
-     * @return \dukt\videos\services\Tokens The tokens service
+     * @return Tokens
      *
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
-    public function getTokens(): \dukt\videos\services\Tokens
+    public function getTokens(): Tokens
     {
-        // @var Videos $this
         return $this->get('tokens');
+    }
+
+    /**
+     * Returns the videos service.
+     *
+     * @return Videos
+     *
+     * @throws InvalidConfigException
+     */
+    public function getVideos(): Videos
+    {
+        return $this->get('videos');
     }
 }

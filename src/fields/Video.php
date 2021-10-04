@@ -67,15 +67,7 @@ class Video extends Field
         // Preview
         $preview = $view->renderTemplate('videos/_elements/fieldPreview', ['video' => $value]);
 
-        // Has gateways
-        $gateways = Videos::$plugin->getGateways()->getGateways();
-        $hasGateways = false;
-
-        if ($gateways && count($gateways) > 0) {
-            $hasGateways = true;
-        }
-
-        if ($hasGateways) {
+        if (Videos::$plugin->getGateways()->hasGatewaysEnabled()) {
             // Instantiate Videos Field
             $view->registerJs('new Videos.Field("'.$view->namespaceInputId($id).'");');
         }
@@ -85,7 +77,7 @@ class Video extends Field
             'name' => $name,
             'value' => $value,
             'preview' => $preview,
-            'hasGateways' => $hasGateways,
+            'hasGatewaysEnabled' => Videos::$plugin->getGateways()->hasGatewaysEnabled(),
         ]);
     }
 
@@ -115,11 +107,7 @@ class Video extends Field
         }
 
         try {
-            $video = Videos::$plugin->getVideos()->getVideoByUrl($value);
-
-            if ($video) {
-                return $video;
-            }
+            return Videos::$plugin->getVideos()->getVideoByUrl($value);
         } catch (\Exception $e) {
             $errorMessage = "Couldn't get video in field normalizeValue: ".$e->getMessage();
 

@@ -23,6 +23,11 @@ use Twig_Markup;
  */
 class Video extends AbstractVideo
 {
+    /**
+     * @var string prefix for cache key
+     */
+    public const CACHE_KEY_PREFIX = 'video';
+
     // Properties
     // =========================================================================
 
@@ -182,7 +187,7 @@ class Video extends AbstractVideo
     public function getGateway()
     {
         if (!$this->_gateway) {
-            $this->_gateway = Videos::$plugin->getGateways()->getGateway($this->gatewayHandle);
+            $this->_gateway = Videos::$plugin->getGateways()->getGatewayByHandle($this->gatewayHandle);
         }
 
         return $this->_gateway;

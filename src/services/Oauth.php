@@ -8,12 +8,13 @@
 
 namespace dukt\videos\services;
 
+use dukt\videos\errors\OauthTokenNotFoundException;
 use dukt\videos\models\Token;
-use dukt\videos\Plugin;
-use Exception;
+use dukt\videos\Plugin as VideosPlugin;
 use League\OAuth2\Client\Grant\RefreshToken;
 use League\OAuth2\Client\Token\AccessToken;
 use yii\base\Component;
+use yii\base\InvalidConfigException;
 
 /**
  * Class Oauth service.
@@ -26,92 +27,64 @@ use yii\base\Component;
  */
 class Oauth extends Component
 {
-    // Public Methods
-    // =========================================================================
-
     /**
-     * Get a token by its gateway handle.
+     * Get one access token by gateway handle.
      *
-     * @param $gatewayHandle
-     * @param bool $refresh
+     * @param string $gatewayHandle
+     * @param bool   $refresh
      *
      * @return null|AccessToken
      *
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
-    public function getToken($gatewayHandle, $refresh = true)
+    public function getAccessTokenByGatewayHandle(string $gatewayHandle, bool $refresh = true): ?AccessToken
     {
-        $token = Plugin::getInstance()->getTokens()->getToken($gatewayHandle);
+        try {
+            $token = VideosPlugin::$plugin->getTokens()->getTokenByGatewayHandle($gatewayHandle);
 
-        if (!$token) {
+            return $this->_generateAccessTokenFromData($gatewayHandle, $token->accessToken, $refresh);
+        } catch (OauthTokenNotFoundException $e) {
             return null;
         }
-
-        return $this->createTokenFromData($gatewayHandle, $token->accessToken, $refresh);
     }
 
     /**
-     * Saves a token.
+     * Saves an access token.
      *
-     * @param $gatewayHandle
-     * @param AccessToken $token
+     * @param string      $gatewayHandle
+     * @param AccessToken $accessToken
      *
-     * @return bool
+     * @return void
      *
-     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws OauthTokenSaveException
      */
-    public function saveToken($gatewayHandle, AccessToken $token): bool
+    public function saveAccessToken(string $gatewayHandle, AccessToken $accessToken): void
     {
-        $tokenModel = Plugin::getInstance()->getTokens()->getToken($gatewayHandle);
+        $token = new Token();
 
-        if (!$tokenModel) {
-            $tokenModel = new Token();
-            $tokenModel->gateway = $gatewayHandle;
+        try {
+            $token = VideosPlugin::$plugin->getTokens()->getTokenByGatewayHandle($gatewayHandle);
+        } catch (OauthTokenNotFoundException $e) {
+            $token->gateway = $gatewayHandle;
         }
 
-        $tokenModel->accessToken = [
-            'accessToken' => $token->getToken(),
-            'expires' => $token->getExpires(),
-            'resourceOwnerId' => $token->getResourceOwnerId(),
-            'values' => $token->getValues(),
+        $token->accessToken = [
+            'accessToken' => $accessToken->getToken(),
+            'expires' => $accessToken->getExpires(),
+            'resourceOwnerId' => $accessToken->getResourceOwnerId(),
+            'values' => $accessToken->getValues(),
         ];
 
-        if (!empty($token->getRefreshToken())) {
-            $tokenModel->accessToken['refreshToken'] = $token->getRefreshToken();
+        if (!empty($accessToken->getRefreshToken())) {
+            $token->accessToken['refreshToken'] = $accessToken->getRefreshToken();
         }
 
-        Plugin::getInstance()->getTokens()->saveToken($tokenModel);
-
-        return true;
+        VideosPlugin::$plugin->getTokens()->saveToken($token);
     }
 
     /**
-     * Deletes a token.
-     *
-     * @param $gatewayHandle
-     *
-     * @return bool
-     *
-     * @throws \Throwable
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\db\StaleObjectException
-     */
-    public function deleteToken($gatewayHandle): bool
-    {
-        $token = Plugin::getInstance()->getTokens()->getToken($gatewayHandle);
-
-        if (!$token) {
-            return true;
-        }
-
-        return Plugin::getInstance()->getTokens()->deleteTokenById($token->id);
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Create token from data.
+     * Generate access token from data.
      *
      * @param string $gatewayHandle
      * @param array  $data
@@ -119,9 +92,9 @@ class Oauth extends Component
      *
      * @return null|AccessToken
      *
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
-    private function createTokenFromData(string $gatewayHandle, array $data, $refreshToken = true)
+    private function _generateAccessTokenFromData(string $gatewayHandle, array $data, bool $refreshToken = true): ?AccessToken
     {
         if (!isset($data['accessToken'])) {
             return null;
@@ -137,7 +110,7 @@ class Oauth extends Component
 
         // Refresh OAuth token
         if ($refreshToken && !empty($token->getRefreshToken()) && $token->getExpires() && $token->hasExpired()) {
-            $gateway = Plugin::$plugin->getGateways()->getGateway($gatewayHandle);
+            $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
             $provider = $gateway->getOauthProvider();
             $grant = new RefreshToken();
             $newToken = $provider->getAccessToken($grant, ['refresh_token' => $token->getRefreshToken()]);
@@ -150,7 +123,7 @@ class Oauth extends Component
                 'values' => $newToken->getValues(),
             ]);
 
-            Plugin::$plugin->getOauth()->saveToken($gateway->getHandle(), $token);
+            VideosPlugin::$plugin->getOauth()->saveAccessToken($gateway->getHandle(), $token);
         }
 
         return $token;

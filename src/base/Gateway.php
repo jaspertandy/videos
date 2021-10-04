@@ -165,7 +165,7 @@ abstract class Gateway implements GatewayInterface
             ]);
 
             // Save token
-            Videos::$plugin->getOauth()->saveToken($this->getHandle(), $token);
+            Videos::$plugin->getOauth()->saveAccessToken($this->getHandle(), $token);
 
             // Reset session variables
 
@@ -194,7 +194,7 @@ abstract class Gateway implements GatewayInterface
      */
     public function hasToken(): bool
     {
-        $token = Videos::$plugin->getOauth()->getToken($this->getHandle(), false);
+        $token = Videos::$plugin->getOauth()->getAccessTokenByGatewayHandle($this->getHandle(), false);
 
         if ($token) {
             return true;
@@ -212,7 +212,7 @@ abstract class Gateway implements GatewayInterface
      */
     public function getOauthToken()
     {
-        return Videos::$plugin->getOauth()->getToken($this->getHandle());
+        return Videos::$plugin->getOauth()->getAccessTokenByGatewayHandle($this->getHandle());
     }
 
     /**
@@ -320,13 +320,13 @@ abstract class Gateway implements GatewayInterface
         $token = $this->getOauthToken();
 
         if ($token) {
-            $account = Videos::$plugin->getCache()->get(['getAccount', $token]);
+            $account = /*Videos::$plugin->getCache()->get('getAccount'.$token->access_token)*/ false;
 
             if (!$account) {
                 $oauthProvider = $this->getOauthProvider();
                 $account = $oauthProvider->getResourceOwner($token);
 
-                Videos::$plugin->getCache()->set(['getAccount', $token], $account);
+                //Videos::$plugin->getCache()->set('getAccount'.$token->access_token, $account);
             }
 
             if ($account) {

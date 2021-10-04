@@ -9,6 +9,7 @@
 namespace dukt\videos;
 
 use Craft;
+use craft\base\Plugin as BasePlugin;
 use craft\events\RegisterCacheOptionsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
@@ -30,15 +31,14 @@ use yii\base\Event;
  *
  * @since   1.0
  */
-class Plugin extends \craft\base\Plugin
+class Plugin extends BasePlugin
 {
-    // Traits
-    // =========================================================================
-
     use PluginTrait;
 
-    // Properties
-    // =========================================================================
+    /**
+     * @var string prefix for cache key
+     */
+    public const CACHE_KEY_PREFIX = 'videos';
 
     /**
      * {@inheritDoc}
@@ -51,12 +51,9 @@ class Plugin extends \craft\base\Plugin
     public $hasCpSettings = true;
 
     /**
-     * @var \dukt\videos\Plugin the plugin instance
+     * @var BasePlugin the plugin instance
      */
     public static $plugin;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * {@inheritdoc}
@@ -91,7 +88,7 @@ class Plugin extends \craft\base\Plugin
      *
      * @return null|array
      *
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function getOauthProviderOptions(string $gatewayHandle, bool $parse = true)
     {
@@ -110,15 +107,12 @@ class Plugin extends \craft\base\Plugin
         }
 
         if (!isset($options['redirectUri'])) {
-            $gateway = $this->getGateways()->getGateway($gatewayHandle, false);
+            $gateway = $this->getGateways()->getGatewayByHandle($gatewayHandle, false);
             $options['redirectUri'] = $gateway->getRedirectUri();
         }
 
         return $parse ? array_map('Craft::parseEnv', $options) : $options;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * {@inheritdoc}
@@ -128,13 +122,12 @@ class Plugin extends \craft\base\Plugin
         return new Settings();
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Set plugin components.
+     *
+     * @return void
      */
-    private function _setPluginComponents()
+    private function _setPluginComponents(): void
     {
         $this->setComponents([
             'videos' => \dukt\videos\services\Videos::class,
@@ -147,8 +140,10 @@ class Plugin extends \craft\base\Plugin
 
     /**
      * Register CP routes.
+     *
+     * @return void
      */
-    private function _registerCpRoutes()
+    private function _registerCpRoutes(): void
     {
         Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function (RegisterUrlRulesEvent $event) {
             $rules = [
@@ -163,8 +158,10 @@ class Plugin extends \craft\base\Plugin
 
     /**
      * Register field types.
+     *
+     * @return void
      */
-    private function _registerFieldTypes()
+    private function _registerFieldTypes(): void
     {
         Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function (RegisterComponentTypesEvent $event) {
             $event->types[] = VideoField::class;
@@ -173,8 +170,10 @@ class Plugin extends \craft\base\Plugin
 
     /**
      * Register cache options.
+     *
+     * @return void
      */
-    private function _registerCacheOptions()
+    private function _registerCacheOptions(): void
     {
         Event::on(ClearCaches::class, ClearCaches::EVENT_REGISTER_CACHE_OPTIONS, function (RegisterCacheOptionsEvent $event) {
             $event->options[] = [
@@ -187,8 +186,10 @@ class Plugin extends \craft\base\Plugin
 
     /**
      * Register template variable.
+     *
+     * @return void
      */
-    private function _registerVariable()
+    private function _registerVariable(): void
     {
         Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function (Event $event) {
             /** @var CraftVariable $variable */
