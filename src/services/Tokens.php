@@ -8,10 +8,10 @@
 
 namespace dukt\videos\services;
 
-use dukt\videos\errors\OauthTokenDeleteException;
-use dukt\videos\errors\OauthTokenInvalidException;
-use dukt\videos\errors\OauthTokenNotFoundException;
-use dukt\videos\errors\OauthTokenSaveException;
+use dukt\videos\errors\TokenDeleteException;
+use dukt\videos\errors\TokenInvalidException;
+use dukt\videos\errors\TokenNotFoundException;
+use dukt\videos\errors\TokenSaveException;
 use dukt\videos\models\Token;
 use dukt\videos\records\Token as TokenRecord;
 use Exception;
@@ -35,14 +35,14 @@ class Tokens extends Component
      *
      * @return Token
      *
-     * @throws OauthTokenNotFoundException
+     * @throws TokenNotFoundException
      */
     public function getTokenByGatewayHandle(string $gatewayHandle): Token
     {
         $tokenRecord = TokenRecord::findOne(['gateway' => $gatewayHandle]);
 
         if ($tokenRecord === null) {
-            throw new OauthTokenNotFoundException(/* TODO: more precise message */);
+            throw new TokenNotFoundException(/* TODO: more precise message */);
         }
 
         return new Token($tokenRecord->toArray([
@@ -59,13 +59,13 @@ class Tokens extends Component
      *
      * @return void
      *
-     * @throws OauthTokenSaveException
+     * @throws TokenSaveException
      */
     public function saveToken(Token $token): void
     {
         try {
             if ($token->validate() === false) {
-                throw new OauthTokenInvalidException(/* TODO: more precise message */);
+                throw new TokenInvalidException(/* TODO: more precise message */);
             }
 
             $tokenRecord = new TokenRecord();
@@ -74,7 +74,7 @@ class Tokens extends Component
                 $tokenRecord = TokenRecord::findOne($token->id);
 
                 if ($tokenRecord === null) {
-                    throw new OauthTokenNotFoundException(/* TODO: more precise message */);
+                    throw new TokenNotFoundException(/* TODO: more precise message */);
                 }
             }
 
@@ -83,7 +83,7 @@ class Tokens extends Component
 
             $tokenRecord->save(false);
         } catch (Exception $e) {
-            throw new OauthTokenSaveException(/* TODO: more precise message */);
+            throw new TokenSaveException(/* TODO: more precise message */);
         }
     }
 
@@ -94,7 +94,7 @@ class Tokens extends Component
      *
      * @return void
      *
-     * @throws OauthTokenDeleteException
+     * @throws TokenDeleteException
      */
     public function deleteTokenByGatewayHandle(string $gatewayHandle): void
     {
@@ -102,14 +102,14 @@ class Tokens extends Component
             $tokenRecord = TokenRecord::findOne(['gateway' => $gatewayHandle]);
 
             if ($tokenRecord === null) {
-                throw new OauthTokenNotFoundException(/* TODO: more precise message */);
+                throw new TokenNotFoundException(/* TODO: more precise message */);
             }
 
             if ($tokenRecord->delete() === false) {
-                throw new OauthTokenDeleteException(/* TODO: more precise message */);
+                throw new TokenDeleteException(/* TODO: more precise message */);
             }
         } catch (Exception $e) {
-            throw new OauthTokenDeleteException(/* TODO: more precise message */);
+            throw new TokenDeleteException(/* TODO: more precise message */);
         }
     }
 }

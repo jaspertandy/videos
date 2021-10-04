@@ -10,6 +10,7 @@ namespace dukt\videos\controllers;
 
 use Craft;
 use craft\web\Controller;
+use dukt\videos\errors\OauthAccountNotFoundException;
 use dukt\videos\Plugin as Videos;
 use dukt\videos\web\assets\settings\SettingsAsset;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
@@ -34,23 +35,29 @@ class SettingsController extends Controller
         $accounts = [];
         $accountErrors = [];
 
-        $gateways = Videos::$plugin->getGateways()->getGateways(false);
+        $gateways = Videos::$plugin->getGateways()->getGateways();
 
         foreach ($gateways as $gateway) {
             try {
-                $accounts[$gateway->getHandle()] = $gateway->getAccount();
+                $accounts[$gateway->getHandle()] = $gateway->getOauthAccount();
                 $accountErrors[$gateway->getHandle()] = false;
-            } catch (IdentityProviderException $e) {
-                $error = $e->getMessage();
-
-                $data = $e->getResponseBody();
-
-                if (isset($data['error_description'])) {
-                    $error = $data['error_description'];
-                }
-
+            } catch (OauthAccountNotFoundException $e) {
                 $accounts[$gateway->getHandle()] = false;
-                $accountErrors[$gateway->getHandle()] = $error;
+                $accountErrors[$gateway->getHandle()] = false;
+
+                $previous = $e->getPrevious();
+
+                if ($previous instanceof IdentityProviderException) {
+                    $error = $previous->getMessage();
+
+                    $data = $previous->getResponseBody();
+
+                    if (isset($data['error_description'])) {
+                        $error = $data['error_description'];
+                    }
+
+                    $accountErrors[$gateway->getHandle()] = $error;
+                }
             }
         }
 
@@ -74,17 +81,21 @@ class SettingsController extends Controller
      */
     public function actionGateway($gatewayHandle): Response
     {
-        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, false);
+        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
         $account = null;
 
         try {
-            $account = $gateway->getAccount();
-        } catch (IdentityProviderException $e) {
-            $error = $e->getMessage();
-            $data = $e->getResponseBody();
+            $account = $gateway->getOauthAccount();
+        } catch (OauthAccountNotFoundException $e) {
+            $previous = $e->getPrevious();
 
-            if (isset($data['error_description'])) {
-                $error = $data['error_description'];
+            if ($previous instanceof IdentityProviderException) {
+                $error = $previous->getMessage();
+                $data = $previous->getResponseBody();
+
+                if (isset($data['error_description'])) {
+                    $error = $data['error_description'];
+                }
             }
         }
 
@@ -107,7 +118,7 @@ class SettingsController extends Controller
      */
     public function actionGatewayOauth($gatewayHandle): Response
     {
-        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, false);
+        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
 
         return $this->renderTemplate('videos/settings/_oauth', [
             'gatewayHandle' => $gatewayHandle,
@@ -127,7 +138,7 @@ class SettingsController extends Controller
     public function actionSaveGateway(): Response
     {
         $gatewayHandle = Craft::$app->getRequest()->getParam('gatewayHandle');
-        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, false);
+        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
 
         $clientId = Craft::$app->getRequest()->getParam('clientId');
         $clientSecret = Craft::$app->getRequest()->getParam('clientSecret');

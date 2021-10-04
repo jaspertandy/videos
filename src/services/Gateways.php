@@ -10,11 +10,9 @@ namespace dukt\videos\services;
 
 use dukt\videos\base\Gateway;
 use dukt\videos\errors\GatewayNotFoundException;
-use dukt\videos\errors\OauthTokenNotFoundException;
 use dukt\videos\events\RegisterGatewayTypesEvent;
 use dukt\videos\gateways\Vimeo;
 use dukt\videos\gateways\YouTube;
-use dukt\videos\Plugin as VideosPlugin;
 use yii\base\Component;
 
 /**
@@ -29,14 +27,9 @@ use yii\base\Component;
 class Gateways extends Component
 {
     /**
-     * @var array available gateways
+     * @var array all gateways
      */
     private array $_gateways = [];
-
-    /**
-     * @var array enabled gateways
-     */
-    private array $_enabledGateways = [];
 
     /**
      * {@inheritdoc}
@@ -57,49 +50,39 @@ class Gateways extends Component
             $gateway = new $gatewayType();
 
             $this->_gateways[] = $gateway;
-
-            // TODO: move to Gateway::isEnabled() and filter in self::getGateways()
-            if ($gateway->enableOauthFlow() === true) {
-                try {
-                    $token = VideosPlugin::$plugin->getTokens()->getTokenByGatewayHandle($gateway->getHandle());
-
-                    $this->_enabledGateways[] = $gateway;
-                } catch (OauthTokenNotFoundException $e) {
-                }
-            } else {
-                $this->_enabledGateways[] = $gateway;
-            }
         }
     }
 
     /**
      * Get all gateways.
      *
-     * @param bool $enabledOnly
+     * @param null|bool $loggedInStatus
      *
      * @return Gateway[]
      *
      * @throws InvalidConfigException
      * @throws GatewayNotFoundException
      */
-    public function getGateways(bool $enabledOnly = true): array
+    public function getGateways(?bool $loggedInStatus = null): array
     {
-        if ($enabledOnly === true) {
-            return $this->_enabledGateways;
+        if ($loggedInStatus !== null) {
+            return array_filter($this->_gateways, function ($_gateway) use ($loggedInStatus) {
+                return $_gateway->isOauthLoggedIn() === $loggedInStatus;
+            });
         }
 
         return $this->_gateways;
     }
 
     /**
-     * Has gateway enabled.
+     * Has gateway logged in.
      *
      * @return bool
      *
      * @throws InvalidConfigException
      * @throws GatewayNotFoundException
      */
-    public function hasGatewaysEnabled(): bool
+    public function hasGatewaysLoggedIn(): bool
     {
         return count($this->getGateways(true)) > 0;
     }
@@ -107,17 +90,17 @@ class Gateways extends Component
     /**
      * Get one gateway by handle.
      *
-     * @param string $gatewayHandle
-     * @param bool   $enabledOnly
+     * @param string    $gatewayHandle
+     * @param null|bool $loggedInStatus
      *
      * @return Gateway
      *
      * @throws InvalidConfigException
      * @throws GatewayNotFoundException
      */
-    public function getGatewayByHandle(string $gatewayHandle, bool $enabledOnly = true): Gateway
+    public function getGatewayByHandle(string $gatewayHandle, ?bool $loggedInStatus = null): Gateway
     {
-        foreach ($this->getGateways($enabledOnly) as $gateway) {
+        foreach ($this->getGateways($loggedInStatus) as $gateway) {
             if ($gateway->getHandle() === $gatewayHandle) {
                 return $gateway;
             }

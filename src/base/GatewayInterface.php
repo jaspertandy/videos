@@ -8,7 +8,9 @@
 
 namespace dukt\videos\base;
 
+use dukt\videos\errors\VideoNotFoundException;
 use dukt\videos\models\Video;
+use League\OAuth2\Client\Provider\AbstractProvider;
 
 /**
  * GatewayInterface defines the common interface to be implemented by gateway classes.
@@ -19,15 +21,26 @@ use dukt\videos\models\Video;
  */
 interface GatewayInterface
 {
-    // Public Methods
-    // =========================================================================
+    /**
+     * Returns the name of the gateway.
+     *
+     * @return string
+     */
+    public function getName(): string;
+
+    /**
+     * Returns the icon’s alias.
+     *
+     * @return string
+     */
+    public function getIconAlias(): string;
 
     /**
      * Returns the OAuth provider’s instance.
      *
      * @param array $options
      */
-    public function createOauthProvider(array $options);
+    public function createOauthProvider(array $options): AbstractProvider;
 
     /**
      * Returns the OAuth provider’s API console URL.
@@ -37,34 +50,26 @@ interface GatewayInterface
     public function getOauthProviderApiConsoleUrl(): string;
 
     /**
-     * Returns the name of the gateway.
+     * Extracts the video ID from the video URL.
+     *
+     * @param string $videoUrl
      *
      * @return string
-     */
-    public function getName(): string;
-
-    /**
-     * Returns the sections for the explorer.
      *
-     * @return array
+     * @throws VideoIdExtractException
      */
-    public function getExplorerSections(): array;
-
-    /**
-     * Return the icon’s alias.
-     *
-     * @return string
-     */
-    public function getIconAlias(): string;
+    public function extractVideoIdFromVideoUrl(string $videoUrl): string;
 
     /**
      * Requests the video from the API and then returns it as video object.
      *
-     * @param string $id
+     * @param string $videoId
      *
      * @return Video
+     *
+     * @throws VideoNotFoundException
      */
-    public function getVideoById(string $id): Video;
+    public function callVideoById(string $videoId): Video;
 
     /**
      * Returns the URL format of the embed.
@@ -74,11 +79,16 @@ interface GatewayInterface
     public function getEmbedFormat(): string;
 
     /**
-     * Extracts the video ID from the video URL.
+     * Returns the sections for the explorer.
      *
-     * @param string $url
-     *
-     * @return bool|string
+     * @return array
      */
-    public function extractVideoIdFromUrl(string $url);
+    public function getExplorerSections(): array;
+
+    /**
+     * Whether the gateway supports search or not.
+     *
+     * @return bool
+     */
+    public function supportsSearch(): bool;
 }

@@ -51,7 +51,7 @@ class Plugin extends BasePlugin
     public $hasCpSettings = true;
 
     /**
-     * @var BasePlugin the plugin instance
+     * @var Plugin the plugin instance
      */
     public static $plugin;
 
@@ -107,8 +107,8 @@ class Plugin extends BasePlugin
         }
 
         if (!isset($options['redirectUri'])) {
-            $gateway = $this->getGateways()->getGatewayByHandle($gatewayHandle, false);
-            $options['redirectUri'] = $gateway->getRedirectUri();
+            $gateway = $this->getGateways()->getGatewayByHandle($gatewayHandle);
+            $options['redirectUri'] = $gateway->getOauthRedirectUri();
         }
 
         return $parse ? array_map('Craft::parseEnv', $options) : $options;

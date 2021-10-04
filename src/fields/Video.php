@@ -67,7 +67,7 @@ class Video extends Field
         // Preview
         $preview = $view->renderTemplate('videos/_elements/fieldPreview', ['video' => $value]);
 
-        if (Videos::$plugin->getGateways()->hasGatewaysEnabled()) {
+        if (Videos::$plugin->getGateways()->hasGatewaysLoggedIn()) {
             // Instantiate Videos Field
             $view->registerJs('new Videos.Field("'.$view->namespaceInputId($id).'");');
         }
@@ -77,7 +77,7 @@ class Video extends Field
             'name' => $name,
             'value' => $value,
             'preview' => $preview,
-            'hasGatewaysEnabled' => Videos::$plugin->getGateways()->hasGatewaysEnabled(),
+            'hasGatewaysLoggedIn' => Videos::$plugin->getGateways()->hasGatewaysLoggedIn(),
         ]);
     }
 

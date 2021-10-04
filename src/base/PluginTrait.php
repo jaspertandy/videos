@@ -10,7 +10,6 @@ namespace dukt\videos\base;
 
 use dukt\videos\services\Cache;
 use dukt\videos\services\Gateways;
-use dukt\videos\services\Oauth;
 use dukt\videos\services\Tokens;
 use dukt\videos\services\Videos;
 use yii\base\InvalidConfigException;
@@ -46,18 +45,6 @@ trait PluginTrait
     public function getGateways(): Gateways
     {
         return $this->get('gateways');
-    }
-
-    /**
-     * Returns the oauth service.
-     *
-     * @return Oauth
-     *
-     * @throws InvalidConfigException
-     */
-    public function getOauth(): Oauth
-    {
-        return $this->get('oauth');
     }
 
     /**

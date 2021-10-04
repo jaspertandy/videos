@@ -9,38 +9,27 @@
 namespace dukt\videos\gateways;
 
 use dukt\videos\base\Gateway;
+use dukt\videos\errors\VideoIdExtractException;
 use dukt\videos\errors\VideoNotFoundException;
 use dukt\videos\models\Collection;
 use dukt\videos\models\Section;
 use dukt\videos\models\Video;
+use Exception;
 use GuzzleHttp\Client;
+use League\OAuth2\Client\Provider\AbstractProvider;
+use League\OAuth2\Client\Provider\Google as GoogleProvider;
 
 /**
- * YouTube represents the YouTube gateway.
+ * YouTube gateway.
  *
- * @author    Dukt <support@dukt.net>
+ * @author Dukt <support@dukt.net>
  *
- * @since     1.0
+ * @since  1.0
  */
 class YouTube extends Gateway
 {
-    // Public Methods
-    // =========================================================================
-
     /**
-     * {@inheritDoc}
-     *
-     * @return string
-     */
-    public function getIconAlias(): string
-    {
-        return '@dukt/videos/icons/youtube.svg';
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return string
+     * {@inheritdoc}
      */
     public function getName(): string
     {
@@ -48,9 +37,15 @@ class YouTube extends Gateway
     }
 
     /**
-     * Returns the OAuth provider’s name.
-     *
-     * @return string
+     * {@inheritdoc}
+     */
+    public function getIconAlias(): string
+    {
+        return '@dukt/videos/icons/youtube.svg';
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function getOauthProviderName(): string
     {
@@ -58,19 +53,7 @@ class YouTube extends Gateway
     }
 
     /**
-     * Returns the OAuth provider’s API console URL.
-     *
-     * @return string
-     */
-    public function getOauthProviderApiConsoleUrl(): string
-    {
-        return 'https://console.developers.google.com/';
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public function getOauthScope(): array
     {
@@ -83,9 +66,7 @@ class YouTube extends Gateway
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public function getOauthAuthorizationOptions(): array
     {
@@ -110,15 +91,71 @@ class YouTube extends Gateway
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @param array $options
-     *
-     * @return \League\OAuth2\Client\Provider\Google
+     * {@inheritdoc}
      */
-    public function createOauthProvider(array $options): \League\OAuth2\Client\Provider\Google
+    public function createOauthProvider(array $options): AbstractProvider
     {
-        return new \League\OAuth2\Client\Provider\Google($options);
+        return new GoogleProvider($options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getOauthProviderApiConsoleUrl(): string
+    {
+        return 'https://console.developers.google.com/';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function extractVideoIdFromVideoUrl(string $videoUrl): string
+    {
+        $regexp = '/^https?:\/\/(www\.youtube\.com|youtube\.com|youtu\.be).*\/(watch\?v=)?(.*)/';
+
+        if (preg_match($regexp, $videoUrl, $matches, PREG_OFFSET_CAPTURE) > 0) {
+            $videoId = $matches[3][0];
+
+            // Fixes the youtube &feature_gdata bug
+            if (strpos($videoId, '&')) {
+                $videoId = substr($videoId, 0, strpos($videoId, '&'));
+            }
+
+            return $videoId;
+        }
+
+        throw new VideoIdExtractException(/* TODO: more precise message */);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function callVideoById(string $videoId): Video
+    {
+        try {
+            $data = $this->get('videos', [
+                'query' => [
+                    'part' => 'snippet,statistics,contentDetails',
+                    'id' => $videoId,
+                ],
+            ]);
+
+            if (count($data['items']) !== 1) {
+                throw new VideoNotFoundException(/* TODO: more precise message */);
+            }
+
+            return $this->parseVideo($data['items'][0]);
+        } catch (Exception $e) {
+            throw new VideoNotFoundException(/* TODO: more precise message */);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getEmbedFormat(): string
+    {
+        return 'https://www.youtube.com/embed/%s?wmode=transparent';
     }
 
     /**
@@ -173,79 +210,7 @@ class YouTube extends Gateway
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @param string $id
-     *
-     * @return Video
-     *
-     * @throws VideoNotFoundException
-     * @throws \dukt\videos\errors\ApiResponseException
-     */
-    public function getVideoById(string $id): Video
-    {
-        $data = $this->get('videos', [
-            'query' => [
-                'part' => 'snippet,statistics,contentDetails',
-                'id' => $id,
-            ],
-        ]);
-
-        $videos = $this->parseVideos($data['items']);
-
-        if (\count($videos) === 1) {
-            return array_pop($videos);
-        }
-
-        throw new VideoNotFoundException('Video not found.');
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return string
-     */
-    public function getEmbedFormat(): string
-    {
-        return 'https://www.youtube.com/embed/%s?wmode=transparent';
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param $url
-     *
-     * @return bool|string
-     */
-    public function extractVideoIdFromUrl(string $url)
-    {
-        // check if url works with this service and extract video_id
-
-        $video_id = false;
-
-        $regexp = ['/^https?:\/\/(www\.youtube\.com|youtube\.com|youtu\.be).*\/(watch\?v=)?(.*)/', 3];
-
-        if (preg_match($regexp[0], $url, $matches, PREG_OFFSET_CAPTURE) > 0) {
-            // regexp match key
-            $match_key = $regexp[1];
-
-            // define video id
-            $video_id = $matches[$match_key][0];
-
-            // Fixes the youtube &feature_gdata bug
-            if (strpos($video_id, '&')) {
-                $video_id = substr($video_id, 0, strpos($video_id, '&'));
-            }
-        }
-
-        // here we should have a valid video_id or false if service not matching
-        return $video_id;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function supportsSearch(): bool
     {
@@ -267,7 +232,7 @@ class YouTube extends Gateway
         $options = [
             'base_uri' => $this->getApiUrl(),
             'headers' => [
-                'Authorization' => 'Bearer '.$this->getOauthToken()->getToken(),
+                'Authorization' => 'Bearer '.$this->getOauthAccessToken()->getToken(),
             ],
         ];
 

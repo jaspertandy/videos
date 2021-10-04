@@ -4,6 +4,6 @@ namespace dukt\videos\errors;
 
 use yii\base\Exception;
 
-class OauthTokenInvalidException extends Exception
+class VideoIdExtractException extends Exception
 {
 }

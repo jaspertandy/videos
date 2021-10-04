@@ -14,7 +14,7 @@ use craft\web\Controller;
 use dukt\videos\errors\GatewayNotFoundException;
 use dukt\videos\errors\VideoNotFoundException;
 use dukt\videos\models\VideoError;
-use dukt\videos\Plugin as Videos;
+use dukt\videos\Plugin as VideosPlugin;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use yii\web\Response;
 
@@ -52,7 +52,7 @@ class ExplorerController extends Controller
 
         $gateways = [];
         $gatewaySections = [];
-        foreach (Videos::$plugin->getGateways()->getGateways() as $_gateway) {
+        foreach (VideosPlugin::$plugin->getGateways()->getGateways(true) as $_gateway) {
             try {
                 $gatewaySection = $_gateway->getExplorerSections();
 
@@ -112,11 +112,7 @@ class ExplorerController extends Controller
         $method = Craft::$app->getRequest()->getParam('method');
         $options = Craft::$app->getRequest()->getParam('options', []);
 
-        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
-
-        if (!$gateway) {
-            throw new GatewayNotFoundException('Gateway not found.');
-        }
+        $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, true);
 
         $videosResponse = $gateway->getVideos($method, $options);
 
@@ -151,7 +147,7 @@ class ExplorerController extends Controller
         $video = null;
 
         try {
-            $video = Videos::$plugin->getVideos()->getVideoByUrl($url);
+            $video = VideosPlugin::$plugin->getVideos()->getVideoByUrl($url);
         } catch (\Exception $e) {
             $video = new VideoError([
                 'url' => $url,
@@ -184,9 +180,11 @@ class ExplorerController extends Controller
         $this->requireAcceptsJson();
 
         $gatewayHandle = strtolower(Craft::$app->getRequest()->getParam('gateway'));
+        $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, true);
+
         $videoId = Craft::$app->getRequest()->getParam('videoId');
 
-        $video = Videos::$plugin->getVideos()->getVideoByIdAndGateway($videoId, $gatewayHandle);
+        $video = $gateway->getVideoById($videoId);
 
         $html = Craft::$app->getView()->renderTemplate('videos/_elements/player', [
             'video' => $video,

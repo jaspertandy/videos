@@ -9,9 +9,10 @@
 namespace dukt\videos\models;
 
 use Craft;
+use dukt\videos\base\Cachable;
 use dukt\videos\base\Gateway;
 use dukt\videos\helpers\VideosHelper;
-use dukt\videos\Plugin as Videos;
+use dukt\videos\Plugin as VideosPlugin;
 use Twig_Markup;
 
 /**
@@ -21,7 +22,7 @@ use Twig_Markup;
  *
  * @since  2.0
  */
-class Video extends AbstractVideo
+class Video extends AbstractVideo implements Cachable
 {
     /**
      * @var string prefix for cache key
@@ -187,7 +188,7 @@ class Video extends AbstractVideo
     public function getGateway()
     {
         if (!$this->_gateway) {
-            $this->_gateway = Videos::$plugin->getGateways()->getGatewayByHandle($this->gatewayHandle);
+            $this->_gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($this->gatewayHandle, true);
         }
 
         return $this->_gateway;
@@ -208,5 +209,13 @@ class Video extends AbstractVideo
     public function getThumbnail($size = 300)
     {
         return VideosHelper::getVideoThumbnail($this->gatewayHandle, $this->id, $size);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function generateCacheKey(array $identifiers): string
+    {
+        return VideosPlugin::CACHE_KEY_PREFIX.'.'.self::CACHE_KEY_PREFIX.'.'.$identifiers['gateway_handle'].'.'.md5($identifiers['id']);
     }
 }

@@ -10,7 +10,7 @@ namespace dukt\videos\helpers;
 
 use Craft;
 use craft\helpers\FileHelper;
-use dukt\videos\Plugin;
+use dukt\videos\Plugin as VideosPlugin;
 
 /**
  * Videos helper.
@@ -110,7 +110,8 @@ class VideosHelper
 
             if (!$originalPath) {
                 // Copy the original thumbnail
-                $video = Plugin::$plugin->getVideos()->getVideoByIdAndGateway($videoId, $gatewayHandle);
+                $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, true);
+                $video = $gateway->getVideoById($videoId);
                 $url = $video->thumbnailSource;
 
                 $name = pathinfo($url, PATHINFO_BASENAME);

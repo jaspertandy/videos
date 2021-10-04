@@ -9,41 +9,30 @@
 namespace dukt\videos\gateways;
 
 use DateTime;
+use Dukt\OAuth2\Client\Provider\Vimeo as VimeoProvider;
 use dukt\videos\base\Gateway;
 use dukt\videos\errors\CollectionParsingException;
+use dukt\videos\errors\VideoIdExtractException;
 use dukt\videos\errors\VideoNotFoundException;
 use dukt\videos\helpers\VideosHelper;
 use dukt\videos\models\Collection;
 use dukt\videos\models\Section;
 use dukt\videos\models\Video;
+use Exception;
 use GuzzleHttp\Client;
+use League\OAuth2\Client\Provider\AbstractProvider;
 
 /**
- * Vimeo represents the Vimeo gateway.
+ * Vimeo gateway.
  *
- * @author    Dukt <support@dukt.net>
+ * @author Dukt <support@dukt.net>
  *
- * @since     1.0
+ * @since  1.0
  */
 class Vimeo extends Gateway
 {
-    // Public Methods
-    // =========================================================================
-
     /**
-     * {@inheritDoc}
-     *
-     * @return string
-     */
-    public function getIconAlias(): string
-    {
-        return '@dukt/videos/icons/vimeo.svg';
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return string
+     * {@inheritdoc}
      */
     public function getName(): string
     {
@@ -51,9 +40,15 @@ class Vimeo extends Gateway
     }
 
     /**
-     * Returns the OAuth provider’s API console URL.
-     *
-     * @return string
+     * {@inheritdoc}
+     */
+    public function getIconAlias(): string
+    {
+        return '@dukt/videos/icons/vimeo.svg';
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function getOauthProviderApiConsoleUrl(): string
     {
@@ -61,9 +56,7 @@ class Vimeo extends Gateway
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public function getOauthScope(): array
     {
@@ -74,15 +67,51 @@ class Vimeo extends Gateway
     }
 
     /**
-     * Creates the OAuth provider.
-     *
-     * @param array $options
-     *
-     * @return \Dukt\OAuth2\Client\Provider\Vimeo
+     * {@inheritdoc}
      */
-    public function createOauthProvider(array $options): \Dukt\OAuth2\Client\Provider\Vimeo
+    public function createOauthProvider(array $options): AbstractProvider
     {
-        return new \Dukt\OAuth2\Client\Provider\Vimeo($options);
+        return new VimeoProvider($options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function extractVideoIdFromVideoUrl(string $videoUrl): string
+    {
+        $regexp = '/^https?:\/\/(www\.)?vimeo\.com\/([0-9]*)/';
+
+        if (preg_match($regexp, $videoUrl, $matches, PREG_OFFSET_CAPTURE) > 0) {
+            return $matches[2][0];
+        }
+
+        throw new VideoIdExtractException(/* TODO: more precise message */);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function callVideoById(string $videoId): Video
+    {
+        try {
+            $data = $this->get('videos/'.$videoId, [
+                'query' => [
+                    'fields' => 'created_time,description,duration,height,link,name,pictures,pictures,privacy,stats,uri,user,width,download,review_link,files',
+                ],
+            ]);
+
+            return $this->parseVideo($data);
+        } catch (Exception $e) {
+            throw new VideoNotFoundException(/* TODO: more precise message */);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getEmbedFormat(): string
+    {
+        return 'https://player.vimeo.com/video/%s';
     }
 
     /**
@@ -159,74 +188,7 @@ class Vimeo extends Gateway
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @param string $id
-     *
-     * @return Video
-     *
-     * @throws VideoNotFoundException
-     * @throws \dukt\videos\errors\ApiResponseException
-     */
-    public function getVideoById(string $id): Video
-    {
-        $data = $this->get('videos/'.$id, [
-            'query' => [
-                'fields' => 'created_time,description,duration,height,link,name,pictures,pictures,privacy,stats,uri,user,width,download,review_link,files',
-            ],
-        ]);
-
-        if ($data) {
-            return $this->parseVideo($data);
-        }
-
-        throw new VideoNotFoundException('Video not found.');
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return string
-     */
-    public function getEmbedFormat(): string
-    {
-        return 'https://player.vimeo.com/video/%s';
-    }
-
-    /**
-     * @param string $url
-     *
-     * @return bool|string
-     */
-    public function extractVideoIdFromUrl(string $url)
-    {
-        // check if url works with this service and extract video_id
-
-        $videoId = false;
-
-        $regexp = ['/^https?:\/\/(www\.)?vimeo\.com\/([0-9]*)/', 2];
-
-        if (preg_match($regexp[0], $url, $matches, PREG_OFFSET_CAPTURE) > 0) {
-            // regexp match key
-            $match_key = $regexp[1];
-
-            // define video id
-            $videoId = $matches[$match_key][0];
-
-            // Fixes the youtube &feature_gdata bug
-            if (strpos($videoId, '&')) {
-                $videoId = substr($videoId, 0, strpos($videoId, '&'));
-            }
-        }
-
-        // here we should have a valid video_id or false if service not matching
-        return $videoId;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function supportsSearch(): bool
     {
@@ -249,7 +211,7 @@ class Vimeo extends Gateway
             'base_uri' => $this->getApiUrl(),
             'headers' => [
                 'Accept' => 'application/vnd.vimeo.*+json;version='.$this->getApiVersion(),
-                'Authorization' => 'Bearer '.$this->getOauthToken()->getToken(),
+                'Authorization' => 'Bearer '.$this->getOauthAccessToken()->getToken(),
             ],
         ];
 
