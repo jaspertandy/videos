@@ -81,40 +81,6 @@ class Plugin extends BasePlugin
     }
 
     /**
-     * Get OAuth provider options.
-     *
-     * @param string $gatewayHandle
-     * @param bool   $parse
-     *
-     * @return null|array
-     *
-     * @throws InvalidConfigException
-     */
-    public function getOauthProviderOptions(string $gatewayHandle, bool $parse = true)
-    {
-        $options = null;
-
-        $configSettings = Craft::$app->config->getConfigFromFile($this->id);
-
-        if (isset($configSettings['oauthProviderOptions'][$gatewayHandle])) {
-            $options = $configSettings['oauthProviderOptions'][$gatewayHandle];
-        }
-
-        $storedSettings = Craft::$app->plugins->getStoredPluginInfo($this->id)['settings'];
-
-        if ($options === null && isset($storedSettings['oauthProviderOptions'][$gatewayHandle])) {
-            $options = $storedSettings['oauthProviderOptions'][$gatewayHandle];
-        }
-
-        if (!isset($options['redirectUri'])) {
-            $gateway = $this->getGateways()->getGatewayByHandle($gatewayHandle);
-            $options['redirectUri'] = $gateway->getOauthRedirectUri();
-        }
-
-        return $parse ? array_map('Craft::parseEnv', $options) : $options;
-    }
-
-    /**
      * {@inheritdoc}
      */
     protected function createSettingsModel()

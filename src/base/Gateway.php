@@ -16,12 +16,10 @@ use dukt\videos\errors\GatewayMethodNotFoundException;
 use dukt\videos\errors\JsonParsingException;
 use dukt\videos\errors\OauthAccessTokenNotFoundException;
 use dukt\videos\errors\OauthAccountNotFoundException;
+use dukt\videos\errors\OauthLoginException;
 use dukt\videos\errors\OauthLogoutException;
-use dukt\videos\errors\OauthRefreshAccessTokenException;
-use dukt\videos\errors\OauthSaveAccessTokenException;
-use dukt\videos\errors\TokenInvalidException;
-use dukt\videos\errors\TokenNotFoundException;
 use dukt\videos\errors\VideoNotFoundException;
+use dukt\videos\helpers\UrlHelper as VideosUrlHelper;
 use dukt\videos\models\OauthAccount;
 use dukt\videos\models\Token;
 use dukt\videos\models\Video;
@@ -29,7 +27,6 @@ use dukt\videos\Plugin as VideosPlugin;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
-use League\OAuth2\Client\Grant\RefreshToken;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use Psr\Http\Message\ResponseInterface;
@@ -80,6 +77,28 @@ abstract class Gateway implements GatewayInterface
     }
 
     /**
+     * Returns the OAuth provider’s name.
+     *
+     * @return string
+     */
+    public function getOauthProviderName(): string
+    {
+        return $this->getName();
+    }
+
+    /**
+     * Returns the OAuth provider options.
+     *
+     * @param bool $parseEnv
+     *
+     * @return array
+     */
+    public function getOauthProviderOptions(bool $parseEnv = true): array
+    {
+        return VideosPlugin::$plugin->getOauth()->getOauthProviderOptions($this, $parseEnv);
+    }
+
+    /**
      * Returns the OAuth provider.
      *
      * @return AbstractProvider
@@ -92,23 +111,25 @@ abstract class Gateway implements GatewayInterface
     }
 
     /**
-     * Returns the OAuth provider’s name.
-     *
-     * @return string
-     */
-    public function getOauthProviderName(): string
-    {
-        return $this->getName();
-    }
-
-    /**
-     * Returns the redirect URI.
+     * Returns the OAuth redirect URI.
      *
      * @return string
      */
     public function getOauthRedirectUri(): string
     {
         return UrlHelper::actionUrl('videos/oauth/callback');
+    }
+
+    /**
+     * Returns the OAuth javascript origin URL.
+     *
+     * @return string
+     *
+     * @throws SiteNotFoundException
+     */
+    public function getOauthJavascriptOrigin(): string
+    {
+        return UrlHelper::baseUrl();
     }
 
     /**
@@ -153,87 +174,29 @@ abstract class Gateway implements GatewayInterface
      */
     final public function getOauthAccessToken(): AccessToken
     {
-        try {
-            $token = VideosPlugin::$plugin->getTokens()->getTokenByGatewayHandle($this->getHandle());
-
-            if (isset($token->accessToken['accessToken']) === false) {
-                throw new TokenInvalidException(/* TODO: more precise message */);
-            }
-
-            $accessToken = new AccessToken([
-                'access_token' => $token->accessToken['accessToken'] ?? null,
-                'expires' => $token->accessToken['expires'] ?? null,
-                'refresh_token' => $token->accessToken['refreshToken'] ?? null,
-                'resource_owner_id' => $token->accessToken['resourceOwnerId'] ?? null,
-                'values' => $token->accessToken['values'] ?? null,
-            ]);
-
-            return $this->refreshOauthAccessToken($accessToken);
-        } catch (Exception $e) {
-            throw new OauthAccessTokenNotFoundException(/* TODO: more precise message */);
-        }
+        return VideosPlugin::$plugin->getOauth()->getOauthAccessTokenByGateway($this);
     }
 
     /**
-     * Refreshes Oauth access token.
+     * Oauth login.
      *
-     * @param AccessToken $accessToken
-     *
-     * @return AccessToken
-     *
-     * @throws OauthRefreshAccessTokenException
-     */
-    final public function refreshOauthAccessToken(AccessToken $accessToken): AccessToken
-    {
-        try {
-            if ($accessToken->getRefreshToken() !== null && $accessToken->getExpires() !== null && $accessToken->hasExpired() === true) {
-                $newAccessToken = $this->getOauthProvider()->getAccessToken(new RefreshToken(), ['refresh_token' => $accessToken->getRefreshToken()]);
-
-                $this->saveOauthAccessToken($newAccessToken);
-
-                return $newAccessToken;
-            }
-
-            return $accessToken;
-        } catch (Exception $e) {
-            throw new OauthRefreshAccessTokenException(/* TODO: more precise message */);
-        }
-    }
-
-    /**
-     * Saves Oauth access token.
-     *
-     * @param AccessToken $accessToken
+     * @param string $code
      *
      * @return void
      *
-     * @throws OauthSaveAccessTokenException
+     * @throws OauthLoginException
      */
-    final public function saveOauthAccessToken(AccessToken $accessToken): void
+    final public function oauthLogin(string $code): void
     {
         try {
-            $token = new Token();
+            // try to get an access token (using the authorization code grant)
+            $accessToken = $this->getOauthProvider()->getAccessToken('authorization_code', [
+                'code' => $code,
+            ]);
 
-            try {
-                $token = VideosPlugin::$plugin->getTokens()->getTokenByGatewayHandle($this->getHandle());
-            } catch (TokenNotFoundException $e) {
-                $token->gateway = $this->getHandle();
-            }
-
-            $token->accessToken = [
-                'accessToken' => $accessToken->getToken(),
-                'expires' => $accessToken->getExpires(),
-                'resourceOwnerId' => $accessToken->getResourceOwnerId(),
-                'values' => $accessToken->getValues(),
-            ];
-
-            if (!empty($accessToken->getRefreshToken())) {
-                $token->accessToken['refreshToken'] = $accessToken->getRefreshToken();
-            }
-
-            VideosPlugin::$plugin->getTokens()->saveToken($token);
+            VideosPlugin::$plugin->getOauth()->saveOauthAccessTokenByGateway($accessToken, $this);
         } catch (Exception $e) {
-            throw new OauthSaveAccessTokenException(/* TODO: more precise message */);
+            throw new OauthLoginException(/* TODO: more precise message */);
         }
     }
 
@@ -263,7 +226,7 @@ abstract class Gateway implements GatewayInterface
     final public function oauthLogout(): void
     {
         try {
-            VideosPlugin::$plugin->getTokens()->deleteTokenByGatewayHandle($this->getHandle());
+            VideosPlugin::$plugin->getOauth()->deleteOauthAccessTokenByGateway($this);
         } catch (Exception $e) {
             throw new OauthLogoutException(/* TODO: more precise message */);
         }
@@ -291,7 +254,7 @@ abstract class Gateway implements GatewayInterface
 
             $oauthAccount = new OauthAccount([
                 'id' => $resourceOwner->getId(),
-                'name' => isset($resourceOwner->toArray()['name']) === true ? $resourceOwner->toArray()['name'] : '',
+                'name' => $resourceOwner->toArray()['name'] ?? '',
             ]);
 
             if (VideosPlugin::$plugin->getCache()->isEnabled() === true) {
@@ -324,7 +287,7 @@ abstract class Gateway implements GatewayInterface
                 }
             }
 
-            $video = $this->callVideoById($videoId);
+            $video = $this->fetchVideoById($videoId);
 
             if (VideosPlugin::$plugin->getCache()->isEnabled() === true) {
                 VideosPlugin::$plugin->getCache()->set(Video::generateCacheKey(['id' => $videoId, 'gateway_handle' => $this->getHandle()]), $video);
@@ -334,75 +297,6 @@ abstract class Gateway implements GatewayInterface
         } catch (Exception $e) {
             throw new VideoNotFoundException(/* TODO: more precise message */);
         }
-    }
-
-    /**
-     * OAuth Connect.
-     *
-     * @return Response
-     *
-     * @throws InvalidConfigException
-     */
-    public function oauthConnect(): Response
-    {
-        Craft::$app->getSession()->set('videos.oauthState', $this->getOauthProvider()->getState());
-
-        return Craft::$app->getResponse()->redirect($this->getOauthAuthorizationUrl());
-    }
-
-    /**
-     * OAuth Callback.
-     *
-     * @return Response
-     *
-     * @throws \craft\errors\MissingComponentException
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function oauthCallback(): Response
-    {
-        $provider = $this->getOauthProvider();
-
-        $code = Craft::$app->getRequest()->getParam('code');
-
-        try {
-            // Try to get an access token (using the authorization code grant)
-            $token = $provider->getAccessToken('authorization_code', [
-                'code' => $code,
-            ]);
-
-            // Save token
-            $this->saveOauthAccessToken($token);
-
-            // Reset session variables
-
-            // Redirect
-            Craft::$app->getSession()->setNotice(Craft::t('videos', 'Connected to {gateway}.', ['gateway' => $this->getName()]));
-        } catch (Exception $e) {
-            Craft::error('Couldn’t connect to video gateway:'."\r\n"
-                .'Message: '."\r\n".$e->getMessage()."\r\n"
-                .'Trace: '."\r\n".$e->getTraceAsString(), __METHOD__);
-
-            // Failed to get the token credentials or user details.
-            Craft::$app->getSession()->setError($e->getMessage());
-        }
-
-        $redirectUrl = UrlHelper::cpUrl('videos/settings');
-
-        return Craft::$app->getResponse()->redirect($redirectUrl);
-    }
-
-    /**
-     * Returns the OAuth provider options.
-     *
-     * @param bool $parse
-     *
-     * @return array
-     *
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function getOauthProviderOptions(bool $parse = true): array
-    {
-        return VideosPlugin::$plugin->getOauthProviderOptions($this->getHandle(), $parse);
     }
 
     /**
@@ -452,40 +346,25 @@ abstract class Gateway implements GatewayInterface
     /**
      * Returns the URL of the embed from a video ID.
      *
-     * @param       $videoId
-     * @param array $options
+     * @param string $videoId
+     * @param array  $options
      *
      * @return string
      */
-    public function getEmbedUrl($videoId, array $options = []): string
+    final public function getEmbedUrl(string $videoId, array $options = []): string
     {
         $format = $this->getEmbedFormat();
 
-        if (\count($options) > 0) {
-            $queryMark = '?';
+        $formatParts = parse_url($format);
+        $formatPartQueryParams = [];
 
-            if (strpos($this->getEmbedFormat(), '?') !== false) {
-                $queryMark = '&';
-            }
-
-            $options = http_build_query($options);
-
-            $format .= $queryMark.$options;
+        if (isset($formatParts['query']) === true) {
+            parse_str($formatParts['query'], $formatPartQueryParams);
         }
 
-        return sprintf($format, $videoId);
-    }
+        $formatParts['query'] = http_build_query(array_merge($formatPartQueryParams, $options));
 
-    /**
-     * Returns the javascript origin URL.
-     *
-     * @return string
-     *
-     * @throws \craft\errors\SiteNotFoundException
-     */
-    public function getJavascriptOrigin(): string
-    {
-        return UrlHelper::baseUrl();
+        return sprintf(VideosUrlHelper::buildUrl($formatParts), $videoId);
     }
 
     /**
@@ -512,9 +391,9 @@ abstract class Gateway implements GatewayInterface
     /**
      * Number of videos per page.
      *
-     * @return mixed
+     * @return int
      */
-    public function getVideosPerPage()
+    public function getVideosPerPage(): int
     {
         return VideosPlugin::$plugin->getSettings()->videosPerPage;
     }

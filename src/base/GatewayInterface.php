@@ -69,7 +69,7 @@ interface GatewayInterface
      *
      * @throws VideoNotFoundException
      */
-    public function callVideoById(string $videoId): Video;
+    public function fetchVideoById(string $videoId): Video;
 
     /**
      * Returns the URL format of the embed.

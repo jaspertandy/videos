@@ -9,9 +9,10 @@
 namespace dukt\videos\controllers;
 
 use Craft;
+use craft\helpers\UrlHelper;
 use craft\web\Controller;
-use dukt\videos\Plugin as Videos;
-use yii\base\InvalidConfigException;
+use dukt\videos\Plugin as VideosPlugin;
+use Exception;
 use yii\web\Response;
 
 /**
@@ -19,67 +20,74 @@ use yii\web\Response;
  */
 class OauthController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
-     * Connect.
+     * Action connect.
      *
      * @return Response
      *
-     * @throws InvalidConfigException
-     * @throws \craft\errors\MissingComponentException
+     * TODO: rename => login
+     * TODO: catch exception
      */
     public function actionConnect(): Response
     {
         $gatewayHandle = Craft::$app->getRequest()->getParam('gateway');
-
-        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
+        $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
 
         Craft::$app->getSession()->set('videos.oauthGateway', $gatewayHandle);
+        Craft::$app->getSession()->set('videos.oauthState', $gateway->getOauthProvider()->getState());
 
-        return $gateway->oauthConnect();
+        return Craft::$app->getResponse()->redirect($gateway->getOauthAuthorizationUrl());
     }
 
     /**
-     * Callback.
+     * Action callback.
      *
      * @return Response
      *
-     * @throws InvalidConfigException
-     * @throws \craft\errors\MissingComponentException
+     * TODO: catch exception
      */
     public function actionCallback(): Response
     {
-        $gatewayHandle = Craft::$app->getSession()->get('videos.oauthGateway');
+        try {
+            $gatewayHandle = Craft::$app->getSession()->get('videos.oauthGateway');
+            $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
 
-        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
+            $code = Craft::$app->getRequest()->getParam('code');
 
-        return $gateway->oauthCallback();
+            $gateway->oauthLogin($code);
+
+            // send notice
+            Craft::$app->getSession()->setNotice(Craft::t('videos', 'Connected to {gateway}.', ['gateway' => $gateway->getName()]));
+        } catch (Exception $e) {
+            Craft::error('Couldn’t connect to video gateway:'."\r\n"
+                .'Message: '."\r\n".$e->getMessage()."\r\n"
+                .'Trace: '."\r\n".$e->getTraceAsString(), __METHOD__);
+
+            // Failed to get the token credentials or user details.
+            Craft::$app->getSession()->setError($e->getMessage());
+        }
+
+        return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('videos/settings'));
     }
 
     /**
-     * Disconnect.
+     * Action disconnect.
      *
      * @return Response
      *
-     * @throws InvalidConfigException
-     * @throws \craft\errors\MissingComponentException
+     * TODO: rename => logout
+     * TODO: catch exception
      */
     public function actionDisconnect(): Response
     {
         $gatewayHandle = Craft::$app->getRequest()->getParam('gateway');
-        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
+        $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
 
-        Videos::$plugin->getTokens()->deleteTokenByGatewayHandle($gateway->getHandle());
+        $gateway->oauthLogout();
 
-        // set notice
+        // send notice
         Craft::$app->getSession()->setNotice(Craft::t('videos', 'Disconnected.'));
 
-        // redirect
-
-        $redirect = Craft::$app->getRequest()->referrer;
-
-        return $this->redirect($redirect);
+        return $this->redirect(Craft::$app->getRequest()->referrer);
     }
 }

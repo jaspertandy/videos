@@ -55,6 +55,28 @@ class YouTube extends Gateway
     /**
      * {@inheritdoc}
      */
+    public function getOauthProviderOptions(bool $parseEnv = true): array
+    {
+        $options = parent::getOauthProviderOptions($parseEnv);
+
+        if (isset($options['useOidcMode']) === false) {
+            $options['useOidcMode'] = true;
+        }
+
+        return $options;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createOauthProvider(array $options): AbstractProvider
+    {
+        return new GoogleProvider($options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getOauthScope(): array
     {
         return [
@@ -79,28 +101,6 @@ class YouTube extends Gateway
     /**
      * {@inheritdoc}
      */
-    public function getOauthProviderOptions(bool $parse = true): array
-    {
-        $options = parent::getOauthProviderOptions($parse);
-
-        if (!isset($options['useOidcMode'])) {
-            $options['useOidcMode'] = true;
-        }
-
-        return $options;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function createOauthProvider(array $options): AbstractProvider
-    {
-        return new GoogleProvider($options);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getOauthProviderApiConsoleUrl(): string
     {
         return 'https://console.developers.google.com/';
@@ -116,7 +116,7 @@ class YouTube extends Gateway
         if (preg_match($regexp, $videoUrl, $matches, PREG_OFFSET_CAPTURE) > 0) {
             $videoId = $matches[3][0];
 
-            // Fixes the youtube &feature_gdata bug
+            // fixes the youtube &feature_gdata bug
             if (strpos($videoId, '&')) {
                 $videoId = substr($videoId, 0, strpos($videoId, '&'));
             }
@@ -130,7 +130,7 @@ class YouTube extends Gateway
     /**
      * {@inheritdoc}
      */
-    public function callVideoById(string $videoId): Video
+    public function fetchVideoById(string $videoId): Video
     {
         try {
             $data = $this->get('videos', [

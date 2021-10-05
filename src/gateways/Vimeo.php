@@ -50,6 +50,14 @@ class Vimeo extends Gateway
     /**
      * {@inheritdoc}
      */
+    public function createOauthProvider(array $options): AbstractProvider
+    {
+        return new VimeoProvider($options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getOauthProviderApiConsoleUrl(): string
     {
         return 'https://developer.vimeo.com/apps';
@@ -69,14 +77,6 @@ class Vimeo extends Gateway
     /**
      * {@inheritdoc}
      */
-    public function createOauthProvider(array $options): AbstractProvider
-    {
-        return new VimeoProvider($options);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function extractVideoIdFromVideoUrl(string $videoUrl): string
     {
         $regexp = '/^https?:\/\/(www\.)?vimeo\.com\/([0-9]*)/';
@@ -91,7 +91,7 @@ class Vimeo extends Gateway
     /**
      * {@inheritdoc}
      */
-    public function callVideoById(string $videoId): Video
+    public function fetchVideoById(string $videoId): Video
     {
         try {
             $data = $this->get('videos/'.$videoId, [
