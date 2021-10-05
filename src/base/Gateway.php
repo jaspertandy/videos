@@ -302,43 +302,77 @@ abstract class Gateway implements GatewayInterface
     /**
      * Returns the HTML of the embed from a video ID.
      *
-     * @param       $videoId
-     * @param array $options
+     * @param string $videoId
+     * @param array  $options
      *
      * @return string
      */
-    public function getEmbedHtml($videoId, array $options = []): string
+    public function getEmbedHtml(string $videoId, array $options = []): string
     {
-        $embedAttributes = [
-            'title' => 'External video from '.$this->getHandle(),
-            'frameborder' => '0',
-            'allowfullscreen' => 'true',
-            'allowscriptaccess' => 'true',
-            'allow' => 'autoplay; encrypted-media',
+        $urlOptions = [];
+        $attributeOptions = [
+            'title' => [
+                'value' => 'External video from '.$this->getHandle(),
+            ],
+            'frameborder' => [
+                'value' => 0,
+            ],
+            'allowfullscreen' => [
+                'value' => true,
+            ],
+            'allowscriptaccess' => [
+                'value' => true,
+            ],
+            'allow' => [
+                'value' => 'autoplay; encrypted-media',
+            ],
+            'disable_size' => [
+                'value' => null,
+            ],
+            'width' => [
+                'value' => null,
+            ],
+            'height' => [
+                'value' => null,
+            ],
+            'iframeClass' => [
+                'attr' => 'class',
+                'value' => null,
+            ],
         ];
 
-        $disableSize = $options['disable_size'] ?? false;
-
-        if (!$disableSize) {
-            $this->parseEmbedAttribute($embedAttributes, $options, 'width', 'width');
-            $this->parseEmbedAttribute($embedAttributes, $options, 'height', 'height');
+        // split url options / attribute options from options
+        foreach ($options as $optionName => $optionValue) {
+            if (isset($attributeOptions[$optionName]) === true) {
+                $attributeOptions[$optionName]['value'] = $optionValue;
+            } else {
+                $urlOptions[$optionName] = $optionValue;
+            }
         }
 
-        $title = $options['title'] ?? false;
-
-        if ($title) {
-            $this->parseEmbedAttribute($embedAttributes, $options, 'title', 'title');
+        // special disable size attribute
+        if ($attributeOptions['disable_size']['value'] === true) {
+            $attributeOptions['width']['value'] = null;
+            $attributeOptions['height']['value'] = null;
         }
 
-        $this->parseEmbedAttribute($embedAttributes, $options, 'iframeClass', 'class');
+        // remove null value attribute options
+        $attributeOptions = array_filter($attributeOptions, function ($attributeOption) {
+            return $attributeOption['value'] !== null;
+        });
 
-        $embedUrl = $this->getEmbedUrl($videoId, $options);
-
-        $embedAttributesString = '';
-
-        foreach ($embedAttributes as $key => $value) {
-            $embedAttributesString .= ' '.$key.'="'.$value.'"';
+        // reformate attribute options
+        foreach ($attributeOptions as $key => $attributeOption) {
+            unset($attributeOptions[$key]);
+            $key = $attributeOption['attr'] ?? $key;
+            $attributeOptions[$key] = $attributeOption['value'];
         }
+
+        $embedUrl = $this->getEmbedUrl($videoId, $urlOptions);
+
+        $embedAttributesString = implode(' ', array_map(function ($value, $attr) {
+            return sprintf('%s="%s"', $attr, $value);
+        }, $attributeOptions, array_keys($attributeOptions)));
 
         return '<iframe src="'.$embedUrl.'"'.$embedAttributesString.'></iframe>';
     }
@@ -468,28 +502,5 @@ abstract class Gateway implements GatewayInterface
 
             throw new ApiResponseException($error, $code);
         }
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Parse embed attribute.
-     *
-     * @param $embedAttributes
-     * @param $options
-     * @param $option
-     * @param $attribute
-     *
-     * @return null
-     */
-    private function parseEmbedAttribute(&$embedAttributes, &$options, $option, $attribute)
-    {
-        if (isset($options[$option])) {
-            $embedAttributes[$attribute] = $options[$option];
-            unset($options[$option]);
-        }
-
-        return null;
     }
 }

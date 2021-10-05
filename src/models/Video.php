@@ -14,6 +14,7 @@ use dukt\videos\base\Gateway;
 use dukt\videos\helpers\VideosHelper;
 use dukt\videos\Plugin as VideosPlugin;
 use Twig_Markup;
+use yii\base\InvalidConfigException;
 
 /**
  * Video model class.
@@ -150,15 +151,15 @@ class Video extends AbstractVideo implements Cachable
     /**
      * Get the video’s embed.
      *
-     * @param array $opts
+     * @param array $options
      *
      * @return Twig_Markup
      *
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
-    public function getEmbed(array $opts = []): Twig_Markup
+    public function getEmbed(array $options = []): Twig_Markup
     {
-        $embed = $this->getGateway()->getEmbedHtml($this->id, $opts);
+        $embed = $this->getGateway()->getEmbedHtml($this->id, $options);
         $charset = Craft::$app->getView()->getTwig()->getCharset();
 
         return new Twig_Markup($embed, $charset);
@@ -167,15 +168,15 @@ class Video extends AbstractVideo implements Cachable
     /**
      * Get the video’s embed URL.
      *
-     * @param array $opts
+     * @param array $options
      *
      * @return string
      *
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
-    public function getEmbedUrl(array $opts = []): string
+    public function getEmbedUrl(array $options = []): string
     {
-        return $this->getGateway()->getEmbedUrl($this->id, $opts);
+        return $this->getGateway()->getEmbedUrl($this->id, $options);
     }
 
     /**
@@ -183,7 +184,7 @@ class Video extends AbstractVideo implements Cachable
      *
      * @return null|Gateway
      *
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function getGateway()
     {
@@ -204,7 +205,7 @@ class Video extends AbstractVideo implements Cachable
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \craft\errors\ImageException
      * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function getThumbnail($size = 300)
     {
