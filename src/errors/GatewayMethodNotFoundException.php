@@ -7,7 +7,7 @@
 
 namespace dukt\videos\errors;
 
-use yii\base\Exception;
+use dukt\videos\base\Exception;
 
 /**
  * Gateway method not found exception.
