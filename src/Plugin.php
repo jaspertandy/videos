@@ -1,9 +1,8 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
- *
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos;
@@ -21,15 +20,20 @@ use craft\web\UrlManager;
 use dukt\videos\base\PluginTrait;
 use dukt\videos\fields\Video as VideoField;
 use dukt\videos\models\Settings;
+use dukt\videos\services\Cache;
+use dukt\videos\services\Gateways;
+use dukt\videos\services\Oauth;
+use dukt\videos\services\Tokens;
+use dukt\videos\services\Videos;
 use dukt\videos\web\twig\variables\VideosVariable;
+use Exception;
 use yii\base\Event;
 
 /**
  * Videos plugin class.
  *
- * @author  Dukt <support@dukt.net>
- *
- * @since   1.0
+ * @author Dukt <support@dukt.net>
+ * @since 2.0.0
  */
 class Plugin extends BasePlugin
 {
@@ -37,26 +41,36 @@ class Plugin extends BasePlugin
 
     /**
      * @var string prefix for cache key
+     *
+     * @since 3.0.0
      */
     public const CACHE_KEY_PREFIX = 'videos';
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
+     *
+     * @since 2.0.12
      */
     public $schemaVersion = '1.0.3';
 
     /**
-     * @var bool
+     * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public $hasCpSettings = true;
 
     /**
      * @var Plugin the plugin instance
+     *
+     * @since 2.0.0
      */
     public static $plugin;
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function init()
     {
@@ -72,6 +86,8 @@ class Plugin extends BasePlugin
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function getSettingsResponse()
     {
@@ -81,7 +97,34 @@ class Plugin extends BasePlugin
     }
 
     /**
+     * Get OAuth provider options.
+     *
+     * @param string $gatewayHandle
+     * @param bool $parse
+     * @return null|array
+     *
+     * @since 2.0.2
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Oauth::getOauthProviderOptions]] instead.
+     */
+    public function getOauthProviderOptions(string $gatewayHandle, bool $parse = true)
+    {
+        try {
+            $gateway = $this->getGateways()->getGatewayByHandle($gatewayHandle);
+            $options = $this->getOauth()->getOauthProviderOptions($gateway, $parse);
+
+            if (empty($options) === false) {
+                return $options;
+            }
+        } catch (Exception $e) {
+        }
+
+        return null;
+    }
+
+    /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     protected function createSettingsModel()
     {
@@ -92,15 +135,17 @@ class Plugin extends BasePlugin
      * Set plugin components.
      *
      * @return void
+     *
+     * @since 2.0.3
      */
     private function _setPluginComponents(): void
     {
         $this->setComponents([
-            'videos' => \dukt\videos\services\Videos::class,
-            'cache' => \dukt\videos\services\Cache::class,
-            'gateways' => \dukt\videos\services\Gateways::class,
-            'oauth' => \dukt\videos\services\Oauth::class,
-            'tokens' => \dukt\videos\services\Tokens::class,
+            'videos' => Videos::class,
+            'cache' => Cache::class,
+            'gateways' => Gateways::class,
+            'oauth' => Oauth::class,
+            'tokens' => Tokens::class,
         ]);
     }
 
@@ -108,6 +153,8 @@ class Plugin extends BasePlugin
      * Register CP routes.
      *
      * @return void
+     *
+     * @since 2.0.3
      */
     private function _registerCpRoutes(): void
     {
@@ -126,6 +173,8 @@ class Plugin extends BasePlugin
      * Register field types.
      *
      * @return void
+     *
+     * @since 2.0.3
      */
     private function _registerFieldTypes(): void
     {
@@ -138,6 +187,8 @@ class Plugin extends BasePlugin
      * Register cache options.
      *
      * @return void
+     *
+     * @since 2.0.3
      */
     private function _registerCacheOptions(): void
     {
@@ -154,6 +205,8 @@ class Plugin extends BasePlugin
      * Register template variable.
      *
      * @return void
+     *
+     * @since 2.0.3
      */
     private function _registerVariable(): void
     {
