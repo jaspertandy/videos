@@ -8,6 +8,7 @@
 namespace dukt\videos\gateways;
 
 use dukt\videos\base\Gateway;
+use dukt\videos\errors\ApiClientCreateException;
 use dukt\videos\errors\VideoIdExtractException;
 use dukt\videos\errors\VideoNotFoundException;
 use dukt\videos\models\Collection;
@@ -151,7 +152,7 @@ class YouTube extends Gateway
     public function fetchVideoById(string $videoId): Video
     {
         try {
-            $data = $this->get('videos', [
+            $data = $this->fetch('videos', [
                 'query' => [
                     'part' => 'snippet,statistics,contentDetails',
                     'id' => $videoId,
@@ -242,18 +243,22 @@ class YouTube extends Gateway
     /**
      * {@inheritdoc}
      *
-     * @since 2.0.0
+     * @since 3.0.0
      */
-    protected function createClient(): Client
+    protected function createApiClient(): Client
     {
-        $options = [
-            'base_uri' => $this->getApiUrl(),
-            'headers' => [
-                'Authorization' => 'Bearer '.$this->getOauthAccessToken()->getToken(),
-            ],
-        ];
+        try {
+            $options = [
+                'base_uri' => 'https://www.googleapis.com/youtube/v3/',
+                'headers' => [
+                    'Authorization' => 'Bearer '.$this->getOauthAccessToken()->getToken(),
+                ],
+            ];
 
-        return new Client($options);
+            return new Client($options);
+        } catch (Exception $e) {
+            throw new ApiClientCreateException(/* TODO: more precise message */);
+        }
     }
 
     /**
@@ -272,7 +277,7 @@ class YouTube extends Gateway
         $query['myRating'] = 'like';
         $query = array_merge($query, $this->paginationQueryFromParams($params));
 
-        $videosResponse = $this->get('videos', ['query' => $query]);
+        $videosResponse = $this->fetch('videos', ['query' => $query]);
 
         $videos = $this->parseVideos($videosResponse['items']);
 
@@ -301,7 +306,7 @@ class YouTube extends Gateway
         $query['playlistId'] = $params['id'];
         $query = array_merge($query, $this->paginationQueryFromParams($params));
 
-        $playlistItemsResponse = $this->get('playlistItems', ['query' => $query]);
+        $playlistItemsResponse = $this->fetch('playlistItems', ['query' => $query]);
 
         foreach ($playlistItemsResponse['items'] as $item) {
             $videoId = $item['snippet']['resourceId']['videoId'];
@@ -314,7 +319,7 @@ class YouTube extends Gateway
         $query['part'] = 'snippet,statistics,contentDetails';
         $query['id'] = implode(',', $videoIds);
 
-        $videosResponse = $this->get('videos', ['query' => $query]);
+        $videosResponse = $this->fetch('videos', ['query' => $query]);
         $videos = $this->parseVideos($videosResponse['items']);
 
         return array_merge([
@@ -342,7 +347,7 @@ class YouTube extends Gateway
         $query['q'] = $params['q'];
         $query = array_merge($query, $this->paginationQueryFromParams($params));
 
-        $searchResponse = $this->get('search', ['query' => $query]);
+        $searchResponse = $this->fetch('search', ['query' => $query]);
 
         foreach ($searchResponse['items'] as $item) {
             $videoIds[] = $item['id']['videoId'];
@@ -355,7 +360,7 @@ class YouTube extends Gateway
             $query['part'] = 'snippet,statistics,contentDetails';
             $query['id'] = implode(',', $videoIds);
 
-            $videosResponse = $this->get('videos', ['query' => $query]);
+            $videosResponse = $this->fetch('videos', ['query' => $query]);
 
             $videos = $this->parseVideos($videosResponse['items']);
 
@@ -391,7 +396,7 @@ class YouTube extends Gateway
         $query['playlistId'] = $uploadsPlaylistId;
         $query = array_merge($query, $this->paginationQueryFromParams($params));
 
-        $playlistItemsResponse = $this->get('playlistItems', ['query' => $query]);
+        $playlistItemsResponse = $this->fetch('playlistItems', ['query' => $query]);
 
         $videoIds = [];
 
@@ -406,24 +411,13 @@ class YouTube extends Gateway
         $query['part'] = 'snippet,statistics,contentDetails,status';
         $query['id'] = implode(',', $videoIds);
 
-        $videosResponse = $this->get('videos', ['query' => $query]);
+        $videosResponse = $this->fetch('videos', ['query' => $query]);
 
         $videos = $this->parseVideos($videosResponse['items']);
 
         return array_merge([
             'videos' => $videos,
         ], $this->paginationResponse($playlistItemsResponse, $videos));
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * @return string
-     */
-    private function getApiUrl(): string
-    {
-        return 'https://www.googleapis.com/youtube/v3/';
     }
 
     /**
@@ -433,7 +427,7 @@ class YouTube extends Gateway
      */
     private function getCollectionsPlaylists(): array
     {
-        $data = $this->get('playlists', [
+        $data = $this->fetch('playlists', [
             'query' => [
                 'part' => 'snippet',
                 'mine' => 'true',
@@ -456,7 +450,7 @@ class YouTube extends Gateway
             'mine' => 'true',
         ];
 
-        $channelsResponse = $this->get('channels', ['query' => $channelsQuery]);
+        $channelsResponse = $this->fetch('channels', ['query' => $channelsQuery]);
 
         if (isset($channelsResponse['items'][0])) {
             $channel = $channelsResponse['items'][0];

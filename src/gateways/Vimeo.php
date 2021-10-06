@@ -10,6 +10,7 @@ namespace dukt\videos\gateways;
 use DateTime;
 use Dukt\OAuth2\Client\Provider\Vimeo as VimeoProvider;
 use dukt\videos\base\Gateway;
+use dukt\videos\errors\ApiClientCreateException;
 use dukt\videos\errors\CollectionParsingException;
 use dukt\videos\errors\VideoIdExtractException;
 use dukt\videos\errors\VideoNotFoundException;
@@ -106,7 +107,7 @@ class Vimeo extends Gateway
     public function fetchVideoById(string $videoId): Video
     {
         try {
-            $data = $this->get('videos/'.$videoId, [
+            $data = $this->fetch('videos/'.$videoId, [
                 'query' => [
                     'fields' => 'created_time,description,duration,height,link,name,pictures,pictures,privacy,stats,uri,user,width,download,review_link,files',
                 ],
@@ -215,19 +216,23 @@ class Vimeo extends Gateway
     /**
      * {@inheritdoc}
      *
-     * @since 2.0.0
+     * @since 3.0.0
      */
-    protected function createClient(): Client
+    protected function createApiClient(): Client
     {
-        $options = [
-            'base_uri' => $this->getApiUrl(),
-            'headers' => [
-                'Accept' => 'application/vnd.vimeo.*+json;version='.$this->getApiVersion(),
-                'Authorization' => 'Bearer '.$this->getOauthAccessToken()->getToken(),
-            ],
-        ];
+        try {
+            $options = [
+                'base_uri' => 'https://api.vimeo.com/',
+                'headers' => [
+                    'Accept' => 'application/vnd.vimeo.*+json;version=3.0',
+                    'Authorization' => 'Bearer '.$this->getOauthAccessToken()->getToken(),
+                ],
+            ];
 
-        return new Client($options);
+            return new Client($options);
+        } catch (Exception $e) {
+            throw new ApiClientCreateException(/* TODO: more precise message */);
+        }
     }
 
     /**
@@ -307,25 +312,6 @@ class Vimeo extends Gateway
         return $this->performVideosRequest('me/videos', $params);
     }
 
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * @return string
-     */
-    private function getApiUrl(): string
-    {
-        return 'https://api.vimeo.com/';
-    }
-
-    /**
-     * @return string
-     */
-    private function getApiVersion(): string
-    {
-        return '3.0';
-    }
-
     /**
      * @param array $params
      *
@@ -336,7 +322,7 @@ class Vimeo extends Gateway
      */
     private function getCollectionsAlbums(array $params = []): array
     {
-        $data = $this->get('me/albums', [
+        $data = $this->fetch('me/albums', [
             'query' => $this->queryFromParams($params),
         ]);
 
@@ -353,7 +339,7 @@ class Vimeo extends Gateway
      */
     private function getCollectionsChannels(array $params = []): array
     {
-        $data = $this->get('me/channels', [
+        $data = $this->fetch('me/channels', [
             'query' => $this->queryFromParams($params),
         ]);
 
@@ -561,7 +547,7 @@ class Vimeo extends Gateway
     {
         $query = $this->queryFromParams($params);
 
-        $data = $this->get($uri, [
+        $data = $this->fetch($uri, [
             'query' => $query,
         ]);
 

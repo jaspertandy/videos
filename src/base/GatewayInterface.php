@@ -143,4 +143,29 @@ interface GatewayInterface
      * TODO: report breaking changes (and update since ?)
      */
     //public function oauthCallback(): Response;
+
+    /*
+     * Returns an authenticated Guzzle client.
+     *
+     * @return Client
+     *
+     * TODO: throws exception
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
+     */
+    //protected function createClient(): Client;
+
+    /*
+     * Performs a GET request on the API.
+     *
+     * @param $uri
+     * @param array $options
+     * @return array
+     * @throws ApiResponseException
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
+     */
+    //protected function get($uri, array $options = []): array
 }

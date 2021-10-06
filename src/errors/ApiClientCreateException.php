@@ -10,11 +10,11 @@ namespace dukt\videos\errors;
 use yii\base\Exception;
 
 /**
- * API response exception.
+ * API client create exception.
  *
  * @author Dukt <support@dukt.net>
- * @since 2.0.0
+ * @since 3.0.0
  */
-class ApiResponseException extends Exception
+class ApiClientCreateException extends Exception
 {
 }

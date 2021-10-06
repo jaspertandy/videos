@@ -10,9 +10,9 @@ namespace dukt\videos\base;
 use Craft;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
+use dukt\videos\errors\ApiClientCreateException;
 use dukt\videos\errors\ApiResponseException;
 use dukt\videos\errors\GatewayMethodNotFoundException;
-use dukt\videos\errors\JsonParsingException;
 use dukt\videos\errors\OauthAccessTokenNotFoundException;
 use dukt\videos\errors\OauthAccountNotFoundException;
 use dukt\videos\errors\OauthLoginException;
@@ -25,13 +25,10 @@ use dukt\videos\models\Video;
 use dukt\videos\Plugin as VideosPlugin;
 use Exception;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\BadResponseException;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
-use Psr\Http\Message\ResponseInterface;
 use ReflectionClass;
 use yii\base\InvalidConfigException;
-use yii\web\Response;
 
 /**
  * Gateway is the base class for classes representing video gateways.
@@ -529,14 +526,14 @@ abstract class Gateway implements GatewayInterface
     /**
      * Returns a list of videos.
      *
-     * @param $method
-     * @param $options
+     * @param string $method
+     * @param array $options
      * @return mixed
      * @throws GatewayMethodNotFoundException
      *
      * @since 2.0.0
      */
-    public function getVideos($method, $options)
+    public function getVideos(string $method, array $options = [])
     {
         $realMethod = 'getVideos'.ucwords($method);
 
@@ -570,71 +567,37 @@ abstract class Gateway implements GatewayInterface
     }
 
     /**
-     * Returns an authenticated Guzzle client.
+     * Returns an authenticated guzzle client.
      *
      * @return Client
+     * @throws ApiClientCreateException
      *
-     * TODO: throws exception
-     *
-     * @since 2.0.0
+     * @since 3.0.0
      */
-    abstract protected function createClient(): Client;
+    abstract protected function createApiClient(): Client;
 
     /**
      * Performs a GET request on the API.
      *
-     * @param $uri
+     * @param string $uri
      * @param array $options
      * @return array
      * @throws ApiResponseException
      *
-     * @since 2.0.0
+     * @since 3.0.0
      */
-    protected function get($uri, array $options = []): array
+    final protected function fetch(string $uri, array $options = []): array
     {
-        $client = $this->createClient();
-
         try {
+            $client = $this->createApiClient();
+
             $response = $client->request('GET', $uri, $options);
-            $body = (string)$response->getBody();
-            $data = Json::decode($body);
-        } catch (BadResponseException $badResponseException) {
-            $response = $badResponseException->getResponse();
-            $body = (string)$response->getBody();
 
-            try {
-                $data = Json::decode($body);
-            } catch (JsonParsingException $e) {
-                throw $badResponseException;
-            }
-        }
+            $responseBody = (string)$response->getBody();
 
-        $this->checkResponse($response, $data);
-
-        return $data;
-    }
-
-    /**
-     * Checks a provider response for errors.
-     *
-     * @param ResponseInterface $response
-     * @param $data
-     * @throws ApiResponseException
-     *
-     * @since 2.0.0
-     */
-    protected function checkResponse(ResponseInterface $response, $data)
-    {
-        if (!empty($data['error'])) {
-            $code = 0;
-            $error = $data['error'];
-
-            if (\is_array($error)) {
-                $code = $error['code'];
-                $error = $error['message'];
-            }
-
-            throw new ApiResponseException($error, $code);
+            return Json::decode($responseBody);
+        } catch (Exception $e) {
+            throw new ApiResponseException(/* TODO: more precise message */);
         }
     }
 }
