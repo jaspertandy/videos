@@ -112,7 +112,17 @@ class Oauth extends Component
             if ($accessToken->getRefreshToken() !== null && $accessToken->getExpires() !== null && $accessToken->hasExpired() === true) {
                 $newAccessToken = $gateway->getOauthProvider()->getAccessToken(new RefreshToken(), ['refresh_token' => $accessToken->getRefreshToken()]);
 
-                $this->saveOauthAccessTokenByGateway($newAccessToken, $gateway);
+                if (!$newAccessToken instanceof AccessToken) {
+                    throw new OauthRefreshAccessTokenException(/* TODO: more precise message */);
+                }
+
+                $this->saveOauthAccessTokenByGateway(new AccessToken([
+                    'access_token' => $newAccessToken->getToken(),
+                    'expires' => $newAccessToken->getExpires(),
+                    'refresh_token' => $accessToken->getRefreshToken(),
+                    'resource_owner_id' => $newAccessToken->getResourceOwnerId(),
+                    'values' => $newAccessToken->getValues(),
+                ]), $gateway);
 
                 return $newAccessToken;
             }
@@ -151,7 +161,7 @@ class Oauth extends Component
                 'values' => $accessToken->getValues(),
             ];
 
-            if (!empty($accessToken->getRefreshToken())) {
+            if (empty($accessToken->getRefreshToken()) === false) {
                 $token->accessToken['refreshToken'] = $accessToken->getRefreshToken();
             }
 
