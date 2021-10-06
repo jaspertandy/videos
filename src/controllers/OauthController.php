@@ -1,9 +1,8 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
- *
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\controllers;
@@ -17,26 +16,50 @@ use yii\web\Response;
 
 /**
  * OAuth controller.
+ *
+ * @author Dukt <support@dukt.net>
+ * @since 2.0.0
  */
 class OauthController extends Controller
 {
+    /**
+     * Action login.
+     *
+     * @return Response
+     *
+     * @since 3.0.0
+     */
+    public function actionLogin(): Response
+    {
+        $gatewayHandle = Craft::$app->getRequest()->getParam('gateway');
+
+        try {
+            $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
+
+            Craft::$app->getSession()->set('videos.oauthGateway', $gatewayHandle);
+            Craft::$app->getSession()->set('videos.oauthState', $gateway->getOauthProvider()->getState());
+
+            return Craft::$app->getResponse()->redirect($gateway->getOauthAuthorizationUrl());
+        } catch (Exception $e) {
+            // send flash message
+            // TODO: improve message (translation ?)
+            Craft::$app->getSession()->setError('An error occured: '.$e->getMessage());
+        }
+
+        return $this->redirect(Craft::$app->getRequest()->referrer);
+    }
+
     /**
      * Action connect.
      *
      * @return Response
      *
-     * TODO: rename => login
-     * TODO: catch exception
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[OauthController::actionLogin]] instead.
      */
     public function actionConnect(): Response
     {
-        $gatewayHandle = Craft::$app->getRequest()->getParam('gateway');
-        $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
-
-        Craft::$app->getSession()->set('videos.oauthGateway', $gatewayHandle);
-        Craft::$app->getSession()->set('videos.oauthState', $gateway->getOauthProvider()->getState());
-
-        return Craft::$app->getResponse()->redirect($gateway->getOauthAuthorizationUrl());
+        return $this->actionLogin();
     }
 
     /**
@@ -44,30 +67,57 @@ class OauthController extends Controller
      *
      * @return Response
      *
-     * TODO: catch exception
+     * @since 2.0.0
      */
     public function actionCallback(): Response
     {
+        $gatewayHandle = Craft::$app->getSession()->get('videos.oauthGateway');
+
         try {
-            $gatewayHandle = Craft::$app->getSession()->get('videos.oauthGateway');
             $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
 
             $code = Craft::$app->getRequest()->getParam('code');
 
             $gateway->oauthLogin($code);
 
-            // send notice
+            // send flash message
+            // TODO: improve message (translation ?)
             Craft::$app->getSession()->setNotice(Craft::t('videos', 'Connected to {gateway}.', ['gateway' => $gateway->getName()]));
         } catch (Exception $e) {
-            Craft::error('Couldn’t connect to video gateway:'."\r\n"
-                .'Message: '."\r\n".$e->getMessage()."\r\n"
-                .'Trace: '."\r\n".$e->getTraceAsString(), __METHOD__);
-
-            // Failed to get the token credentials or user details.
-            Craft::$app->getSession()->setError($e->getMessage());
+            // send flash message
+            // TODO: improve message (translation ?)
+            Craft::$app->getSession()->setError('An error occured: '.$e->getMessage());
         }
 
-        return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('videos/settings'));
+        return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('videos/settings/'.$gatewayHandle));
+    }
+
+    /**
+     * Action logout.
+     *
+     * @return Response
+     *
+     * @since 3.0.0
+     */
+    public function actionLogout(): Response
+    {
+        $gatewayHandle = Craft::$app->getRequest()->getParam('gateway');
+
+        try {
+            $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
+
+            $gateway->oauthLogout();
+
+            // send flash message
+            // TODO: improve message (translation ?)
+            Craft::$app->getSession()->setNotice(Craft::t('videos', 'Disconnected.'));
+        } catch (Exception $e) {
+            // send flash message
+            // TODO: improve message (translation ?)
+            Craft::$app->getSession()->setError('An error occured: '.$e->getMessage());
+        }
+
+        return $this->redirect(Craft::$app->getRequest()->referrer);
     }
 
     /**
@@ -75,19 +125,11 @@ class OauthController extends Controller
      *
      * @return Response
      *
-     * TODO: rename => logout
-     * TODO: catch exception
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[OauthController::actionLogout]] instead.
      */
     public function actionDisconnect(): Response
     {
-        $gatewayHandle = Craft::$app->getRequest()->getParam('gateway');
-        $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
-
-        $gateway->oauthLogout();
-
-        // send notice
-        Craft::$app->getSession()->setNotice(Craft::t('videos', 'Disconnected.'));
-
-        return $this->redirect(Craft::$app->getRequest()->referrer);
+        return $this->actionLogout();
     }
 }
