@@ -9,7 +9,6 @@ namespace dukt\videos\migrations;
 
 use Craft;
 use craft\db\Migration;
-use dukt\videos\Plugin;
 
 /**
  * Install migration class.

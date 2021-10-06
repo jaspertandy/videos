@@ -11,7 +11,7 @@ namespace dukt\videos\controllers;
 use Craft;
 use craft\web\Controller;
 use dukt\videos\errors\OauthAccountNotFoundException;
-use dukt\videos\Plugin as Videos;
+use dukt\videos\Plugin as VideosPlugin;
 use dukt\videos\web\assets\settings\SettingsAsset;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use yii\base\InvalidConfigException;
@@ -35,7 +35,7 @@ class SettingsController extends Controller
         $accounts = [];
         $accountErrors = [];
 
-        $gateways = Videos::$plugin->getGateways()->getGateways();
+        $gateways = VideosPlugin::$plugin->getGateways()->getGateways();
 
         foreach ($gateways as $gateway) {
             try {
@@ -81,7 +81,7 @@ class SettingsController extends Controller
      */
     public function actionGateway($gatewayHandle): Response
     {
-        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
+        $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
         $account = null;
 
         try {
@@ -118,7 +118,7 @@ class SettingsController extends Controller
      */
     public function actionGatewayOauth($gatewayHandle): Response
     {
-        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
+        $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
 
         return $this->renderTemplate('videos/settings/_oauth', [
             'gatewayHandle' => $gatewayHandle,
@@ -138,7 +138,7 @@ class SettingsController extends Controller
     public function actionSaveGateway(): Response
     {
         $gatewayHandle = Craft::$app->getRequest()->getParam('gatewayHandle');
-        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
+        $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
 
         $clientId = Craft::$app->getRequest()->getParam('clientId');
         $clientSecret = Craft::$app->getRequest()->getParam('clientSecret');
