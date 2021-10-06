@@ -1,9 +1,8 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
- *
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\helpers;
@@ -14,20 +13,21 @@ use dukt\videos\Plugin as VideosPlugin;
 
 /**
  * Videos helper.
+ *
+ * @author Dukt <support@dukt.net>
+ * @since 2.0.0
  */
 class VideosHelper
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Formats seconds to hh:mm:ss.
      *
-     * @param $seconds
-     *
+     * @param int $seconds
      * @return string
+     *
+     * @since 2.0.0
      */
-    public static function getDuration($seconds): string
+    public static function getDuration(int $seconds): string
     {
         $hours = (int)((int)$seconds / 3600);
         $minutes = (($seconds / 60) % 60);
@@ -49,11 +49,12 @@ class VideosHelper
     /**
      * Formats seconds to ISO 8601 duration.
      *
-     * @param $seconds
-     *
+     * @param int $seconds
      * @return string
+     *
+     * @since 2.0.11
      */
-    public static function getDuration8601($seconds): string
+    public static function getDuration8601(int $seconds): string
     {
         $hours = (int)((int)$seconds / 3600);
         $minutes = (($seconds / 60) % 60);
@@ -80,13 +81,13 @@ class VideosHelper
      * @param $gatewayHandle
      * @param $videoId
      * @param $size
-     *
      * @return null|string
-     *
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \craft\errors\ImageException
      * @throws \yii\base\Exception
      * @throws \yii\base\InvalidConfigException
+     *
+     * @since 2.0.0
      */
     public static function getVideoThumbnail($gatewayHandle, $videoId, $size)
     {
@@ -162,15 +163,13 @@ class VideosHelper
         return Craft::$app->getAssetManager()->getPublishedUrl($dir, true)."/{$name}";
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Get thumbnail file.
      *
      * @param $dir
-     *
      * @return null|string
+     *
+     * @since 2.0.0
      */
     private static function getThumbnailFile($dir)
     {

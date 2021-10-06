@@ -1,9 +1,8 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
- *
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\web\assets\videofield;
@@ -12,13 +11,18 @@ use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use dukt\videos\web\assets\videos\VideosAsset;
 
+/**
+ * Video field asset class.
+ *
+ * @author Dukt <support@dukt.net>
+ * @since 2.0.0
+ */
 class VideoFieldAsset extends AssetBundle
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function init()
     {

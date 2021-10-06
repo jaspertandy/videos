@@ -1,9 +1,8 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
- *
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\web\twig\variables;
@@ -12,22 +11,29 @@ use Craft;
 use dukt\videos\models\Video;
 use dukt\videos\Plugin as VideosPlugin;
 
+/**
+ * Video variable class.
+ *
+ * @author Dukt <support@dukt.net>
+ * @since 2.0.0
+ */
 class VideosVariable
 {
     /**
      * Get embed from a video url.
      *
      * @param string $videoUrl
-     * @param array  $embedOptions
-     *
+     * @param array $options
      * @return null|string
+     *
+     * @since 2.0.0
      */
-    public function getEmbed(string $videoUrl, array $embedOptions = []): ?string
+    public function getEmbed(string $videoUrl, array $options = []): ?string
     {
         try {
             $video = VideosPlugin::$plugin->getVideos()->getVideoByUrl($videoUrl);
 
-            return $video->getEmbed($embedOptions);
+            return $video->getEmbed($options);
         } catch (\Exception $e) {
             Craft::info('Couldn’t get video from its url ('.$videoUrl.'): '.$e->getMessage(), __METHOD__);
         }
@@ -39,12 +45,13 @@ class VideosVariable
      * Get a video from its URL.
      *
      * @param string $videoUrl
-     * @param bool   $enableCache
-     * @param int    $cacheExpiry
-     *
+     * @param bool $enableCache deprecated
+     * @param int $cacheExpiry deprecated
      * @return null|Video
+     *
+     * @since 2.0.0
      */
-    public function getVideoByUrl(string $videoUrl/*, $enableCache = true, $cacheExpiry = 3600*/): ?Video
+    public function getVideoByUrl(string $videoUrl, $enableCache = true, $cacheExpiry = 3600): ?Video
     {
         try {
             return VideosPlugin::$plugin->getVideos()->getVideoByUrl($videoUrl);
@@ -59,12 +66,13 @@ class VideosVariable
      * Alias for the `getVideoByUrl()` method.
      *
      * @param string $videoUrl
-     * @param bool   $enableCache
-     * @param int    $cacheExpiry
-     *
+     * @param bool $enableCache deprecated
+     * @param int $cacheExpiry deprecated
      * @return null|Video
+     *
+     * @since 2.0.0
      */
-    public function url($videoUrl/*, $enableCache = true, $cacheExpiry = 3600*/): ?Video
+    public function url($videoUrl, $enableCache = true, $cacheExpiry = 3600): ?Video
     {
         return $this->getVideoByUrl($videoUrl);
     }

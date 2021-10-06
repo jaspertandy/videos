@@ -1,9 +1,8 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
- *
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\models;
@@ -14,26 +13,28 @@ use craft\base\Model;
  * Collection model class.
  *
  * @author Dukt <support@dukt.net>
- *
- * @since  2.0
+ * @since 2.0.0
  */
 class Collection extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
-     * @var null|string Name
+     * @var null|string the collection's name
+     *
+     * @since 2.0.0
      */
     public $name;
 
     /**
-     * @var null|string Method
+     * @var null|string the collection's method
+     *
+     * @since 2.0.0
      */
     public $method;
 
     /**
-     * @var null|mixed Options
+     * @var null|mixed the collection's options
+     *
+     * @since 2.0.0
      */
     public $options;
 }

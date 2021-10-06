@@ -1,9 +1,8 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
- *
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\base;
@@ -18,9 +17,8 @@ use yii\base\InvalidConfigException;
 /**
  * PluginTrait implements the common methods and properties for plugin classes.
  *
- * @author  Dukt <support@dukt.net>
- *
- * @since   2.0
+ * @author Dukt <support@dukt.net>
+ * @since 2.0.0
  */
 trait PluginTrait
 {
@@ -28,8 +26,9 @@ trait PluginTrait
      * Returns the cache service.
      *
      * @return Cache
-     *
      * @throws InvalidConfigException
+     *
+     * @since 2.0.0
      */
     public function getCache(): Cache
     {
@@ -40,8 +39,9 @@ trait PluginTrait
      * Returns the gateways service.
      *
      * @return Gateways
-     *
      * @throws InvalidConfigException
+     *
+     * @since 2.0.0
      */
     public function getGateways(): Gateways
     {
@@ -52,8 +52,9 @@ trait PluginTrait
      * Returns the tokens service.
      *
      * @return Tokens
-     *
      * @throws InvalidConfigException
+     *
+     * @since 2.0.8
      */
     public function getTokens(): Tokens
     {
@@ -64,8 +65,9 @@ trait PluginTrait
      * Returns the oauth service.
      *
      * @return Oauth
-     *
      * @throws InvalidConfigException
+     *
+     * @since 2.0.0
      */
     public function getOauth(): Oauth
     {
@@ -76,8 +78,9 @@ trait PluginTrait
      * Returns the videos service.
      *
      * @return Videos
-     *
      * @throws InvalidConfigException
+     *
+     * @since 2.0.0
      */
     public function getVideos(): Videos
     {
