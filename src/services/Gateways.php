@@ -1,9 +1,8 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
- *
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\services;
@@ -21,11 +20,16 @@ use yii\base\Component;
  * An instance of the Gateways service is globally accessible via [[Plugin::gateways `Videos::$plugin->getGateways()`]].
  *
  * @author Dukt <support@dukt.net>
- *
- * @since  2.0
+ * @since 2.0.0
  */
 class Gateways extends Component
 {
+    /**
+     * @event RegisterLoginProviderTypesEvent The event that is triggered when registering login providers.
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[RegisterGatewayTypesEvent::NAME]] instead.
+     */
+    const EVENT_REGISTER_GATEWAY_TYPES = 'registerGatewayTypes';
+
     /**
      * @var array all gateways
      */
@@ -36,6 +40,8 @@ class Gateways extends Component
      *
      * @throws InvalidConfigException
      * @throws GatewayNotFoundException
+     *
+     * @since 3.0.0
      */
     public function init(): void
     {
@@ -57,11 +63,12 @@ class Gateways extends Component
      * Get all gateways.
      *
      * @param null|bool $loggedInStatus
-     *
      * @return Gateway[]
-     *
      * @throws InvalidConfigException
      * @throws GatewayNotFoundException
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
     public function getGateways(?bool $loggedInStatus = null): array
     {
@@ -78,9 +85,10 @@ class Gateways extends Component
      * Has gateway logged in.
      *
      * @return bool
-     *
      * @throws InvalidConfigException
      * @throws GatewayNotFoundException
+     *
+     * @since 3.0.0
      */
     public function hasGatewaysLoggedIn(): bool
     {
@@ -90,13 +98,14 @@ class Gateways extends Component
     /**
      * Get one gateway by handle.
      *
-     * @param string    $gatewayHandle
+     * @param string $gatewayHandle
      * @param null|bool $loggedInStatus
-     *
      * @return Gateway
-     *
      * @throws InvalidConfigException
      * @throws GatewayNotFoundException
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
     public function getGatewayByHandle(string $gatewayHandle, ?bool $loggedInStatus = null): Gateway
     {

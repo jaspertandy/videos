@@ -10,6 +10,7 @@ namespace dukt\videos\web\twig\variables;
 use Craft;
 use dukt\videos\models\Video;
 use dukt\videos\Plugin as VideosPlugin;
+use Exception;
 
 /**
  * Video variable class.
@@ -34,7 +35,7 @@ class VideosVariable
             $video = VideosPlugin::$plugin->getVideos()->getVideoByUrl($videoUrl);
 
             return $video->getEmbed($options);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Craft::info('Couldn’t get video from its url ('.$videoUrl.'): '.$e->getMessage(), __METHOD__);
         }
 
@@ -45,17 +46,18 @@ class VideosVariable
      * Get a video from its URL.
      *
      * @param string $videoUrl
-     * @param bool $enableCache deprecated
-     * @param int $cacheExpiry deprecated
+     * @param bool $enableCache @deprecated
+     * @param int $cacheExpiry @deprecated
      * @return null|Video
      *
      * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
     public function getVideoByUrl(string $videoUrl, $enableCache = true, $cacheExpiry = 3600): ?Video
     {
         try {
             return VideosPlugin::$plugin->getVideos()->getVideoByUrl($videoUrl);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Craft::info('Couldn’t get video from its url ('.$videoUrl.'): '.$e->getMessage(), __METHOD__);
         }
 
@@ -66,11 +68,12 @@ class VideosVariable
      * Alias for the `getVideoByUrl()` method.
      *
      * @param string $videoUrl
-     * @param bool $enableCache deprecated
-     * @param int $cacheExpiry deprecated
+     * @param bool $enableCache @deprecated
+     * @param int $cacheExpiry @deprecated
      * @return null|Video
      *
      * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
     public function url($videoUrl, $enableCache = true, $cacheExpiry = 3600): ?Video
     {

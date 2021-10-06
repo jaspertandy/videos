@@ -1,9 +1,8 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
- *
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\services;
@@ -18,8 +17,7 @@ use yii\base\Component;
  * An instance of the Cache service is globally accessible via [[Plugin::cache `VideosPlugin::$plugin->getCache()`]].
  *
  * @author Dukt <support@dukt.net>
- *
- * @since  2.0
+ * @since 2.0.0
  */
 class Cache extends Component
 {
@@ -27,6 +25,8 @@ class Cache extends Component
      * Is cache enabled.
      *
      * @return bool
+     *
+     * @since 3.0.0
      */
     public function isEnabled(): bool
     {
@@ -37,8 +37,10 @@ class Cache extends Component
      * Get cache data by cache key.
      *
      * @param string $cacheKey
-     *
      * @return mixed the value stored in cache, false if the value is not in the cache, expired, or the dependency associated with the cached data has changed
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
     public function get(string $cacheKey)
     {
@@ -49,9 +51,11 @@ class Cache extends Component
      * Set data to the cache.
      *
      * @param string $cacheKey
-     * @param mixed  $value
-     *
+     * @param mixed $value
      * @return bool whether the value is successfully stored into cache
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
     public function set(string $cacheKey, $value): bool
     {

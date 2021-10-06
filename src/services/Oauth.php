@@ -1,9 +1,8 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
- *
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\services;
@@ -29,8 +28,7 @@ use yii\base\Component;
  * An instance of the Oauth service is globally accessible via [[Plugin::oauth `VideosPlugin::$plugin->getOauth()`]].
  *
  * @author Dukt <support@dukt.net>
- *
- * @since  2.0
+ * @since 2.0.0
  */
 class Oauth extends Component
 {
@@ -38,9 +36,10 @@ class Oauth extends Component
      * Returns OAuth provider options.
      *
      * @param Gateway $gateway
-     * @param bool    $parseEnv
-     *
+     * @param bool $parseEnv
      * @return array
+     *
+     * @since 3.0.0
      */
     public function getOauthProviderOptions(Gateway $gateway, bool $parseEnv = true): array
     {
@@ -69,15 +68,15 @@ class Oauth extends Component
      * Returns the OAuth access token by gateway.
      *
      * @param Gateway $gateway
-     *
      * @return AccessToken
-     *
      * @throws OauthAccessTokenNotFoundException
+     *
+     * @since 3.0.0
      */
     public function getOauthAccessTokenByGateway(Gateway $gateway): AccessToken
     {
         try {
-            $token = VideosPlugin::$plugin->getTokens()->getTokenByGatewayHandle($gateway->getHandle());
+            $token = VideosPlugin::$plugin->getTokens()->getTokenByGateway($gateway);
 
             if (isset($token->accessToken['accessToken']) === false) {
                 throw new TokenInvalidException(/* TODO: more precise message */);
@@ -98,14 +97,14 @@ class Oauth extends Component
     }
 
     /**
-     * Refreshes Oauth access token for a gateway.
+     * Refreshes Oauth access token by gateway.
      *
      * @param AccessToken $accessToken
-     * @param Gateway     $gateway
-     *
+     * @param Gateway $gateway
      * @return AccessToken
-     *
      * @throws OauthRefreshAccessTokenException
+     *
+     * @since 3.0.0
      */
     public function refreshOauthAccessTokenByGateway(AccessToken $accessToken, Gateway $gateway): AccessToken
     {
@@ -125,14 +124,14 @@ class Oauth extends Component
     }
 
     /**
-     * Saves Oauth access token for a gateway.
+     * Saves Oauth access token by gateway.
      *
      * @param AccessToken $accessToken
-     * @param Gateway     $gateway
-     *
+     * @param Gateway $gateway
      * @return void
-     *
      * @throws OauthSaveAccessTokenException
+     *
+     * @since 3.0.0
      */
     public function saveOauthAccessTokenByGateway(AccessToken $accessToken, Gateway $gateway): void
     {
@@ -140,7 +139,7 @@ class Oauth extends Component
             $token = new Token();
 
             try {
-                $token = VideosPlugin::$plugin->getTokens()->getTokenByGatewayHandle($gateway->getHandle());
+                $token = VideosPlugin::$plugin->getTokens()->getTokenByGateway($gateway);
             } catch (TokenNotFoundException $e) {
                 $token->gateway = $gateway->getHandle();
             }
@@ -163,20 +162,87 @@ class Oauth extends Component
     }
 
     /**
-     * Deletes Oauth access token for a gateway.
+     * Deletes Oauth access token by gateway.
      *
      * @param Gateway $gateway
-     *
      * @return void
-     *
      * @throws OauthDeleteAccessTokenException
+     *
+     * @since 3.0.0
      */
     public function deleteOauthAccessTokenByGateway(Gateway $gateway): void
     {
         try {
-            VideosPlugin::$plugin->getTokens()->deleteTokenByGatewayHandle($gateway->getHandle());
+            VideosPlugin::$plugin->getTokens()->deleteTokenByGateway($gateway);
         } catch (Exception $e) {
             throw new OauthDeleteAccessTokenException(/* TODO: more precise message */);
         }
+    }
+
+    /**
+     * Returns a token by its gateway handle.
+     *
+     * @param string $gatewayHandle
+     * @param bool $refresh
+     * @return null|AccessToken
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Oauth::getOauthAccessTokenByGateway]] instead.
+     */
+    public function getToken($gatewayHandle, $refresh = true)
+    {
+        try {
+            $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, true);
+
+            return $this->getOauthAccessTokenByGateway($gateway);
+        } catch (Exception $e) {
+        }
+
+        return null;
+    }
+
+    /**
+     * Saves a token.
+     *
+     * @param string $gatewayHandle
+     * @param AccessToken $token
+     * @return bool
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Oauth::saveOauthAccessTokenByGateway]] instead.
+     */
+    public function saveToken($gatewayHandle, AccessToken $token): bool
+    {
+        try {
+            $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, true);
+
+            return $this->saveOauthAccessTokenByGateway($token, $gateway);
+        } catch (Exception $e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Deletes a token.
+     *
+     * @param string $gatewayHandle
+     * @return bool
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Oauth::deleteOauthAccessTokenByGateway]] instead.
+     */
+    public function deleteToken($gatewayHandle): bool
+    {
+        try {
+            $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, true);
+
+            return $this->deleteOauthAccessTokenByGateway($gateway);
+        } catch (Exception $e) {
+            return false;
+        }
+
+        return true;
     }
 }
