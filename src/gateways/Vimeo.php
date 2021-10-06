@@ -115,6 +115,14 @@ class Vimeo extends Gateway
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function supportsSearch(): bool
+    {
+        return true;
+    }
+
+    /**
      * {@inheritDoc}
      *
      * @return array
@@ -185,14 +193,6 @@ class Vimeo extends Gateway
         }
 
         return $sections;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function supportsSearch(): bool
-    {
-        return true;
     }
 
     // Protected

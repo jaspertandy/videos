@@ -159,6 +159,14 @@ class YouTube extends Gateway
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function supportsSearch(): bool
+    {
+        return true;
+    }
+
+    /**
      * {@inheritDoc}
      *
      * @return array
@@ -207,14 +215,6 @@ class YouTube extends Gateway
         }
 
         return $sections;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function supportsSearch(): bool
-    {
-        return true;
     }
 
     // Protected Methods

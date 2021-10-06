@@ -79,16 +79,16 @@ interface GatewayInterface
     public function getEmbedFormat(): string;
 
     /**
-     * Returns the sections for the explorer.
-     *
-     * @return array
-     */
-    public function getExplorerSections(): array;
-
-    /**
      * Whether the gateway supports search or not.
      *
      * @return bool
      */
     public function supportsSearch(): bool;
+
+    /**
+     * Returns the sections for the explorer.
+     *
+     * @return array
+     */
+    public function getExplorerSections(): array;
 }
