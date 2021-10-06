@@ -1,9 +1,8 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
- *
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\gateways;
@@ -26,13 +25,14 @@ use League\OAuth2\Client\Provider\AbstractProvider;
  * Vimeo gateway.
  *
  * @author Dukt <support@dukt.net>
- *
- * @since  1.0
+ * @since 2.0.0
  */
 class Vimeo extends Gateway
 {
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function getName(): string
     {
@@ -41,6 +41,8 @@ class Vimeo extends Gateway
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function getIconAlias(): string
     {
@@ -49,6 +51,8 @@ class Vimeo extends Gateway
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function createOauthProvider(array $options): AbstractProvider
     {
@@ -57,14 +61,8 @@ class Vimeo extends Gateway
 
     /**
      * {@inheritdoc}
-     */
-    public function getOauthProviderApiConsoleUrl(): string
-    {
-        return 'https://developer.vimeo.com/apps';
-    }
-
-    /**
-     * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function getOauthScope(): array
     {
@@ -76,6 +74,18 @@ class Vimeo extends Gateway
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
+     */
+    public function getOauthProviderApiConsoleUrl(): string
+    {
+        return 'https://developer.vimeo.com/apps';
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @since 3.0.0
      */
     public function extractVideoIdFromVideoUrl(string $videoUrl): string
     {
@@ -90,6 +100,8 @@ class Vimeo extends Gateway
 
     /**
      * {@inheritdoc}
+     *
+     * @since 3.0.0
      */
     public function fetchVideoById(string $videoId): Video
     {
@@ -108,6 +120,8 @@ class Vimeo extends Gateway
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function getEmbedFormat(): string
     {
@@ -116,6 +130,8 @@ class Vimeo extends Gateway
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function supportsSearch(): bool
     {
@@ -123,12 +139,13 @@ class Vimeo extends Gateway
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      *
      * @return array
-     *
      * @throws CollectionParsingException
      * @throws \dukt\videos\errors\ApiResponseException
+     *
+     * @since 2.0.0
      */
     public function getExplorerSections(): array
     {
@@ -195,15 +212,10 @@ class Vimeo extends Gateway
         return $sections;
     }
 
-    // Protected
-    // =========================================================================
-
     /**
-     * Returns an authenticated Guzzle client.
+     * {@inheritdoc}
      *
-     * @return Client
-     *
-     * @throws \yii\base\InvalidConfigException
+     * @since 2.0.0
      */
     protected function createClient(): Client
     {
@@ -519,7 +531,7 @@ class Vimeo extends Gateway
     /**
      * Get video data pictures.
      *
-     * @param array  $data
+     * @param array $data
      * @param string $type
      *
      * @return array

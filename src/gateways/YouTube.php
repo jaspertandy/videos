@@ -1,9 +1,8 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
- *
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\gateways;
@@ -23,13 +22,14 @@ use League\OAuth2\Client\Provider\Google as GoogleProvider;
  * YouTube gateway.
  *
  * @author Dukt <support@dukt.net>
- *
- * @since  1.0
+ * @since 2.0.0
  */
 class YouTube extends Gateway
 {
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function getName(): string
     {
@@ -38,6 +38,8 @@ class YouTube extends Gateway
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function getIconAlias(): string
     {
@@ -46,6 +48,8 @@ class YouTube extends Gateway
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function getOauthProviderName(): string
     {
@@ -54,6 +58,8 @@ class YouTube extends Gateway
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function getOauthProviderOptions(bool $parseEnv = true): array
     {
@@ -68,6 +74,8 @@ class YouTube extends Gateway
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function createOauthProvider(array $options): AbstractProvider
     {
@@ -76,6 +84,8 @@ class YouTube extends Gateway
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function getOauthScope(): array
     {
@@ -89,6 +99,8 @@ class YouTube extends Gateway
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function getOauthAuthorizationOptions(): array
     {
@@ -100,6 +112,8 @@ class YouTube extends Gateway
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function getOauthProviderApiConsoleUrl(): string
     {
@@ -108,6 +122,8 @@ class YouTube extends Gateway
 
     /**
      * {@inheritdoc}
+     *
+     * @since 3.0.0
      */
     public function extractVideoIdFromVideoUrl(string $videoUrl): string
     {
@@ -129,6 +145,8 @@ class YouTube extends Gateway
 
     /**
      * {@inheritdoc}
+     *
+     * @since 3.0.0
      */
     public function fetchVideoById(string $videoId): Video
     {
@@ -152,6 +170,8 @@ class YouTube extends Gateway
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function getEmbedFormat(): string
     {
@@ -160,6 +180,8 @@ class YouTube extends Gateway
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function supportsSearch(): bool
     {
@@ -167,11 +189,11 @@ class YouTube extends Gateway
     }
 
     /**
-     * {@inheritDoc}
-     *
+     * {@inheritdoc}
      * @return array
-     *
      * @throws \dukt\videos\errors\ApiResponseException
+     *
+     * @since 2.0.0
      */
     public function getExplorerSections(): array
     {
@@ -217,15 +239,10 @@ class YouTube extends Gateway
         return $sections;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
-     * Returns an authenticated Guzzle client.
+     * {@inheritdoc}
      *
-     * @return Client
-     *
-     * @throws \yii\base\InvalidConfigException
+     * @since 2.0.0
      */
     protected function createClient(): Client
     {

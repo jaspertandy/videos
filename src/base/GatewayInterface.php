@@ -1,23 +1,24 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
- *
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\base;
 
+use craft\errors\MissingComponentException;
 use dukt\videos\errors\VideoNotFoundException;
 use dukt\videos\models\Video;
 use League\OAuth2\Client\Provider\AbstractProvider;
+use yii\base\InvalidConfigException;
+use yii\web\Response;
 
 /**
  * GatewayInterface defines the common interface to be implemented by gateway classes.
  *
  * @author Dukt <support@dukt.net>
- *
- * @since  2.0
+ * @since 2.0.0
  */
 interface GatewayInterface
 {
@@ -25,6 +26,8 @@ interface GatewayInterface
      * Returns the name of the gateway.
      *
      * @return string
+     *
+     * @since 2.0.0
      */
     public function getName(): string;
 
@@ -32,6 +35,8 @@ interface GatewayInterface
      * Returns the icon’s alias.
      *
      * @return string
+     *
+     * @since 2.0.0
      */
     public function getIconAlias(): string;
 
@@ -39,6 +44,10 @@ interface GatewayInterface
      * Returns the OAuth provider’s instance.
      *
      * @param array $options
+     * @return AbstractProvider
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
     public function createOauthProvider(array $options): AbstractProvider;
 
@@ -46,6 +55,8 @@ interface GatewayInterface
      * Returns the OAuth provider’s API console URL.
      *
      * @return string
+     *
+     * @since 2.0.0
      */
     public function getOauthProviderApiConsoleUrl(): string;
 
@@ -53,10 +64,10 @@ interface GatewayInterface
      * Extracts the video ID from the video URL.
      *
      * @param string $videoUrl
-     *
      * @return string
-     *
      * @throws VideoIdExtractException
+     *
+     * @since 3.0.0
      */
     public function extractVideoIdFromVideoUrl(string $videoUrl): string;
 
@@ -64,10 +75,10 @@ interface GatewayInterface
      * Requests the video from the API and then returns it as video object.
      *
      * @param string $videoId
-     *
      * @return Video
-     *
      * @throws VideoNotFoundException
+     *
+     * @since 3.0.0
      */
     public function fetchVideoById(string $videoId): Video;
 
@@ -75,6 +86,8 @@ interface GatewayInterface
      * Returns the URL format of the embed.
      *
      * @return string
+     *
+     * @since 2.0.0
      */
     public function getEmbedFormat(): string;
 
@@ -82,6 +95,8 @@ interface GatewayInterface
      * Whether the gateway supports search or not.
      *
      * @return bool
+     *
+     * @since 3.0.0
      */
     public function supportsSearch(): bool;
 
@@ -89,6 +104,43 @@ interface GatewayInterface
      * Returns the sections for the explorer.
      *
      * @return array
+     *
+     * @since 2.0.0
      */
     public function getExplorerSections(): array;
+
+    /*
+     * Extracts the video ID from the video URL.
+     *
+     * @param string $videoUrl
+     * @return bool|string
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
+     */
+    //public function extractVideoIdFromUrl(string $videoUrl);
+
+    /*
+     * OAuth Connect.
+     *
+     * @return Response
+     * @throws MissingComponentException
+     * @throws InvalidConfigException
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
+     */
+    //public function oauthConnect(): Response;
+
+    /*
+     * OAuth Callback.
+     *
+     * @return Response
+     * @throws MissingComponentException
+     * @throws InvalidConfigException
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
+     */
+    //public function oauthCallback(): Response;
 }

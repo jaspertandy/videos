@@ -1,9 +1,8 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
- *
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\base;
@@ -38,8 +37,7 @@ use yii\web\Response;
  * Gateway is the base class for classes representing video gateways.
  *
  * @author Dukt <support@dukt.net>
- *
- * @since  1.0
+ * @since 2.0.0
  */
 abstract class Gateway implements GatewayInterface
 {
@@ -47,6 +45,10 @@ abstract class Gateway implements GatewayInterface
      * Returns the handle of the gateway based on its class name.
      *
      * @return string
+     * @throws ReflectionException
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
     final public function getHandle(): string
     {
@@ -59,6 +61,10 @@ abstract class Gateway implements GatewayInterface
      * Returns the icon URL.
      *
      * @return null|string
+     * @throws InvalidArgumentException
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
     final public function getIconUrl(): ?string
     {
@@ -80,6 +86,8 @@ abstract class Gateway implements GatewayInterface
      * Returns the OAuth provider’s name.
      *
      * @return string
+     *
+     * @since 2.0.0
      */
     public function getOauthProviderName(): string
     {
@@ -90,8 +98,11 @@ abstract class Gateway implements GatewayInterface
      * Returns the OAuth provider options.
      *
      * @param bool $parseEnv
-     *
      * @return array
+     * @throws InvalidConfigException
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
     public function getOauthProviderOptions(bool $parseEnv = true): array
     {
@@ -102,8 +113,10 @@ abstract class Gateway implements GatewayInterface
      * Returns the OAuth provider.
      *
      * @return AbstractProvider
-     *
      * @throws InvalidConfigException
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
     final public function getOauthProvider(): AbstractProvider
     {
@@ -114,6 +127,8 @@ abstract class Gateway implements GatewayInterface
      * Returns the OAuth redirect URI.
      *
      * @return string
+     *
+     * @since 3.0.0
      */
     public function getOauthRedirectUri(): string
     {
@@ -121,11 +136,25 @@ abstract class Gateway implements GatewayInterface
     }
 
     /**
-     * Returns the OAuth javascript origin URL.
+     * Returns the redirect URI.
      *
      * @return string
      *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Gateway::getOauthRedirectUri]] instead.
+     */
+    public function getRedirectUri(): string
+    {
+        return $this->getOauthRedirectUri();
+    }
+
+    /**
+     * Returns the OAuth javascript origin URL.
+     *
+     * @return string
      * @throws SiteNotFoundException
+     *
+     * @since 3.0.0
      */
     public function getOauthJavascriptOrigin(): string
     {
@@ -133,9 +162,26 @@ abstract class Gateway implements GatewayInterface
     }
 
     /**
+     * Returns the javascript origin URL.
+     *
+     * @return string
+     * @throws SiteNotFoundException
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Gateway::getOauthJavascriptOrigin]] instead.
+     */
+    public function getJavascriptOrigin(): string
+    {
+        return $this->getOauthJavascriptOrigin();
+    }
+
+    /**
      * Returns the OAuth scope.
      *
      * @return array
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
     public function getOauthScope(): array
     {
@@ -146,6 +192,9 @@ abstract class Gateway implements GatewayInterface
      * Returns the OAuth authorization options.
      *
      * @return array
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
     public function getOauthAuthorizationOptions(): array
     {
@@ -156,6 +205,9 @@ abstract class Gateway implements GatewayInterface
      * Returns the OAuth authorization URL.
      *
      * @return string
+     * @throws InvalidConfigException
+     *
+     * @since 3.0.0
      */
     final public function getOauthAuthorizationUrl(): string
     {
@@ -169,8 +221,9 @@ abstract class Gateway implements GatewayInterface
      * Returns the OAuth access token.
      *
      * @return AccessToken
-     *
      * @throws OauthAccessTokenNotFoundException
+     *
+     * @since 3.0.0
      */
     final public function getOauthAccessToken(): AccessToken
     {
@@ -178,13 +231,31 @@ abstract class Gateway implements GatewayInterface
     }
 
     /**
+     * Returns the OAuth token.
+     *
+     * @return null|AccessToken
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Gateway::getOauthAccessToken]] instead.
+     */
+    public function getOauthToken()
+    {
+        try {
+            return $this->getOauthAccessToken();
+        } catch (Exception $e) {
+        }
+
+        return null;
+    }
+
+    /**
      * Oauth login.
      *
      * @param string $code
-     *
      * @return void
-     *
      * @throws OauthLoginException
+     *
+     * @since 3.0.0
      */
     final public function oauthLogin(string $code): void
     {
@@ -204,6 +275,8 @@ abstract class Gateway implements GatewayInterface
      * Is OAuth logged in.
      *
      * @return bool
+     *
+     * @since 3.0.0
      */
     final public function isOauthLoggedIn(): bool
     {
@@ -217,11 +290,25 @@ abstract class Gateway implements GatewayInterface
     }
 
     /**
+     * Has token.
+     *
+     * @return bool
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Gateway::isOauthLoggedIn]] instead.
+     */
+    public function hasToken(): bool
+    {
+        return $this->isOauthLoggedIn();
+    }
+
+    /**
      * Oauth logout.
      *
      * @return void
-     *
      * @throws OauthLogoutException
+     *
+     * @since 3.0.0
      */
     final public function oauthLogout(): void
     {
@@ -236,8 +323,9 @@ abstract class Gateway implements GatewayInterface
      * Returns the OAuth account.
      *
      * @return OauthAccount
-     *
      * @throws OauthAccountNotFoundException
+     *
+     * @since 3.0.0
      */
     final public function getOauthAccount(): OauthAccount
     {
@@ -268,13 +356,33 @@ abstract class Gateway implements GatewayInterface
     }
 
     /**
+     * Returns the account.
+     *
+     * @return mixed
+     * @throws Exception
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Gateway::getOauthAccount]] instead.
+     */
+    public function getAccount()
+    {
+        try {
+            return $this->getOauthAccount();
+        } catch (Exception $e) {
+        }
+
+        return null;
+    }
+
+    /**
      * Returns one video by its ID.
      *
      * @param string $videoId
-     *
      * @return Video
-     *
      * @throws VideoNotFoundException
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
     final public function getVideoById(string $videoId): Video
     {
@@ -300,12 +408,28 @@ abstract class Gateway implements GatewayInterface
     }
 
     /**
+     * Return a video from its public URL.
+     *
+     * @param $videoUrl
+     * @return Video
+     * @throws VideoNotFoundException
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Videos::getVideoByUrl]] instead.
+     */
+    public function getVideoByUrl($videoUrl)
+    {
+        return VideosPlugin::$plugin->getVideos()->getVideoByUrl($videoUrl);
+    }
+
+    /**
      * Returns the HTML of the embed from a video ID.
      *
      * @param string $videoId
-     * @param array  $options
-     *
+     * @param array $options
      * @return string
+     *
+     * @since 2.0.0
      */
     public function getEmbedHtml(string $videoId, array $options = []): string
     {
@@ -381,9 +505,10 @@ abstract class Gateway implements GatewayInterface
      * Returns the URL of the embed from a video ID.
      *
      * @param string $videoId
-     * @param array  $options
-     *
+     * @param array $options
      * @return string
+     *
+     * @since 2.0.0
      */
     final public function getEmbedUrl(string $videoId, array $options = []): string
     {
@@ -406,10 +531,10 @@ abstract class Gateway implements GatewayInterface
      *
      * @param $method
      * @param $options
-     *
      * @return mixed
-     *
      * @throws GatewayMethodNotFoundException
+     *
+     * @since 2.0.0
      */
     public function getVideos($method, $options)
     {
@@ -426,6 +551,8 @@ abstract class Gateway implements GatewayInterface
      * Number of videos per page.
      *
      * @return int
+     *
+     * @since 2.0.0
      */
     public function getVideosPerPage(): int
     {
@@ -434,6 +561,8 @@ abstract class Gateway implements GatewayInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function supportsSearch(): bool
     {
@@ -444,18 +573,22 @@ abstract class Gateway implements GatewayInterface
      * Returns an authenticated Guzzle client.
      *
      * @return Client
+     *
+     * TODO: throws exception
+     *
+     * @since 2.0.0
      */
     abstract protected function createClient(): Client;
 
     /**
      * Performs a GET request on the API.
      *
-     * @param       $uri
+     * @param $uri
      * @param array $options
-     *
      * @return array
-     *
      * @throws ApiResponseException
+     *
+     * @since 2.0.0
      */
     protected function get($uri, array $options = []): array
     {
@@ -485,9 +618,10 @@ abstract class Gateway implements GatewayInterface
      * Checks a provider response for errors.
      *
      * @param ResponseInterface $response
-     * @param                   $data
-     *
+     * @param $data
      * @throws ApiResponseException
+     *
+     * @since 2.0.0
      */
     protected function checkResponse(ResponseInterface $response, $data)
     {
