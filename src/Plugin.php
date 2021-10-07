@@ -228,9 +228,8 @@ class Plugin extends BasePlugin
      */
     private function _registerTwigExtensions(): void
     {
-        if (Craft::$app->request->getIsSiteRequest()) {
-            $extension = new Extension();
-            Craft::$app->view->registerTwigExtension($extension);
-        }
+        // TODO: Craft::$app->request->getIsSiteRequest() ?
+        $extension = new Extension();
+        Craft::$app->view->registerTwigExtension($extension);
     }
 }

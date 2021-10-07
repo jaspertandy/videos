@@ -86,7 +86,7 @@ class Video extends Field
      */
     public function serializeValue($value, ElementInterface $element = null)
     {
-        if (!empty($value->url)) {
+        if (empty($value->url) === false) {
             return Db::prepareValueForDb($value->url);
         }
 
@@ -100,7 +100,7 @@ class Video extends Field
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
-        if (empty($value)) {
+        if (empty($value) === true) {
             return null;
         }
 

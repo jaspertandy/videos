@@ -17,7 +17,6 @@ use dukt\videos\helpers\ThumbnailHelper;
 use dukt\videos\helpers\VideosHelper;
 use dukt\videos\Plugin as VideosPlugin;
 use Twig\Markup;
-use Twig_Markup;
 
 /**
  * Video model class.
@@ -291,7 +290,7 @@ class Video extends AbstractVideo implements Cachable
      * Returns the video’s embed.
      *
      * @param array $options
-     * @return Twig_Markup
+     * @return Markup
      * @throws GatewayNotFoundException
      *
      * @since 2.0.0
