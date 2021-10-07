@@ -294,6 +294,7 @@ class Video extends AbstractVideo implements Cachable
      * @throws GatewayNotFoundException
      *
      * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
     public function getEmbed(array $options = []): Markup
     {

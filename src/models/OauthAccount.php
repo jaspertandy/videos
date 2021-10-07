@@ -27,18 +27,18 @@ class OauthAccount extends Model implements Cachable
     public const CACHE_KEY_PREFIX = 'oauth_account';
 
     /**
-     * @var null|int the account's ID
+     * @var int the account's ID
      *
      * @since 3.0.0
      */
-    public ?string $id;
+    public string $id;
 
     /**
-     * @var null|string the account's name
+     * @var string the account's name
      *
      * @since 3.0.0
      */
-    public ?string $name;
+    public string $name;
 
     /**
      * {@inheritdoc}
