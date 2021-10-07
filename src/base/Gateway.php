@@ -427,8 +427,9 @@ abstract class Gateway implements GatewayInterface
      * @return string
      *
      * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
-    public function getEmbedHtml(string $videoId, array $options = []): string
+    final public function getEmbedHtml(string $videoId, array $options = []): string
     {
         $urlOptions = [];
         $attributeOptions = [
@@ -506,6 +507,7 @@ abstract class Gateway implements GatewayInterface
      * @return string
      *
      * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
     final public function getEmbedUrl(string $videoId, array $options = []): string
     {
@@ -537,11 +539,11 @@ abstract class Gateway implements GatewayInterface
     {
         $realMethod = 'getVideos'.ucwords($method);
 
-        if (method_exists($this, $realMethod)) {
+        if (method_exists($this, $realMethod) === true) {
             return $this->{$realMethod}($options);
         }
 
-        throw new GatewayMethodNotFoundException('Gateway method “'.$realMethod.'” not found.');
+        throw new GatewayMethodNotFoundException(/* TODO: more precise message */);
     }
 
     /**

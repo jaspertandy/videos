@@ -10,24 +10,24 @@ namespace dukt\videos\models;
 use craft\base\Model;
 
 /**
- * Parent video model class.
+ * Video size model class.
  *
  * @author Dukt <support@dukt.net>
  * @since 3.0.0
  */
-abstract class AbstractVideo extends Model
+class VideoSize extends Model
 {
     /**
-     * @var string the URL of the video
-     *
-     * @since 2.0.0
-     */
-    public string $url;
-
-    /**
-     * @var bool the video is loaded if its data is filled
+     * @var int the video size's width
      *
      * @since 3.0.0
      */
-    public bool $loaded = false;
+    public int $width;
+
+    /**
+     * @var int the video size's height
+     *
+     * @since 3.0.0
+     */
+    public string $height;
 }

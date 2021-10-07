@@ -7,6 +7,8 @@
 
 namespace dukt\videos\gateways;
 
+use DateInterval;
+use DateTime;
 use dukt\videos\base\Gateway;
 use dukt\videos\errors\ApiClientCreateException;
 use dukt\videos\errors\VideoIdExtractException;
@@ -14,6 +16,8 @@ use dukt\videos\errors\VideoNotFoundException;
 use dukt\videos\models\Collection;
 use dukt\videos\models\Section;
 use dukt\videos\models\Video;
+use dukt\videos\models\VideoAuthor;
+use dukt\videos\models\VideoStatistic;
 use Exception;
 use GuzzleHttp\Client;
 use League\OAuth2\Client\Provider\AbstractProvider;
@@ -163,7 +167,7 @@ class YouTube extends Gateway
                 throw new VideoNotFoundException(/* TODO: more precise message */);
             }
 
-            return $this->parseVideo($data['items'][0]);
+            return $this->_parseVideo($data['items'][0]);
         } catch (Exception $e) {
             throw new VideoNotFoundException(/* TODO: more precise message */);
         }
@@ -279,7 +283,7 @@ class YouTube extends Gateway
 
         $videosResponse = $this->fetch('videos', ['query' => $query]);
 
-        $videos = $this->parseVideos($videosResponse['items']);
+        $videos = $this->_parseVideos($videosResponse['items']);
 
         return array_merge([
             'videos' => $videos,
@@ -320,7 +324,7 @@ class YouTube extends Gateway
         $query['id'] = implode(',', $videoIds);
 
         $videosResponse = $this->fetch('videos', ['query' => $query]);
-        $videos = $this->parseVideos($videosResponse['items']);
+        $videos = $this->_parseVideos($videosResponse['items']);
 
         return array_merge([
             'videos' => $videos,
@@ -362,7 +366,7 @@ class YouTube extends Gateway
 
             $videosResponse = $this->fetch('videos', ['query' => $query]);
 
-            $videos = $this->parseVideos($videosResponse['items']);
+            $videos = $this->_parseVideos($videosResponse['items']);
 
             return array_merge([
                 'videos' => $videos,
@@ -413,7 +417,7 @@ class YouTube extends Gateway
 
         $videosResponse = $this->fetch('videos', ['query' => $query]);
 
-        $videos = $this->parseVideos($videosResponse['items']);
+        $videos = $this->_parseVideos($videosResponse['items']);
 
         return array_merge([
             'videos' => $videos,
@@ -571,37 +575,54 @@ class YouTube extends Gateway
     }
 
     /**
-     * @param $data
+     * Parses videos from data.
      *
-     * @return Video
-     *
-     * @throws \Exception
+     * @param array $data
+     * @return Video[]
      */
-    private function parseVideo($data): Video
+    private function _parseVideos(array $data): array
+    {
+        $videos = [];
+
+        foreach ($data as $videoData) {
+            $videos[] = $this->_parseVideo($videoData);
+        }
+
+        return $videos;
+    }
+
+    /**
+     * Parses video from data.
+     *
+     * @param array $data
+     * @return Video
+     */
+    private function _parseVideo(array $data): Video
     {
         $video = new Video();
-        $video->raw = $data;
-        $video->authorName = $data['snippet']['channelTitle'];
-        $video->authorUrl = 'http://youtube.com/channel/'.$data['snippet']['channelId'];
-        $video->date = strtotime($data['snippet']['publishedAt']);
-        $video->description = $data['snippet']['description'];
-        $video->gatewayHandle = 'youtube';
-        $video->gatewayName = 'YouTube';
         $video->id = $data['id'];
-        $video->plays = $data['statistics']['viewCount'];
-        $video->title = $data['snippet']['title'];
         $video->url = 'http://youtu.be/'.$video->id;
+        $video->title = $data['snippet']['title'];
+        $video->description = $data['snippet']['description'];
+        $video->duration = new DateInterval($data['contentDetails']['duration']);
+        $video->publishedAt = new DateTime($data['snippet']['publishedAt']);
+        $video->thumbnailSourceUrl = $this->_getThumbnailSource($data);
+        $video->gatewayHandle = $this->getHandle();
+        $video->raw = $data;
 
-        // Video Duration
-        $interval = new \DateInterval($data['contentDetails']['duration']);
-        $video->durationSeconds = (int)date_create('@0')->add($interval)->getTimestamp();
-        $video->duration8601 = $data['contentDetails']['duration'];
+        // author
+        $author = new VideoAuthor();
+        $author->name = $data['snippet']['channelTitle'];
+        $author->url = 'http://youtube.com/channel/'.$data['snippet']['channelId'];
+        $video->author = $author;
 
-        // Thumbnails
-        $video->thumbnailSource = $this->getThumbnailSource($data['snippet']['thumbnails']);
+        // statistic
+        $statistic = new VideoStatistic();
+        $statistic->playCount = (int)$data['statistics']['viewCount'];
+        $video->statistic = $statistic;
 
-        // Privacy
-        if (!empty($data['status']['privacyStatus']) && $data['status']['privacyStatus'] === 'private') {
+        // privacy
+        if (empty($data['status']['privacyStatus']) === false && $data['status']['privacyStatus'] === 'private') {
             $video->private = true;
         }
 
@@ -612,57 +633,25 @@ class YouTube extends Gateway
      * Get the thumbnail source.
      *
      * @param array $thumbnails
-     *
      * @return null|string
      */
-    private function getThumbnailSource(array $thumbnails)
+    private function _getThumbnailSource(array $data): ?string
     {
-        if (!isset($thumbnails['maxres'])) {
-            return $this->getLargestThumbnail($thumbnails);
-        }
+        // need to find the largest thumbnail
+        if (isset($data['snippet']['thumbnails']['maxres']) === false) {
+            $largestSize = 0;
+            $largestThumbnailSource = null;
 
-        return $thumbnails['maxres']['url'];
-    }
-
-    /**
-     * Get the largest thumbnail from an array of thumbnails.
-     *
-     * @param array $thumbnails
-     *
-     * @return null|string
-     */
-    private function getLargestThumbnail(array $thumbnails)
-    {
-        $largestSize = 0;
-        $largestThumbnail = null;
-
-        foreach ($thumbnails as $thumbnail) {
-            if ($thumbnail['width'] > $largestSize) {
-                // Set thumbnail source with the largest thumbnail
-                $largestThumbnail = $thumbnail['url'];
-                $largestSize = $thumbnail['width'];
+            foreach ($data['snippet']['thumbnails'] as $thumbnail) {
+                if ((int)$thumbnail['width'] > $largestSize) {
+                    $largestThumbnailSource = $thumbnail['url'];
+                    $largestSize = (int)$thumbnail['width'];
+                }
             }
+
+            return $largestThumbnailSource;
         }
 
-        return $largestThumbnail;
-    }
-
-    /**
-     * @param $data
-     *
-     * @return array
-     *
-     * @throws \Exception
-     */
-    private function parseVideos($data): array
-    {
-        $videos = [];
-
-        foreach ($data as $videoData) {
-            $video = $this->parseVideo($videoData);
-            $videos[] = $video;
-        }
-
-        return $videos;
+        return $data['snippet']['thumbnails']['maxres']['url'];
     }
 }

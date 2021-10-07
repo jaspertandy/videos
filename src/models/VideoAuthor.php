@@ -7,18 +7,27 @@
 
 namespace dukt\videos\models;
 
+use craft\base\Model;
+
 /**
- * Video error model class.
+ * Video author model class.
  *
  * @author Dukt <support@dukt.net>
  * @since 3.0.0
  */
-class VideoError extends AbstractVideo
+class VideoAuthor extends Model
 {
     /**
-     * @var array errors occurred during video retrieving
+     * @var string the video author’s name
      *
      * @since 3.0.0
      */
-    public array $errors = [];
+    public string $name;
+
+    /**
+     * @var string the video author’s url
+     *
+     * @since 3.0.0
+     */
+    public string $url;
 }

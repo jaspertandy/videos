@@ -12,7 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
-use dukt\videos\models\VideoError;
+use dukt\videos\models\FailedVideo;
 use dukt\videos\Plugin as VideosPlugin;
 use dukt\videos\web\assets\videofield\VideoFieldAsset;
 
@@ -115,7 +115,7 @@ class Video extends Field
 
             Craft::info($errorMessage, __METHOD__);
 
-            return new VideoError([
+            return new FailedVideo([
                 'url' => $value,
                 'errors' => [
                     $errorMessage,
@@ -138,12 +138,11 @@ class Video extends Field
         if ($value instanceof \dukt\videos\models\Video) {
             $keywords[] = $value->id;
             $keywords[] = $value->url;
-            $keywords[] = $value->gatewayHandle;
-            $keywords[] = $value->gatewayName;
-            $keywords[] = $value->authorName;
-            $keywords[] = $value->authorUsername;
             $keywords[] = $value->title;
             $keywords[] = $value->description;
+            $keywords[] = $value->author->name;
+            $keywords[] = $value->gateway->handle;
+            $keywords[] = $value->gateway->name;
         }
 
         $searchKeywords = StringHelper::toString($keywords, ' ');

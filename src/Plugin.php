@@ -25,6 +25,7 @@ use dukt\videos\services\Gateways;
 use dukt\videos\services\Oauth;
 use dukt\videos\services\Tokens;
 use dukt\videos\services\Videos;
+use dukt\videos\web\twig\Extension;
 use dukt\videos\web\twig\variables\VideosVariable;
 use Exception;
 use yii\base\Event;
@@ -82,6 +83,7 @@ class Plugin extends BasePlugin
         $this->_registerFieldTypes();
         $this->_registerCacheOptions();
         $this->_registerVariable();
+        $this->_registerTwigExtensions();
     }
 
     /**
@@ -215,5 +217,20 @@ class Plugin extends BasePlugin
             $variable = $event->sender;
             $variable->set('videos', VideosVariable::class);
         });
+    }
+
+    /**
+     * Register twig extensions.
+     *
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    private function _registerTwigExtensions(): void
+    {
+        if (Craft::$app->request->getIsSiteRequest()) {
+            $extension = new Extension();
+            Craft::$app->view->registerTwigExtension($extension);
+        }
     }
 }

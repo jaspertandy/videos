@@ -16,6 +16,7 @@ use dukt\videos\Plugin as VideosPlugin;
  *
  * @author Dukt <support@dukt.net>
  * @since 2.0.0
+ * @deprecated in 3.0.0, will be removed in 3.1.0, use [[DatimeHelper|ThumbnailHelper]] instead.
  */
 class VideosHelper
 {
@@ -26,6 +27,7 @@ class VideosHelper
      * @return string
      *
      * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[DatimeHelper::formatDateIntervalToReadable]] instead.
      */
     public static function getDuration(int $seconds): string
     {
@@ -53,6 +55,7 @@ class VideosHelper
      * @return string
      *
      * @since 2.0.11
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[DatimeHelper::formatDateIntervalToISO8601]] instead.
      */
     public static function getDuration8601(int $seconds): string
     {
@@ -88,6 +91,7 @@ class VideosHelper
      * @throws \yii\base\InvalidConfigException
      *
      * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[ThumbnailHelper::getBySize]] instead.
      */
     public static function getVideoThumbnail($gatewayHandle, $videoId, $size)
     {

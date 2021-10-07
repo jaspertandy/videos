@@ -14,10 +14,12 @@ use dukt\videos\errors\ApiClientCreateException;
 use dukt\videos\errors\CollectionParsingException;
 use dukt\videos\errors\VideoIdExtractException;
 use dukt\videos\errors\VideoNotFoundException;
-use dukt\videos\helpers\VideosHelper;
 use dukt\videos\models\Collection;
 use dukt\videos\models\Section;
 use dukt\videos\models\Video;
+use dukt\videos\models\VideoAuthor;
+use dukt\videos\models\VideoSize;
+use dukt\videos\models\VideoStatistic;
 use Exception;
 use GuzzleHttp\Client;
 use League\OAuth2\Client\Provider\AbstractProvider;
@@ -113,7 +115,7 @@ class Vimeo extends Gateway
                 ],
             ]);
 
-            return $this->parseVideo($data);
+            return $this->_parseVideo($data);
         } catch (Exception $e) {
             throw new VideoNotFoundException(/* TODO: more precise message */);
         }
@@ -413,129 +415,6 @@ class Vimeo extends Gateway
     }
 
     /**
-     * @param $data
-     *
-     * @return array
-     */
-    private function parseVideos(array $data): array
-    {
-        $videos = [];
-
-        if (!empty($data)) {
-            foreach ($data as $videoData) {
-                $video = $this->parseVideo($videoData);
-
-                $videos[] = $video;
-            }
-        }
-
-        return $videos;
-    }
-
-    /**
-     * Parse video.
-     *
-     * @param array $data
-     *
-     * @return Video
-     */
-    private function parseVideo(array $data): Video
-    {
-        $video = new Video();
-        $video->raw = $data;
-        $video->authorName = $data['user']['name'];
-        $video->authorUrl = $data['user']['link'];
-        $video->date = new DateTime($data['created_time']);
-        $video->description = $data['description'];
-        $video->gatewayHandle = 'vimeo';
-        $video->gatewayName = 'Vimeo';
-        $video->id = (int)substr($data['uri'], \strlen('/videos/'));
-        $video->plays = $data['stats']['plays'] ?? 0;
-        $video->title = $data['name'];
-        $video->url = 'https://vimeo.com/'.substr($data['uri'], 8);
-        $video->width = $data['width'];
-        $video->height = $data['height'];
-
-        // Video duration
-        $video->durationSeconds = $data['duration'];
-        $video->duration8601 = VideosHelper::getDuration8601($data['duration']);
-
-        $this->parsePrivacy($video, $data);
-        $this->parseThumbnails($video, $data);
-
-        return $video;
-    }
-
-    /**
-     * Parse video’s privacy data.
-     *
-     * @param Video $video
-     * @param array $data
-     *
-     * @return null
-     */
-    private function parsePrivacy(Video $video, array $data)
-    {
-        $privacyOptions = ['nobody', 'contacts', 'password', 'users', 'disable'];
-
-        if (in_array($data['privacy']['view'], $privacyOptions, true)) {
-            $video->private = true;
-        }
-
-        return null;
-    }
-
-    /**
-     * Parse thumbnails.
-     *
-     * @param Video $video
-     * @param array $data
-     *
-     * @return null
-     */
-    private function parseThumbnails(Video $video, array $data)
-    {
-        if (!\is_array($data['pictures'])) {
-            return null;
-        }
-
-        $largestSize = 0;
-
-        foreach ($this->getVideoDataPictures($data, 'thumbnail') as $picture) {
-            // Retrieve highest quality thumbnail
-            if ($picture['width'] > $largestSize) {
-                $video->thumbnailSource = $picture['link'];
-                $largestSize = $picture['width'];
-            }
-        }
-
-        $video->thumbnailLargeSource = $video->thumbnailSource;
-
-        return null;
-    }
-
-    /**
-     * Get video data pictures.
-     *
-     * @param array $data
-     * @param string $type
-     *
-     * @return array
-     */
-    private function getVideoDataPictures(array $data, string $type = 'thumbnail'): array
-    {
-        $pictures = [];
-
-        foreach ($data['pictures'] as $picture) {
-            if ($picture['type'] === $type) {
-                $pictures[] = $picture;
-            }
-        }
-
-        return $pictures;
-    }
-
-    /**
      * @param $uri
      * @param $params
      *
@@ -551,7 +430,7 @@ class Vimeo extends Gateway
             'query' => $query,
         ]);
 
-        $videos = $this->parseVideos($data['data']);
+        $videos = $this->_parseVideos($data['data']);
 
         $more = false;
         $moreToken = null;
@@ -596,5 +475,99 @@ class Vimeo extends Gateway
         $query['per_page'] = $this->getVideosPerPage();
 
         return array_merge($query, $params);
+    }
+
+    /**
+     * Parses videos from data.
+     *
+     * @param array $data
+     * @return Video[]
+     */
+    private function _parseVideos(array $data): array
+    {
+        $videos = [];
+
+        foreach ($data as $videoData) {
+            $videos[] = $this->_parseVideo($videoData);
+        }
+
+        return $videos;
+    }
+
+    /**
+     * Parses video from data.
+     *
+     * @param array $data
+     * @return Video
+     */
+    private function _parseVideo(array $data): Video
+    {
+        $video = new Video();
+        $video->id = (int)substr($data['uri'], strlen('/videos/'));
+        $video->url = 'https://vimeo.com/'.substr($data['uri'], 8);
+        $video->title = $data['name'];
+        $video->description = $data['description'];
+        $video->duration = (new DateTime())->modify('+'.(int)$data['duration'].' seconds')->diff(new DateTime());
+        $video->publishedAt = new DateTime($data['created_time']);
+        $video->thumbnailSourceUrl = $this->_getThumbnailSource($data);
+        $video->gatewayHandle = $this->getHandle();
+        $video->raw = $data;
+
+        // author
+        $author = new VideoAuthor();
+        $author->name = $data['user']['name'];
+        $author->url = $data['user']['link'];
+        $video->author = $author;
+
+        // size
+        $size = new VideoSize();
+        $size->width = (int)$data['width'];
+        $size->height = (int)$data['height'];
+        $video->size = $size;
+
+        // statistic
+        $statistic = new VideoStatistic();
+        $statistic->playCount = $data['stats']['plays'] ?? 0;
+        $video->statistic = $statistic;
+
+        // privacy
+        if (in_array($data['privacy']['view'], ['nobody', 'contacts', 'password', 'users', 'disable'], true) === true) {
+            $video->private = true;
+        }
+
+        return $video;
+    }
+
+    /**
+     * Get the thumbnail source.
+     *
+     * @param array $thumbnails
+     * @return null|string
+     */
+    private function _getThumbnailSource(array $data): ?string
+    {
+        if (is_array($data['pictures']) === false) {
+            return null;
+        }
+
+        // need to find all thumbnails
+        $thumbnails = [];
+        foreach ($data['pictures'] as $picture) {
+            if ($picture['type'] === 'thumbnail') {
+                $thumbnails[] = $picture;
+            }
+        }
+
+        // need to find the largest thumbnail
+        $largestSize = 0;
+        $largestThumbnailSource = null;
+        foreach ($thumbnails as $thumbnail) {
+            if ((int)$thumbnail['width'] > $largestSize) {
+                $largestThumbnailSource = $picture['link'];
+                $largestSize = (int)$thumbnail['width'];
+            }
+        }
+
+        return $largestThumbnailSource;
     }
 }

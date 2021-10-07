@@ -13,7 +13,7 @@ use craft\helpers\Json;
 use craft\web\Controller;
 use dukt\videos\errors\GatewayNotFoundException;
 use dukt\videos\errors\VideoNotFoundException;
-use dukt\videos\models\VideoError;
+use dukt\videos\models\FailedVideo;
 use dukt\videos\Plugin as VideosPlugin;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use yii\web\Response;
@@ -149,7 +149,7 @@ class ExplorerController extends Controller
         try {
             $video = VideosPlugin::$plugin->getVideos()->getVideoByUrl($url);
         } catch (\Exception $e) {
-            $video = new VideoError([
+            $video = new FailedVideo([
                 'url' => $url,
                 'errors' => [
                     $e->getMessage(),
