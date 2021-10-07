@@ -226,12 +226,12 @@ class Video extends AbstractVideo implements Cachable
     public $duration8601;
 
     /**
-     * @var null|Gateway the gateway
+     * @var null|Gateway the gateway (used for non reinit on each call)
      *
      * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::gateway]] instead.
+     * TODO: report breaking changes (and update since ?)
      */
-    private $_gateway;
+    private ?Gateway $_gateway = null;
 
     /**
      * Returns the video’s duration.
@@ -269,7 +269,11 @@ class Video extends AbstractVideo implements Cachable
      */
     public function getGateway(): Gateway
     {
-        return VideosPlugin::$plugin->getGateways()->getGatewayByHandle($this->gatewayHandle);
+        if ($this->_gateway === null) {
+            $this->_gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($this->gatewayHandle);
+        }
+
+        return $this->_gateway;
     }
 
     /**

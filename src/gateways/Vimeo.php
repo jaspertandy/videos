@@ -106,6 +106,28 @@ class Vimeo extends Gateway
      *
      * @since 3.0.0
      */
+    public function createApiClient(): Client
+    {
+        try {
+            $options = [
+                'base_uri' => 'https://api.vimeo.com/',
+                'headers' => [
+                    'Accept' => 'application/vnd.vimeo.*+json;version=3.0',
+                    'Authorization' => 'Bearer '.$this->getOauthAccessToken()->getToken(),
+                ],
+            ];
+
+            return new Client($options);
+        } catch (Exception $e) {
+            throw new ApiClientCreateException(/* TODO: more precise message */);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @since 3.0.0
+     */
     public function fetchVideoById(string $videoId): Video
     {
         try {
@@ -213,28 +235,6 @@ class Vimeo extends Gateway
         }
 
         return $sections;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @since 3.0.0
-     */
-    protected function createApiClient(): Client
-    {
-        try {
-            $options = [
-                'base_uri' => 'https://api.vimeo.com/',
-                'headers' => [
-                    'Accept' => 'application/vnd.vimeo.*+json;version=3.0',
-                    'Authorization' => 'Bearer '.$this->getOauthAccessToken()->getToken(),
-                ],
-            ];
-
-            return new Client($options);
-        } catch (Exception $e) {
-            throw new ApiClientCreateException(/* TODO: more precise message */);
-        }
     }
 
     /**

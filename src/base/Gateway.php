@@ -39,6 +39,16 @@ use yii\base\InvalidConfigException;
 abstract class Gateway implements GatewayInterface
 {
     /**
+     * @var null|AbstractProvider the oauth provider (used for non reinit on each call)
+     */
+    private ?AbstractProvider $_oauthProvider = null;
+
+    /**
+     * @var null|Client the api client (used for non reinit on each call)
+     */
+    private ?Client $_apiClient = null;
+
+    /**
      * Returns the handle of the gateway based on its class name.
      *
      * @return string
@@ -117,7 +127,11 @@ abstract class Gateway implements GatewayInterface
      */
     final public function getOauthProvider(): AbstractProvider
     {
-        return $this->createOauthProvider($this->getOauthProviderOptions());
+        if ($this->_oauthProvider === null) {
+            $this->_oauthProvider = $this->createOauthProvider($this->getOauthProviderOptions());
+        }
+
+        return $this->_oauthProvider;
     }
 
     /**
@@ -314,6 +328,23 @@ abstract class Gateway implements GatewayInterface
         } catch (Exception $e) {
             throw new OauthLogoutException(/* TODO: more precise message */);
         }
+    }
+
+    /**
+     * Returns an authenticated guzzle client.
+     *
+     * @return Client
+     * @throws ApiClientCreateException
+     *
+     * @since 3.0.0
+     */
+    final public function getApiClient(): Client
+    {
+        if ($this->_apiClient === null) {
+            $this->_apiClient = $this->createApiClient();
+        }
+
+        return $this->_apiClient;
     }
 
     /**
@@ -569,16 +600,6 @@ abstract class Gateway implements GatewayInterface
     }
 
     /**
-     * Returns an authenticated guzzle client.
-     *
-     * @return Client
-     * @throws ApiClientCreateException
-     *
-     * @since 3.0.0
-     */
-    abstract protected function createApiClient(): Client;
-
-    /**
      * Performs a GET request on the API.
      *
      * @param string $uri
@@ -591,7 +612,7 @@ abstract class Gateway implements GatewayInterface
     final protected function fetch(string $uri, array $options = []): array
     {
         try {
-            $client = $this->createApiClient();
+            $client = $this->getApiClient();
 
             $response = $client->request('GET', $uri, $options);
 

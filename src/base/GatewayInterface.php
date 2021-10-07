@@ -10,6 +10,7 @@ namespace dukt\videos\base;
 use craft\errors\MissingComponentException;
 use dukt\videos\errors\VideoNotFoundException;
 use dukt\videos\models\Video;
+use GuzzleHttp\Client;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use yii\base\InvalidConfigException;
 use yii\web\Response;
@@ -41,7 +42,7 @@ interface GatewayInterface
     public function getIconAlias(): string;
 
     /**
-     * Returns the OAuth provider’s instance.
+     * Creates the OAuth provider’s instance.
      *
      * @param array $options
      * @return AbstractProvider
@@ -70,6 +71,16 @@ interface GatewayInterface
      * @since 3.0.0
      */
     public function extractVideoIdFromVideoUrl(string $videoUrl): string;
+
+    /**
+     * Creates an authenticated guzzle client.
+     *
+     * @return Client
+     * @throws ApiClientCreateException
+     *
+     * @since 3.0.0
+     */
+    public function createApiClient(): Client;
 
     /**
      * Requests the video from the API and then returns it as video object.
