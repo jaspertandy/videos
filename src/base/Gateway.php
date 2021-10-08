@@ -24,6 +24,7 @@ use dukt\videos\models\Video;
 use dukt\videos\Plugin as VideosPlugin;
 use Exception;
 use GuzzleHttp\Client;
+use JsonSerializable;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use ReflectionClass;
@@ -35,7 +36,7 @@ use yii\base\InvalidConfigException;
  * @author Dukt <support@dukt.net>
  * @since 2.0.0
  */
-abstract class Gateway implements GatewayInterface
+abstract class Gateway implements GatewayInterface, JsonSerializable
 {
     /**
      * @var null|AbstractProvider the oauth provider (used for non reinit on each call)
@@ -596,6 +597,21 @@ abstract class Gateway implements GatewayInterface
     public function supportsSearch(): bool
     {
         return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @since 3.0.0
+     */
+    public function jsonSerialize()
+    {
+        return [
+            'name' => $this->getName(),
+            'handle' => $this->getHandle(),
+            'supportsSearch' => $this->supportsSearch(),
+            'explorer' => $this->getExplorer(),
+        ];
     }
 
     /**

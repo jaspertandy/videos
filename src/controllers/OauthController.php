@@ -23,7 +23,7 @@ use yii\web\Response;
 class OauthController extends Controller
 {
     /**
-     * Action login.
+     * Login to OAuth.
      *
      * @return Response
      *
@@ -50,20 +50,7 @@ class OauthController extends Controller
     }
 
     /**
-     * Action connect.
-     *
-     * @return Response
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[OauthController::actionLogin]] instead.
-     */
-    public function actionConnect(): Response
-    {
-        return $this->actionLogin();
-    }
-
-    /**
-     * Action callback.
+     * Callback from OAuth provider.
      *
      * @return Response
      *
@@ -93,7 +80,7 @@ class OauthController extends Controller
     }
 
     /**
-     * Action logout.
+     * Logout of OAuth.
      *
      * @return Response
      *
@@ -118,6 +105,19 @@ class OauthController extends Controller
         }
 
         return $this->redirect(Craft::$app->getRequest()->referrer);
+    }
+
+    /**
+     * Action connect.
+     *
+     * @return Response
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[OauthController::actionLogin]] instead.
+     */
+    public function actionConnect(): Response
+    {
+        return $this->actionLogin();
     }
 
     /**

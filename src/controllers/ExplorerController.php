@@ -1,9 +1,8 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
- *
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\controllers;
@@ -11,144 +10,107 @@ namespace dukt\videos\controllers;
 use Craft;
 use craft\helpers\Json;
 use craft\web\Controller;
-use dukt\videos\errors\GatewayNotFoundException;
-use dukt\videos\errors\VideoNotFoundException;
 use dukt\videos\models\FailedVideo;
 use dukt\videos\Plugin as VideosPlugin;
-use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
+use Exception;
+use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
 /**
  * Explorer controller.
+ *
+ * @author Dukt <support@dukt.net>
+ * @since 2.0.0
  */
 class ExplorerController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
-     * @var
-     */
-    private $explorerNav;
-
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * Get the explorer modal.
+     * Returns the explorer modal.
      *
      * @return Response
+     * @throws BadRequestHttpException
      *
-     * @throws \Twig_Error_Loader
-     * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\web\BadRequestHttpException
+     * @since 2.0.0
      */
     public function actionGetModal(): Response
     {
         $this->requireAcceptsJson();
 
-        $namespaceInputId = Craft::$app->getRequest()->getBodyParam('namespaceInputId');
+        try {
+            $namespaceInputId = Craft::$app->getRequest()->getBodyParam('namespaceInputId');
 
-        $gateways = [];
-        $gatewaySections = [];
-        foreach (VideosPlugin::$plugin->getGateways()->getGateways(true) as $_gateway) {
-            try {
-                $gatewaySection = $_gateway->getExplorerSections();
+            return $this->asJson([
+                'success' => true,
+                'html' => Craft::$app->getView()->renderTemplate('videos/_elements/explorer', [
+                    'namespaceInputId' => $namespaceInputId,
+                    'gateways' => VideosPlugin::$plugin->getGateways()->getGateways(true),
+                    'jsonGateways' => Json::encode(VideosPlugin::$plugin->getGateways()->getGateways(true)),
+                ]),
+            ]);
+        } catch (Exception $e) {
+            // TODO: exception message
 
-                if ($gatewaySection) {
-                    $gatewaySections[] = $gatewaySection;
-
-                    $gateway = [
-                        'name' => $_gateway->getName(),
-                        'handle' => $_gateway->getHandle(),
-                        'supportsSearch' => $_gateway->supportsSearch(),
-                    ];
-
-                    $gateways[] = $gateway;
-                }
-            } catch (IdentityProviderException $e) {
-                $errorMsg = $e->getMessage();
-
-                $data = $e->getResponseBody();
-
-                if (isset($data['error_description'])) {
-                    $errorMsg = $data['error_description'];
-                }
-
-                Craft::error('Couldn’t load gateway `'.$_gateway->getHandle().'`: '.$errorMsg, __METHOD__);
-            }
+            return $this->asJson(['success' => false]);
         }
-
-        return $this->asJson([
-            'success' => true,
-            'html' => Craft::$app->getView()->renderTemplate('videos/_elements/explorer', [
-                'namespaceInputId' => $namespaceInputId,
-                'gateways' => $gateways,
-                'gatewaySections' => $gatewaySections,
-                'jsonGateways' => Json::encode($gateways),
-            ]),
-        ]);
     }
 
     /**
-     * Get videos.
+     * Returns videos.
      *
      * @return Response
+     * @throws BadRequestHttpException
      *
-     * @throws GatewayNotFoundException
-     * @throws \Twig_Error_Loader
-     * @throws \dukt\videos\errors\GatewayMethodNotFoundException
-     * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\web\BadRequestHttpException
+     * @since 2.0.0
      */
     public function actionGetVideos(): Response
     {
         $this->requireAcceptsJson();
 
-        $gatewayHandle = strtolower(Craft::$app->getRequest()->getParam('gateway'));
+        try {
+            $gatewayHandle = strtolower(Craft::$app->getRequest()->getParam('gateway'));
+            $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, true);
 
-        $method = Craft::$app->getRequest()->getParam('method');
-        $options = Craft::$app->getRequest()->getParam('options', []);
+            $method = Craft::$app->getRequest()->getParam('method');
+            $options = Craft::$app->getRequest()->getParam('options', []);
 
-        $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, true);
+            $videosResponse = $gateway->getVideos($method, $options);
 
-        $videosResponse = $gateway->getVideos($method, $options);
+            return $this->asJson([
+                'success' => true,
+                'html' => Craft::$app->getView()->renderTemplate('videos/_elements/videos', [
+                    'videos' => $videosResponse['videos'],
+                ]),
+                'more' => $videosResponse['pagination']['more'],
+                'moreToken' => $videosResponse['pagination']['moreToken'],
+            ]);
+        } catch (Exception $e) {
+            // TODO: exception message
 
-        $html = Craft::$app->getView()->renderTemplate('videos/_elements/videos', [
-            'videos' => $videosResponse['videos'],
-        ]);
-
-        return $this->asJson([
-            'html' => $html,
-            'more' => $videosResponse['more'],
-            'moreToken' => $videosResponse['moreToken'],
-        ]);
+            return $this->asJson(['success' => false]);
+        }
     }
 
     /**
-     * Field preview.
+     * Returns the field preview.
      *
      * @return Response
+     * @throws BadRequestHttpException
      *
-     * @throws VideoNotFoundException
-     * @throws \Twig_Error_Loader
-     * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\web\BadRequestHttpException
+     * @since 2.0.0
      */
     public function actionFieldPreview(): Response
     {
         $this->requireAcceptsJson();
 
-        $url = Craft::$app->getRequest()->getParam('url');
-
         $video = null;
 
         try {
+            $url = Craft::$app->getRequest()->getParam('url');
+
             $video = VideosPlugin::$plugin->getVideos()->getVideoByUrl($url);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
+            // TODO: exception message
+
             $video = new FailedVideo([
                 'url' => $url,
                 'errors' => [
@@ -157,41 +119,40 @@ class ExplorerController extends Controller
             ]);
         }
 
-        return $this->asJson(
-            [
-                'video' => $video,
-                'preview' => Craft::$app->getView()->renderTemplate('videos/_elements/fieldPreview', ['video' => $video]),
-            ]
-        );
+        return $this->asJson([
+            'video' => $video,
+            'preview' => Craft::$app->getView()->renderTemplate('videos/_elements/fieldPreview', ['video' => $video]),
+        ]);
     }
 
     /**
-     * Player.
+     * Plays the video.
      *
      * @return Response
+     * @throws BadRequestHttpException
      *
-     * @throws \Twig_Error_Loader
-     * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\web\BadRequestHttpException
+     * @since 2.0.0
      */
     public function actionPlayer(): Response
     {
         $this->requireAcceptsJson();
 
-        $gatewayHandle = strtolower(Craft::$app->getRequest()->getParam('gateway'));
-        $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, true);
+        try {
+            $gatewayHandle = strtolower(Craft::$app->getRequest()->getParam('gateway'));
+            $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, true);
 
-        $videoId = Craft::$app->getRequest()->getParam('videoId');
+            $videoId = Craft::$app->getRequest()->getParam('videoId');
 
-        $video = $gateway->getVideoById($videoId);
+            $video = $gateway->getVideoById($videoId);
 
-        $html = Craft::$app->getView()->renderTemplate('videos/_elements/player', [
-            'video' => $video,
-        ]);
+            return $this->asJson([
+                'success' => true,
+                'html' => Craft::$app->getView()->renderTemplate('videos/_elements/player', ['video' => $video]),
+            ]);
+        } catch (Exception $e) {
+            // TODO: exception message
 
-        return $this->asJson([
-            'html' => $html,
-        ]);
+            return $this->asJson(['success' => false]);
+        }
     }
 }

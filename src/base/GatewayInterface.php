@@ -10,6 +10,7 @@ namespace dukt\videos\base;
 use craft\errors\MissingComponentException;
 use dukt\videos\errors\VideoNotFoundException;
 use dukt\videos\models\Video;
+use dukt\videos\models\VideoExplorer;
 use GuzzleHttp\Client;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use yii\base\InvalidConfigException;
@@ -112,13 +113,24 @@ interface GatewayInterface
     public function supportsSearch(): bool;
 
     /**
+     * Returns the videos'explorer.
+     *
+     * @return VideoExplorer
+     * @throws ApiResponseException
+     *
+     * @since 3.0.0
+     */
+    public function getExplorer(): VideoExplorer;
+
+    /*
      * Returns the sections for the explorer.
      *
      * @return array
      *
      * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[GatewayInterface::getExplorer]] instead.
      */
-    public function getExplorerSections(): array;
+    //public function getExplorerSections(): array;
 
     /*
      * Extracts the video ID from the video URL.

@@ -13,10 +13,12 @@ use dukt\videos\base\Gateway;
 use dukt\videos\errors\ApiClientCreateException;
 use dukt\videos\errors\VideoIdExtractException;
 use dukt\videos\errors\VideoNotFoundException;
-use dukt\videos\models\Collection;
 use dukt\videos\models\Section;
 use dukt\videos\models\Video;
 use dukt\videos\models\VideoAuthor;
+use dukt\videos\models\VideoExplorer;
+use dukt\videos\models\VideoExplorerCollection;
+use dukt\videos\models\VideoExplorerSection;
 use dukt\videos\models\VideoStatistic;
 use Exception;
 use GuzzleHttp\Client;
@@ -216,220 +218,245 @@ class YouTube extends Gateway
 
     /**
      * {@inheritdoc}
-     * @return array
-     * @throws \dukt\videos\errors\ApiResponseException
      *
-     * @since 2.0.0
+     * @since 3.0.0
      */
-    public function getExplorerSections(): array
+    public function getExplorer(): VideoExplorer
     {
-        $sections = [];
+        $explorer = new VideoExplorer();
 
-        // Library
-
-        $sections[] = new Section([
+        // library section
+        $explorer->sections[] = new VideoExplorerSection([
             'name' => 'Library',
             'collections' => [
-                new Collection([
+                new VideoExplorerCollection([
                     'name' => 'Uploads',
                     'method' => 'uploads',
                 ]),
-                new Collection([
+                new VideoExplorerCollection([
                     'name' => 'Liked videos',
                     'method' => 'likes',
                 ]),
             ],
         ]);
 
-        // Playlists
+        // playlists section
+        $playlistsData = $this->_fetchPlaylists();
 
-        $playlists = $this->getCollectionsPlaylists();
-
-        $collections = [];
-
-        foreach ($playlists as $playlist) {
-            $collections[] = new Collection([
-                'name' => $playlist['title'],
-                'method' => 'playlist',
-                'options' => ['id' => $playlist['id']],
-            ]);
-        }
-
-        if (\count($collections) > 0) {
-            $sections[] = new Section([
+        if (count($playlistsData) > 0) {
+            $section = new VideoExplorerSection([
                 'name' => 'Playlists',
-                'collections' => $collections,
             ]);
+
+            foreach ($playlistsData as $playlistData) {
+                $section->collections[] = new VideoExplorerCollection([
+                    'name' => $playlistData['snippet']['title'],
+                    'method' => 'playlist',
+                    'options' => ['id' => $playlistData['id']],
+                ]);
+            }
+
+            $explorer->sections[] = $section;
         }
 
-        return $sections;
-    }
-
-    /**
-     * Returns a list of liked videos.
-     *
-     * @param array $params
-     *
-     * @return array
-     *
-     * @throws \dukt\videos\errors\ApiResponseException
-     */
-    protected function getVideosLikes(array $params = []): array
-    {
-        $query = [];
-        $query['part'] = 'snippet,statistics,contentDetails';
-        $query['myRating'] = 'like';
-        $query = array_merge($query, $this->paginationQueryFromParams($params));
-
-        $videosResponse = $this->fetch('videos', ['query' => $query]);
-
-        $videos = $this->_parseVideos($videosResponse['items']);
-
-        return array_merge([
-            'videos' => $videos,
-        ], $this->paginationResponse($videosResponse, $videos));
-    }
-
-    /**
-     * Returns a list of videos in a playlist.
-     *
-     * @param array $params
-     *
-     * @return array
-     *
-     * @throws \dukt\videos\errors\ApiResponseException
-     */
-    protected function getVideosPlaylist(array $params = []): array
-    {
-        // Get video IDs from playlist items
-
-        $videoIds = [];
-
-        $query = [];
-        $query['part'] = 'id,snippet';
-        $query['playlistId'] = $params['id'];
-        $query = array_merge($query, $this->paginationQueryFromParams($params));
-
-        $playlistItemsResponse = $this->fetch('playlistItems', ['query' => $query]);
-
-        foreach ($playlistItemsResponse['items'] as $item) {
-            $videoId = $item['snippet']['resourceId']['videoId'];
-            $videoIds[] = $videoId;
-        }
-
-        // Get videos from video IDs
-
-        $query = [];
-        $query['part'] = 'snippet,statistics,contentDetails';
-        $query['id'] = implode(',', $videoIds);
-
-        $videosResponse = $this->fetch('videos', ['query' => $query]);
-        $videos = $this->_parseVideos($videosResponse['items']);
-
-        return array_merge([
-            'videos' => $videos,
-        ], $this->paginationResponse($playlistItemsResponse, $videos));
-    }
-
-    /**
-     * Returns a list of videos from a search request.
-     *
-     * @param array $params
-     *
-     * @return array
-     *
-     * @throws \dukt\videos\errors\ApiResponseException
-     */
-    protected function getVideosSearch(array $params = []): array
-    {
-        // Get video IDs from search results
-        $videoIds = [];
-
-        $query = [];
-        $query['part'] = 'id';
-        $query['type'] = 'video';
-        $query['q'] = $params['q'];
-        $query = array_merge($query, $this->paginationQueryFromParams($params));
-
-        $searchResponse = $this->fetch('search', ['query' => $query]);
-
-        foreach ($searchResponse['items'] as $item) {
-            $videoIds[] = $item['id']['videoId'];
-        }
-
-        // Get videos from video IDs
-
-        if (\count($videoIds) > 0) {
-            $query = [];
-            $query['part'] = 'snippet,statistics,contentDetails';
-            $query['id'] = implode(',', $videoIds);
-
-            $videosResponse = $this->fetch('videos', ['query' => $query]);
-
-            $videos = $this->_parseVideos($videosResponse['items']);
-
-            return array_merge([
-                'videos' => $videos,
-            ], $this->paginationResponse($searchResponse, $videos));
-        }
-
-        return [];
+        return $explorer;
     }
 
     /**
      * Returns a list of uploaded videos.
      *
-     * @param array $params
-     *
+     * @param array $options
      * @return array
+     * @throws ApiResponseException
      *
-     * @throws \dukt\videos\errors\ApiResponseException
+     * @since 2.0.0
      */
-    protected function getVideosUploads(array $params = []): array
+    protected function getVideosUploads(array $options = []): array
     {
-        $uploadsPlaylistId = $this->getSpecialPlaylistId('uploads');
+        // fetch channel's uploaded playlist ID
+        $query = [
+            'part' => 'contentDetails',
+            'mine' => 'true',
+        ];
 
-        if (!$uploadsPlaylistId) {
+        $channelData = $this->fetch('channels', ['query' => $query]);
+
+        if (
+            empty($channelData['items']) === true
+            || count($channelData['items']) !== 1
+            || empty($channelData['items'][0]['contentDetails']['relatedPlaylists']['uploads']) === true
+        ) {
             return [];
         }
 
-        // Retrieve video IDs
+        $options['id'] = $channelData['items'][0]['contentDetails']['relatedPlaylists']['uploads'];
 
-        $query = [];
-        $query['part'] = 'id,snippet';
-        $query['playlistId'] = $uploadsPlaylistId;
-        $query = array_merge($query, $this->paginationQueryFromParams($params));
-
-        $playlistItemsResponse = $this->fetch('playlistItems', ['query' => $query]);
-
-        $videoIds = [];
-
-        foreach ($playlistItemsResponse['items'] as $item) {
-            $videoId = $item['snippet']['resourceId']['videoId'];
-            $videoIds[] = $videoId;
-        }
-
-        // Retrieve videos from video IDs
-
-        $query = [];
-        $query['part'] = 'snippet,statistics,contentDetails,status';
-        $query['id'] = implode(',', $videoIds);
-
-        $videosResponse = $this->fetch('videos', ['query' => $query]);
-
-        $videos = $this->_parseVideos($videosResponse['items']);
-
-        return array_merge([
-            'videos' => $videos,
-        ], $this->paginationResponse($playlistItemsResponse, $videos));
+        // fetch videos by playlist ID
+        return $this->getVideosPlaylist($options);
     }
 
     /**
-     * @return array
+     * Returns a list of liked videos.
      *
-     * @throws \dukt\videos\errors\ApiResponseException
+     * @param array $options
+     * @return array
+     * @throws ApiResponseException
+     *
+     * @since 2.0.0
      */
-    private function getCollectionsPlaylists(): array
+    protected function getVideosLikes(array $options = []): array
+    {
+        $query = [
+            'part' => 'snippet,statistics,contentDetails',
+            'myRating' => 'like',
+        ];
+
+        $videosData = $this->fetch('videos', [
+            'query' => array_merge($query, $this->_createPaginationQuery($options)),
+        ]);
+
+        $videos = $this->_parseVideos($videosData['items']);
+
+        return [
+            'videos' => $videos,
+            'pagination' => $this->_createPaginationNav($videosData),
+        ];
+    }
+
+    /**
+     * Returns a list of videos in a playlist.
+     *
+     * @param array $options
+     * @return array
+     * @throws ApiResponseException
+     *
+     * @since 2.0.0
+     */
+    protected function getVideosPlaylist(array $options = []): array
+    {
+        // fetch video IDs from a playlist
+        $query = [
+            'part' => 'id,snippet',
+            'playlistId' => $options['id'],
+        ];
+
+        $playlistItemsData = $this->fetch('playlistItems', [
+            'query' => array_merge($query, $this->_createPaginationQuery($options)),
+        ]);
+
+        // fetch videos from video IDs
+        $videoIds = array_map(function (array $itemData) {
+            return $itemData['snippet']['resourceId']['videoId'];
+        }, $playlistItemsData['items']);
+
+        $videosData = $this->_fetchVideosByIds($videoIds);
+        $videos = $this->_parseVideos($videosData);
+
+        return [
+            'videos' => $videos,
+            'pagination' => $this->_createPaginationNav($playlistItemsData),
+        ];
+    }
+
+    /**
+     * Returns a list of videos from a search request.
+     *
+     * @param array $options
+     * @return array
+     * @throws ApiResponseException
+     *
+     * @since 2.0.0
+     */
+    protected function getVideosSearch(array $options = []): array
+    {
+        // fetch video IDs from a search results
+        $query = [
+            'part' => 'id',
+            'type' => 'video',
+            'q' => $options['q'],
+        ];
+
+        $searchData = $this->fetch('search', [
+            'query' => array_merge($query, $this->_createPaginationQuery($options)),
+        ]);
+
+        // fetch videos from video IDs
+        $videoIds = array_map(function (array $itemData) {
+            return $itemData['id']['videoId'];
+        }, $searchData['items']);
+
+        $videosData = $this->_fetchVideosByIds($videoIds);
+        $videos = $this->_parseVideos($videosData);
+
+        return [
+            'videos' => $videos,
+            'pagination' => $this->_createPaginationNav($searchData),
+        ];
+    }
+
+    /**
+     * Creates pagination query.
+     *
+     * @param array $options
+     * @return array
+     */
+    private function _createPaginationQuery(array $options = []): array
+    {
+        $query = [
+            'maxResults' => (empty($options['perPage']) === false) ? (int)$options['perPage'] : $this->getVideosPerPage(),
+        ];
+
+        if (empty($options['moreToken']) === false) {
+            $query['pageToken'] = $options['moreToken'];
+        }
+
+        return $query;
+    }
+
+    /**
+     * Creates pagination nav.
+     *
+     * @param array $data
+     * @return array
+     */
+    private function _createPaginationNav(array $data = []): array
+    {
+        return [
+            'moreToken' => $data['nextPageToken'] ?? null,
+            'more' => isset($data['nextPageToken']) === true ? true : false,
+        ];
+    }
+
+    /**
+     * Fetches videos by IDs from API.
+     *
+     * @param array $videoIds
+     * @return array
+     * @throws ApiResponseException
+     */
+    private function _fetchVideosByIds(array $videoIds = []): array
+    {
+        if (count($videoIds) === 0) {
+            return [];
+        }
+
+        $query = [
+            'part' => 'snippet,statistics,contentDetails',
+            'id' => implode(',', $videoIds),
+        ];
+
+        $data = $this->fetch('videos', ['query' => $query]);
+
+        return $data['items'];
+    }
+
+    /**
+     * Fetches playlists from API.
+     *
+     * @return array
+     * @throws ApiResponseException
+     */
+    private function _fetchPlaylists(): array
     {
         $data = $this->fetch('playlists', [
             'query' => [
@@ -439,139 +466,7 @@ class YouTube extends Gateway
             ],
         ]);
 
-        return $this->parseCollections($data['items']);
-    }
-
-    /**
-     * @return null|mixed
-     *
-     * @throws \dukt\videos\errors\ApiResponseException
-     */
-    private function getSpecialPlaylists()
-    {
-        $channelsQuery = [
-            'part' => 'contentDetails',
-            'mine' => 'true',
-        ];
-
-        $channelsResponse = $this->fetch('channels', ['query' => $channelsQuery]);
-
-        if (isset($channelsResponse['items'][0])) {
-            $channel = $channelsResponse['items'][0];
-
-            return $channel['contentDetails']['relatedPlaylists'];
-        }
-
-        return null;
-    }
-
-    /**
-     * Retrieves playlist ID for special playlists of type: likes, favorites, uploads.
-     *
-     * @param string $type
-     *
-     * @return null|mixed
-     *
-     * @throws \dukt\videos\errors\ApiResponseException
-     */
-    private function getSpecialPlaylistId(string $type)
-    {
-        $specialPlaylists = $this->getSpecialPlaylists();
-
-        if (isset($specialPlaylists[$type])) {
-            return $specialPlaylists[$type];
-        }
-
-        return null;
-    }
-
-    /**
-     * @param array $params
-     *
-     * @return array
-     */
-    private function paginationQueryFromParams(array $params = []): array
-    {
-        // Pagination
-
-        $pagination = [
-            'page' => 1,
-            'perPage' => $this->getVideosPerPage(),
-            'moreToken' => false,
-        ];
-
-        if (!empty($params['perPage'])) {
-            $pagination['perPage'] = $params['perPage'];
-        }
-
-        if (!empty($params['moreToken'])) {
-            $pagination['moreToken'] = $params['moreToken'];
-        }
-
-        // Query
-
-        $query = [];
-        $query['maxResults'] = $pagination['perPage'];
-
-        if (!empty($pagination['moreToken'])) {
-            $query['pageToken'] = $pagination['moreToken'];
-        }
-
-        return $query;
-    }
-
-    /**
-     * @param $response
-     * @param $videos
-     *
-     * @return array
-     */
-    private function paginationResponse($response, $videos): array
-    {
-        $more = false;
-
-        if (!empty($response['nextPageToken']) && \count($videos) > 0) {
-            $more = true;
-        }
-
-        return [
-            'prevPage' => $response['prevPageToken'] ?? null,
-            'moreToken' => $response['nextPageToken'] ?? null,
-            'more' => $more,
-        ];
-    }
-
-    /**
-     * @param $item
-     *
-     * @return array
-     */
-    private function parseCollection($item): array
-    {
-        $collection = [];
-        $collection['id'] = $item['id'];
-        $collection['title'] = $item['snippet']['title'];
-        $collection['totalVideos'] = 0;
-        $collection['url'] = 'title';
-
-        return $collection;
-    }
-
-    /**
-     * @param $items
-     *
-     * @return array
-     */
-    private function parseCollections($items): array
-    {
-        $collections = [];
-
-        foreach ($items as $item) {
-            $collection = $this->parseCollection($item);
-            $collections[] = $collection;
-        }
-
-        return $collections;
+        return $data['items'];
     }
 
     /**
@@ -582,13 +477,9 @@ class YouTube extends Gateway
      */
     private function _parseVideos(array $data): array
     {
-        $videos = [];
-
-        foreach ($data as $videoData) {
-            $videos[] = $this->_parseVideo($videoData);
-        }
-
-        return $videos;
+        return array_map(function (array $videoData) {
+            return $this->_parseVideo($videoData);
+        }, $data);
     }
 
     /**

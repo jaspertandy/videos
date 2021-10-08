@@ -14,6 +14,7 @@ use craft\base\Model;
  *
  * @author Dukt <support@dukt.net>
  * @since 2.0.0
+ * @deprecated in 3.0.0, will be removed in 3.1.0, use [[VideoExplorerSection]] instead.
  */
 class Section extends Model
 {
