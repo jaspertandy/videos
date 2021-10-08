@@ -147,7 +147,7 @@ class Plugin extends BasePlugin
             'cache' => Cache::class,
             'gateways' => Gateways::class,
             'oauth' => Oauth::class,
-            'tokens' => Tokens::class,
+            'tokens' => Tokens::class, // @deprecated
         ]);
     }
 
