@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/master/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\models;
@@ -10,47 +10,61 @@ namespace dukt\videos\models;
 use craft\base\Model;
 use craft\helpers\Json;
 
+/**
+ * Settings model class.
+ *
+ * @author Dukt <support@dukt.net>
+ * @since 2.0.8
+ * @deprecated in 3.0.0, will be removed in 3.1.0.
+ */
 class Token extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
-     * @var int|null ID
+     * @var null|int the token's ID
+     *
+     * @since 2.0.8
      */
     public $id;
 
     /**
-     * @var string|null Gateway
+     * @var null|string the token's gateway
+     *
+     * @since 2.0.8
      */
     public $gateway;
 
-
     /**
-     * @var string|null Access token
+     * @var null|string the token's access token
+     *
+     * @since 2.0.8
      */
     public $accessToken;
 
     /**
-     * @var \DateTime|null Date updated
+     * @var null|\DateTime the token's date updated
+     *
+     * @since 2.0.8
      */
     public $dateUpdated;
 
     /**
-     * @var \DateTime|null Date created
+     * @var null|\DateTime the token's date created
+     *
+     * @since 2.0.8
      */
     public $dateCreated;
 
     /**
-     * @var string|null Uid
+     * @var null|string the token's uid
+     *
+     * @since 2.0.8
      */
     public $uid;
 
-    // Public Methods
-    // =========================================================================
-
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
+     * @since 2.0.8
      */
     public function init()
     {
@@ -62,7 +76,9 @@ class Token extends Model
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
+     * @since 2.0.8
      */
     public function rules()
     {

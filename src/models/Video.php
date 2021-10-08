@@ -1,7 +1,6 @@
 <?php
 /**
  * @link https://dukt.net/videos/
- *
  * @copyright Copyright (c) 2021, Dukt
  * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
@@ -9,132 +8,238 @@
 namespace dukt\videos\models;
 
 use Craft;
+use DateInterval;
+use DateTime;
+use dukt\videos\base\Cachable;
 use dukt\videos\base\Gateway;
+use dukt\videos\errors\GatewayNotFoundException;
+use dukt\videos\helpers\ThumbnailHelper;
 use dukt\videos\helpers\VideosHelper;
-use dukt\videos\Plugin as Videos;
-use Twig_Markup;
+use dukt\videos\Plugin as VideosPlugin;
+use Twig\Markup;
 
 /**
  * Video model class.
  *
  * @author Dukt <support@dukt.net>
- *
- * @since  2.0
+ * @since 2.0.0
  */
-class Video extends AbstractVideo
+class Video extends AbstractVideo implements Cachable
 {
-    // Properties
-    // =========================================================================
-
     /**
-     * @var null|int The ID of the video
-     */
-    public $id;
-
-    /**
-     * @var null|mixed The raw response object
-     */
-    public $raw;
-
-    /**
-     * @var null|string The gateway’s handle
-     */
-    public $gatewayHandle;
-
-    /**
-     * @var null|string The gateway’s name
-     */
-    public $gatewayName;
-
-    /**
-     * @var null|\DateTime The date the video was uploaded
-     */
-    public $date;
-
-    /**
-     * @var null|int The number of times the video has been played
-     */
-    public $plays;
-
-    /**
-     * @var null|int Duration of the video in seconds
-     */
-    public $durationSeconds;
-
-    /**
-     * @var null|int Duration of the video in ISO 8601 format
-     */
-    public $duration8601;
-
-    /**
-     * @var null|string The author’s name
-     */
-    public $authorName;
-
-    /**
-     * @var null|string The author’s URL
-     */
-    public $authorUrl;
-
-    /**
-     * @var null|string The author’s username
-     */
-    public $authorUsername;
-
-    /**
-     * @var null|string The thumbnail’s source
-     */
-    public $thumbnailSource;
-
-    /**
-     * @var null|string The thumbnail’s large source
+     * @var string prefix for cache key
      *
-     * @deprecated in 2.1. Use [[\dukt\videos\models\Video::$thumbnailSource]] instead.
+     * @since 3.0.0
      */
-    public $thumbnailLargeSource;
+    public const CACHE_KEY_PREFIX = 'video';
 
     /**
-     * @var null|string The video’s title
+     * @var string the video's ID
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
-    public $title;
+    public string $id;
 
     /**
-     * @var null|string The video’s description
+     * @var string the video’s title
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
-    public $description;
+    public string $title;
 
     /**
-     * @var bool Is this video private?
+     * @var string the video’s description
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
+     */
+    public string $description;
+
+    /**
+     * @var DateInterval duration of the video
+     *
+     * @since 3.0.0
+     */
+    public DateInterval $duration;
+
+    /**
+     * @var DateTime the date the video was published at
+     *
+     * @since 3.0.0
+     */
+    public DateTime $publishedAt;
+
+    /**
+     * @var VideoAuthor the video's author
+     *
+     * @since 3.0.0
+     */
+    public VideoAuthor $author;
+
+    /**
+     * @var null|string the thumbnail’s source URL
+     *
+     * @since 3.0.0
+     */
+    public ?string $thumbnailSourceUrl = null;
+
+    /**
+     * @var null|VideoSize the video's size
+     *
+     * @since 3.0.0
+     */
+    public ?VideoSize $size = null;
+
+    /**
+     * @var bool is this video private?
+     *
+     * @since 2.0.0
      */
     public $private = false;
 
     /**
-     * @var null|int The video’s width
+     * @var VideoStatistic the video's statistic
+     *
+     * @since 3.0.0
      */
-    public $width;
+    public VideoStatistic $statistic;
 
     /**
-     * @var null|int The video’s height
+     * @var string the gateway’s handle
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
-    public $height;
+    public string $gatewayHandle;
+
+    /**
+     * @var array the raw response object
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
+     */
+    public array $raw;
 
     /**
      * @var bool the video is loaded if its data is filled
+     *
+     * @since 3.0.0
      */
     public bool $loaded = true;
 
     /**
-     * @var null|Gateway Gateway
+     * @var null|\DateTime the date the video was uploaded
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::publishedAt]] instead.
      */
-    private $_gateway;
-
-    // Public Methods
-    // =========================================================================
+    public $date;
 
     /**
-     * Get the video’s duration.
+     * @var null|int the number of times the video has been played
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::statitic::playCount]] instead.
+     */
+    public $plays;
+
+    /**
+     * @var null|int the video’s width
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::size::width]] instead.
+     */
+    public $width;
+
+    /**
+     * @var null|int the video’s height
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::size::height]] instead.
+     */
+    public $height;
+
+    /**
+     * @var null|string the author’s name
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::author::name]] instead.
+     */
+    public $authorName;
+
+    /**
+     * @var null|string the author’s URL
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::author::url]] instead.
+     */
+    public $authorUrl;
+
+    /**
+     * @var null|string the author’s username
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::author::name]] instead.
+     */
+    public $authorUsername;
+
+    /**
+     * @var null|string the gateway’s name
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::gateway]] instead.
+     */
+    public $gatewayName;
+
+    /**
+     * @var null|string the thumbnail’s source
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::thumbnail::source]] instead.
+     */
+    public $thumbnailSource;
+
+    /**
+     * @var null|string the thumbnail’s large source
+     *
+     * @since 2.0.0
+     * @deprecated in 2.1.0, will be removed in 3.1.0, use [[Video::thumbnail::source]] instead.
+     */
+    public $thumbnailLargeSource;
+
+    /**
+     * @var null|int duration of the video in seconds
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::duration]] instead.
+     */
+    public $durationSeconds;
+
+    /**
+     * @var null|int duration of the video in ISO 8601 format
+     *
+     * @since 2.0.11
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::duration]] instead.
+     */
+    public $duration8601;
+
+    /**
+     * @var null|Gateway the gateway (used for non reinit on each call)
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
+     */
+    private ?Gateway $_gateway = null;
+
+    /**
+     * Returns the video’s duration.
      *
      * @return string
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::duration]] instead.
      */
     public function getDuration(): string
     {
@@ -142,66 +247,88 @@ class Video extends AbstractVideo
     }
 
     /**
-     * Get the video’s embed.
+     * {@inheritdoc}
      *
-     * @param array $opts
-     *
-     * @return Twig_Markup
-     *
-     * @throws \yii\base\InvalidConfigException
+     * @since 3.0.0
      */
-    public function getEmbed(array $opts = []): Twig_Markup
+    public function init(): void
     {
-        $embed = $this->getGateway()->getEmbedHtml($this->id, $opts);
-        $charset = Craft::$app->getView()->getTwig()->getCharset();
+        parent::init();
 
-        return new Twig_Markup($embed, $charset);
+        $this->loaded = true;
     }
 
     /**
-     * Get the video’s embed URL.
+     * Returns the video’s gateway.
      *
-     * @param array $opts
+     * @return Gateway
+     * @throws GatewayNotFoundException
      *
-     * @return string
-     *
-     * @throws \yii\base\InvalidConfigException
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
-    public function getEmbedUrl(array $opts = []): string
+    public function getGateway(): Gateway
     {
-        return $this->getGateway()->getEmbedUrl($this->id, $opts);
-    }
-
-    /**
-     * Get the video’s gateway.
-     *
-     * @return null|Gateway
-     *
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function getGateway()
-    {
-        if (!$this->_gateway) {
-            $this->_gateway = Videos::$plugin->getGateways()->getGateway($this->gatewayHandle);
+        if ($this->_gateway === null) {
+            $this->_gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($this->gatewayHandle);
         }
 
         return $this->_gateway;
     }
 
     /**
-     * Get the video’s thumbnail.
+     * Returns the video’s thumbnail.
      *
      * @param int $size
-     *
      * @return null|string
      *
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \craft\errors\ImageException
-     * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
-    public function getThumbnail($size = 300)
+    public function getThumbnail(int $size = 300): string
     {
-        return VideosHelper::getVideoThumbnail($this->gatewayHandle, $this->id, $size);
+        return ThumbnailHelper::getByVideoAndSize($this, $size);
+    }
+
+    /**
+     * Returns the video’s embed.
+     *
+     * @param array $options
+     * @return Markup
+     * @throws GatewayNotFoundException
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
+     */
+    public function getEmbed(array $options = []): Markup
+    {
+        $embed = $this->getGateway()->getEmbedHtml($this->id, $options);
+        $charset = Craft::$app->getView()->getTwig()->getCharset();
+
+        return new Markup($embed, $charset);
+    }
+
+    /**
+     * Returns the video’s embed URL.
+     *
+     * @param array $options
+     * @return string
+     * @throws GatewayNotFoundException
+     *
+     * @since 2.0.0
+     */
+    public function getEmbedUrl(array $options = []): string
+    {
+        return $this->getGateway()->getEmbedUrl($this->id, $options);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @since 3.0.0
+     */
+    public static function generateCacheKey(array $identifiers): string
+    {
+        return VideosPlugin::CACHE_KEY_PREFIX.'.'.self::CACHE_KEY_PREFIX.'.'.$identifiers['gateway_handle'].'.'.md5($identifiers['id']);
     }
 }

@@ -21,7 +21,7 @@
         <p class="error">{{ "If the problem persists, try to disconnect and connect again."|t('videos') }}</p>
     {% endif %}
 
-    {% if gateway.hasToken() %}
+    {% if gateway.isOauthLoggedIn() %}
         {% if account %}
             <ul>
                 <li><strong>Name:</strong> {{ account.name }}</li>

@@ -1,7 +1,6 @@
 <?php
 /**
  * @link https://dukt.net/videos/
- *
  * @copyright Copyright (c) 2021, Dukt
  * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
@@ -13,22 +12,24 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
-use dukt\videos\models\VideoError;
-use dukt\videos\Plugin as Videos;
+use dukt\videos\models\FailedVideo;
+use dukt\videos\Plugin as VideosPlugin;
 use dukt\videos\web\assets\videofield\VideoFieldAsset;
 
 /**
  * Video field.
+ *
+ * @author Dukt <support@dukt.net>
+ * @since 2.0.0
  */
 class Video extends Field
 {
-    // Public Methods
-    // =========================================================================
-
     /**
-     * Get the field’s name.
+     * Returns the field’s name.
      *
      * @return string
+     *
+     * @since 2.0.0
      */
     public function getName(): string
     {
@@ -36,18 +37,15 @@ class Video extends Field
     }
 
     /**
-     * Get Input HTML.
+     * {@inheritdoc}
      *
-     * @param                       $value
-     * @param null|ElementInterface $element
-     *
-     * @return string
+     * @since 2.0.0
      *
      * @throws \Twig_Error_Loader
      * @throws \yii\base\Exception
      * @throws \yii\base\InvalidConfigException
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    public function getInputHtml($value, ?ElementInterface $element = null): string
     {
         $view = Craft::$app->getView();
         $name = $this->handle;
@@ -67,15 +65,7 @@ class Video extends Field
         // Preview
         $preview = $view->renderTemplate('videos/_elements/fieldPreview', ['video' => $value]);
 
-        // Has gateways
-        $gateways = Videos::$plugin->getGateways()->getGateways();
-        $hasGateways = false;
-
-        if ($gateways && count($gateways) > 0) {
-            $hasGateways = true;
-        }
-
-        if ($hasGateways) {
+        if (VideosPlugin::$plugin->getGateways()->hasGatewaysLoggedIn()) {
             // Instantiate Videos Field
             $view->registerJs('new Videos.Field("'.$view->namespaceInputId($id).'");');
         }
@@ -85,16 +75,18 @@ class Video extends Field
             'name' => $name,
             'value' => $value,
             'preview' => $preview,
-            'hasGateways' => $hasGateways,
+            'hasGatewaysLoggedIn' => VideosPlugin::$plugin->getGateways()->hasGatewaysLoggedIn(),
         ]);
     }
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function serializeValue($value, ElementInterface $element = null)
     {
-        if (!empty($value->url)) {
+        if (empty($value->url) === false) {
             return Db::prepareValueForDb($value->url);
         }
 
@@ -103,10 +95,12 @@ class Video extends Field
 
     /**
      * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
-        if (empty($value)) {
+        if (empty($value) === true) {
             return null;
         }
 
@@ -115,17 +109,13 @@ class Video extends Field
         }
 
         try {
-            $video = Videos::$plugin->getVideos()->getVideoByUrl($value);
-
-            if ($video) {
-                return $video;
-            }
+            return VideosPlugin::$plugin->getVideos()->getVideoByUrl($value);
         } catch (\Exception $e) {
             $errorMessage = "Couldn't get video in field normalizeValue: ".$e->getMessage();
 
             Craft::info($errorMessage, __METHOD__);
 
-            return new VideoError([
+            return new FailedVideo([
                 'url' => $value,
                 'errors' => [
                     $errorMessage,
@@ -137,12 +127,9 @@ class Video extends Field
     }
 
     /**
-     * Get Search Keywords.
+     * {@inheritdoc}
      *
-     * @param mixed            $value
-     * @param ElementInterface $element
-     *
-     * @return string
+     * @since 2.0.0
      */
     public function getSearchKeywords($value, ElementInterface $element): string
     {
@@ -151,12 +138,11 @@ class Video extends Field
         if ($value instanceof \dukt\videos\models\Video) {
             $keywords[] = $value->id;
             $keywords[] = $value->url;
-            $keywords[] = $value->gatewayHandle;
-            $keywords[] = $value->gatewayName;
-            $keywords[] = $value->authorName;
-            $keywords[] = $value->authorUsername;
             $keywords[] = $value->title;
             $keywords[] = $value->description;
+            $keywords[] = $value->author->name;
+            $keywords[] = $value->gateway->handle;
+            $keywords[] = $value->gateway->name;
         }
 
         $searchKeywords = StringHelper::toString($keywords, ' ');

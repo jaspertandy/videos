@@ -1,13 +1,14 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos;
 
 use Craft;
+use craft\base\Plugin as BasePlugin;
 use craft\events\RegisterCacheOptionsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
@@ -19,45 +20,58 @@ use craft\web\UrlManager;
 use dukt\videos\base\PluginTrait;
 use dukt\videos\fields\Video as VideoField;
 use dukt\videos\models\Settings;
+use dukt\videos\services\Cache;
+use dukt\videos\services\Gateways;
+use dukt\videos\services\Oauth;
+use dukt\videos\services\Tokens;
+use dukt\videos\services\Videos;
+use dukt\videos\web\twig\Extension;
 use dukt\videos\web\twig\variables\VideosVariable;
+use Exception;
 use yii\base\Event;
 
 /**
  * Videos plugin class.
  *
- * @author  Dukt <support@dukt.net>
- * @since   1.0
+ * @author Dukt <support@dukt.net>
+ * @since 2.0.0
  */
-class Plugin extends \craft\base\Plugin
+class Plugin extends BasePlugin
 {
-    // Traits
-    // =========================================================================
-
     use PluginTrait;
 
-    // Properties
-    // =========================================================================
+    /**
+     * @var string prefix for cache key
+     *
+     * @since 3.0.0
+     */
+    public const CACHE_KEY_PREFIX = 'videos';
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
+     *
+     * @since 2.0.12
      */
     public $schemaVersion = '1.0.3';
 
     /**
-     * @var bool
+     * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public $hasCpSettings = true;
 
     /**
-     * @var \dukt\videos\Plugin The plugin instance.
+     * @var Plugin the plugin instance
+     *
+     * @since 2.0.0
      */
     public static $plugin;
 
-    // Public Methods
-    // =========================================================================
-
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function init()
     {
@@ -69,10 +83,13 @@ class Plugin extends \craft\base\Plugin
         $this->_registerFieldTypes();
         $this->_registerCacheOptions();
         $this->_registerVariable();
+        $this->_registerTwigExtensions();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function getSettingsResponse()
     {
@@ -87,66 +104,63 @@ class Plugin extends \craft\base\Plugin
      * @param string $gatewayHandle
      * @param bool $parse
      * @return null|array
-     * @throws \yii\base\InvalidConfigException
+     *
+     * @since 2.0.2
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Oauth::getOauthProviderOptions]] instead.
      */
     public function getOauthProviderOptions(string $gatewayHandle, bool $parse = true)
     {
-        $options = null;
+        try {
+            $gateway = $this->getGateways()->getGatewayByHandle($gatewayHandle);
+            $options = $this->getOauth()->getOauthProviderOptions($gateway, $parse);
 
-        $configSettings = Craft::$app->config->getConfigFromFile($this->id);
-
-        if (isset($configSettings['oauthProviderOptions'][$gatewayHandle])) {
-            $options = $configSettings['oauthProviderOptions'][$gatewayHandle];
+            if (empty($options) === false) {
+                return $options;
+            }
+        } catch (Exception $e) {
         }
 
-        $storedSettings = Craft::$app->plugins->getStoredPluginInfo($this->id)['settings'];
-
-        if ($options === null && isset($storedSettings['oauthProviderOptions'][$gatewayHandle])) {
-            $options = $storedSettings['oauthProviderOptions'][$gatewayHandle];
-        }
-
-        if (!isset($options['redirectUri'])) {
-            $gateway = $this->getGateways()->getGateway($gatewayHandle, false);
-            $options['redirectUri'] = $gateway->getRedirectUri();
-        }
-
-        return $parse ? array_map('Craft::parseEnv', $options) : $options;
+        return null;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     protected function createSettingsModel()
     {
         return new Settings();
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Set plugin components.
+     *
+     * @return void
+     *
+     * @since 2.0.3
      */
-    private function _setPluginComponents()
+    private function _setPluginComponents(): void
     {
         $this->setComponents([
-            'videos' => \dukt\videos\services\Videos::class,
-            'cache' => \dukt\videos\services\Cache::class,
-            'gateways' => \dukt\videos\services\Gateways::class,
-            'oauth' => \dukt\videos\services\Oauth::class,
-            'tokens' => \dukt\videos\services\Tokens::class,
+            'videos' => Videos::class,
+            'cache' => Cache::class,
+            'gateways' => Gateways::class,
+            'oauth' => Oauth::class,
+            'tokens' => Tokens::class,
         ]);
     }
 
     /**
      * Register CP routes.
+     *
+     * @return void
+     *
+     * @since 2.0.3
      */
-    private function _registerCpRoutes()
+    private function _registerCpRoutes(): void
     {
-        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
+        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function (RegisterUrlRulesEvent $event) {
             $rules = [
                 'videos/settings' => 'videos/settings/index',
                 'videos/settings/<gatewayHandle:{handle}>' => 'videos/settings/gateway',
@@ -159,38 +173,63 @@ class Plugin extends \craft\base\Plugin
 
     /**
      * Register field types.
+     *
+     * @return void
+     *
+     * @since 2.0.3
      */
-    private function _registerFieldTypes()
+    private function _registerFieldTypes(): void
     {
-        Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
+        Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function (RegisterComponentTypesEvent $event) {
             $event->types[] = VideoField::class;
         });
     }
 
     /**
      * Register cache options.
+     *
+     * @return void
+     *
+     * @since 2.0.3
      */
-    private function _registerCacheOptions()
+    private function _registerCacheOptions(): void
     {
-        Event::on(ClearCaches::class, ClearCaches::EVENT_REGISTER_CACHE_OPTIONS, function(RegisterCacheOptionsEvent $event) {
+        Event::on(ClearCaches::class, ClearCaches::EVENT_REGISTER_CACHE_OPTIONS, function (RegisterCacheOptionsEvent $event) {
             $event->options[] = [
                 'key' => 'videos-caches',
                 'label' => Craft::t('videos', 'Videos caches'),
-                'action' => Craft::$app->path->getRuntimePath().'/videos'
+                'action' => Craft::$app->path->getRuntimePath().'/videos',
             ];
         });
     }
 
     /**
      * Register template variable.
+     *
+     * @return void
+     *
+     * @since 2.0.3
      */
-    private function _registerVariable()
+    private function _registerVariable(): void
     {
-        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function(Event $event) {
+        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function (Event $event) {
             /** @var CraftVariable $variable */
             $variable = $event->sender;
             $variable->set('videos', VideosVariable::class);
         });
     }
 
+    /**
+     * Register twig extensions.
+     *
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    private function _registerTwigExtensions(): void
+    {
+        // TODO: Craft::$app->request->getIsSiteRequest() ?
+        $extension = new Extension();
+        Craft::$app->view->registerTwigExtension($extension);
+    }
 }

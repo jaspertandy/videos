@@ -2,8 +2,8 @@
     {% if video.loaded %}
         <div class="thumb">
             <img src="{{ video.thumbnail }}" />
-            <div class="duration">{{ video.duration }}</div>
-            <div class="play" data-gateway="{{ video.gatewayHandle }}" data-id="{{ video.id }}"></div>
+            <div class="duration">{{ video.duration|durationNumeric }}</div>
+            <div class="play" data-gateway="{{ video.gateway.handle }}" data-id="{{ video.id }}"></div>
         </div>
 
         <div class="description">
@@ -11,10 +11,10 @@
 
             <ul class="light">
                 <li><a class="light" href="{{ video.url }}">{{ video.url }}</a></li>
-                <li>{{ "By"|t('videos') }} <strong><a href="{{ video.authorUrl }}" class="light">{{ video.authorName }}</a></strong></li>
+                <li>{{ "By"|t('videos') }} <strong><a href="{{ video.author.url }}" class="light">{{ video.author.name }}</a></strong></li>
 
-                {% if video.plays %}
-                    <li>{{ video.plays }} {{ "plays"|t('videos') }}</li>
+                {% if video.statistic.playCount > 0 %}
+                    <li>{{ video.statistic.playCount }} {{ "plays"|t('videos') }}</li>
                 {% endif %}
 
                 <li><a class="icon delete"></a></li>

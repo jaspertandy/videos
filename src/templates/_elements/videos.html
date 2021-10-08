@@ -4,9 +4,9 @@
         <div class="video" data-url="{{ video.url }}">
 
             <div class="thumb">
-                <img src="{{ video.thumbnailSource }}"/>
-                <div class="duration">{{ video.duration }}</div>
-                <div class="play" data-gateway="{{ video.gatewayHandle }}"
+                <img src="{{ video.thumbnailSourceUrl }}"/>
+                <div class="duration">{{ video.duration|durationNumeric }}</div>
+                <div class="play" data-gateway="{{ video.gateway.handle }}"
                      data-id="{{ video.id }}"></div>
 
                 {% if video.private %}

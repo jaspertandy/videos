@@ -2,7 +2,6 @@
 
 namespace dukt\videos\migrations;
 
-use Craft;
 use craft\db\Migration;
 use dukt\videos\fields\Video;
 
@@ -12,22 +11,23 @@ use dukt\videos\fields\Video;
 class m180910_103838_craft3_upgrade extends Migration
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function safeUp()
     {
         // Place migration code here...
         $this->update('{{%fields}}', [
-            'type' => Video::class
+            'type' => Video::class,
         ], ['type' => 'Videos_Video']);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function safeDown()
     {
         echo "m180910_103838_craft3_upgrade cannot be reverted.\n";
+
         return false;
     }
 }

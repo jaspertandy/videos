@@ -1,48 +1,63 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\web\twig\variables;
 
 use Craft;
-use dukt\videos\Plugin as Videos;
+use dukt\videos\models\Video;
+use dukt\videos\Plugin as VideosPlugin;
+use Exception;
 
+/**
+ * Video variable class.
+ *
+ * @author Dukt <support@dukt.net>
+ * @since 2.0.0
+ */
 class VideosVariable
 {
-    // Public Methods
-    // =========================================================================
-
     /**
-     * Get Embed.
+     * Get embed from a video url.
      *
-     * @param       $videoUrl
-     * @param array $embedOptions
+     * @param string $videoUrl
+     * @param array $options
+     * @return null|string
      *
-     * @return mixed
-     * @throws \yii\base\InvalidConfigException
+     * @since 2.0.0
      */
-    public function getEmbed($videoUrl, array $embedOptions = [])
+    public function getEmbed(string $videoUrl, array $options = []): ?string
     {
-        return Videos::$plugin->getVideos()->getEmbed($videoUrl, $embedOptions);
+        try {
+            $video = VideosPlugin::$plugin->getVideos()->getVideoByUrl($videoUrl);
+
+            return $video->getEmbed($options);
+        } catch (Exception $e) {
+            Craft::info('Couldn’t get video from its url ('.$videoUrl.'): '.$e->getMessage(), __METHOD__);
+        }
+
+        return null;
     }
 
     /**
      * Get a video from its URL.
      *
-     * @param      $videoUrl
-     * @param bool $enableCache
-     * @param int  $cacheExpiry
+     * @param string $videoUrl
+     * @param bool $enableCache @deprecated
+     * @param int $cacheExpiry @deprecated
+     * @return null|Video
      *
-     * @return bool|null
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
-    public function getVideoByUrl($videoUrl, $enableCache = true, $cacheExpiry = 3600)
+    public function getVideoByUrl(string $videoUrl, $enableCache = true, $cacheExpiry = 3600): ?Video
     {
         try {
-            return Videos::$plugin->getVideos()->getVideoByUrl($videoUrl, $enableCache, $cacheExpiry);
-        } catch (\Exception $e) {
+            return VideosPlugin::$plugin->getVideos()->getVideoByUrl($videoUrl);
+        } catch (Exception $e) {
             Craft::info('Couldn’t get video from its url ('.$videoUrl.'): '.$e->getMessage(), __METHOD__);
         }
 
@@ -52,12 +67,16 @@ class VideosVariable
     /**
      * Alias for the `getVideoByUrl()` method.
      *
-     * @param      $videoUrl
-     * @param bool $enableCache
-     * @param int  $cacheExpiry
+     * @param string $videoUrl
+     * @param bool $enableCache @deprecated
+     * @param int $cacheExpiry @deprecated
+     * @return null|Video
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
-    public function url($videoUrl, $enableCache = true, $cacheExpiry = 3600)
+    public function url($videoUrl, $enableCache = true, $cacheExpiry = 3600): ?Video
     {
-        $this->getVideoByUrl($videoUrl, $enableCache, $cacheExpiry);
+        return $this->getVideoByUrl($videoUrl);
     }
 }

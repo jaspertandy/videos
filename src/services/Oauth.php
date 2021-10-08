@@ -1,80 +1,251 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\services;
 
-use dukt\videos\models\Token;
+use Craft;
+use craft\helpers\Json;
+use dukt\videos\base\Gateway;
+use dukt\videos\errors\OauthAccessTokenNotFoundException;
+use dukt\videos\errors\OauthDeleteAccessTokenException;
+use dukt\videos\errors\OauthRefreshAccessTokenException;
+use dukt\videos\errors\OauthSaveAccessTokenException;
+use dukt\videos\errors\TokenDeleteException;
+use dukt\videos\errors\TokenInvalidException;
+use dukt\videos\errors\TokenNotFoundException;
+use dukt\videos\errors\TokenSaveException;
+use dukt\videos\Plugin as VideosPlugin;
+use dukt\videos\records\Token;
 use Exception;
+use League\OAuth2\Client\Grant\RefreshToken;
 use League\OAuth2\Client\Token\AccessToken;
 use yii\base\Component;
-use dukt\videos\Plugin;
-use League\OAuth2\Client\Grant\RefreshToken;
 
 /**
- * Class Oauth service.
+ * Oauth service.
  *
- * An instance of the Oauth service is globally accessible via [[Plugin::oauth `Plugin::$plugin->getOauth()`]].
+ * An instance of the Oauth service is globally accessible via [[Plugin::oauth `VideosPlugin::$plugin->getOauth()`]].
  *
  * @author Dukt <support@dukt.net>
- * @since  2.0
+ * @since 2.0.0
  */
 class Oauth extends Component
 {
-    // Public Methods
-    // =========================================================================
+    /**
+     * Returns OAuth provider options.
+     *
+     * @param Gateway $gateway
+     * @param bool $parseEnv
+     * @return array
+     *
+     * @since 3.0.0
+     */
+    public function getOauthProviderOptions(Gateway $gateway, bool $parseEnv = true): array
+    {
+        $options = [];
+
+        $configSettings = Craft::$app->config->getConfigFromFile(VideosPlugin::$plugin->id);
+
+        if (isset($configSettings['oauthProviderOptions'][$gateway->getHandle()]) === true) {
+            $options = $configSettings['oauthProviderOptions'][$gateway->getHandle()];
+        }
+
+        $storedSettings = Craft::$app->plugins->getStoredPluginInfo(VideosPlugin::$plugin->id)['settings'];
+
+        if (empty($options) === true && isset($storedSettings['oauthProviderOptions'][$gateway->getHandle()]) === true) {
+            $options = $storedSettings['oauthProviderOptions'][$gateway->getHandle()];
+        }
+
+        if (isset($options['redirectUri']) === false) {
+            $options['redirectUri'] = $gateway->getOauthRedirectUri();
+        }
+
+        return $parseEnv === true ? array_map('Craft::parseEnv', $options) : $options;
+    }
 
     /**
-     * Get a token by its gateway handle.
+     * Returns the OAuth access token by gateway.
      *
-     * @param $gatewayHandle
+     * @param Gateway $gateway
+     * @return AccessToken
+     * @throws OauthAccessTokenNotFoundException
+     *
+     * @since 3.0.0
+     */
+    public function getOauthAccessTokenByGateway(Gateway $gateway): AccessToken
+    {
+        try {
+            $token = Token::findOne(['gateway' => $gateway->getHandle()]);
+
+            if ($token === null) {
+                throw new TokenNotFoundException(/* TODO: more precise message */);
+            }
+
+            $accessTokenData = Json::decode($token->accessToken);
+
+            if (isset($accessTokenData['accessToken']) === false) {
+                throw new TokenInvalidException(/* TODO: more precise message */);
+            }
+
+            $accessToken = new AccessToken([
+                'access_token' => $accessTokenData['accessToken'] ?? null,
+                'expires' => $accessTokenData['expires'] ?? null,
+                'refresh_token' => $accessTokenData['refreshToken'] ?? null,
+                'resource_owner_id' => $accessTokenData['resourceOwnerId'] ?? null,
+                'values' => $accessTokenData['values'] ?? null,
+            ]);
+
+            return $this->refreshOauthAccessTokenByGateway($accessToken, $gateway);
+        } catch (Exception $e) {
+            throw new OauthAccessTokenNotFoundException(/* TODO: more precise message */);
+        }
+    }
+
+    /**
+     * Refreshes Oauth access token by gateway.
+     *
+     * @param AccessToken $accessToken
+     * @param Gateway $gateway
+     * @return AccessToken
+     * @throws OauthRefreshAccessTokenException
+     *
+     * @since 3.0.0
+     */
+    public function refreshOauthAccessTokenByGateway(AccessToken $accessToken, Gateway $gateway): AccessToken
+    {
+        try {
+            if ($accessToken->getRefreshToken() !== null && $accessToken->getExpires() !== null && $accessToken->hasExpired() === true) {
+                $newAccessToken = $gateway->getOauthProvider()->getAccessToken(new RefreshToken(), ['refresh_token' => $accessToken->getRefreshToken()]);
+
+                if (!$newAccessToken instanceof AccessToken) {
+                    throw new OauthRefreshAccessTokenException(/* TODO: more precise message */);
+                }
+
+                $this->saveOauthAccessTokenByGateway(new AccessToken([
+                    'access_token' => $newAccessToken->getToken(),
+                    'expires' => $newAccessToken->getExpires(),
+                    'refresh_token' => $accessToken->getRefreshToken(),
+                    'resource_owner_id' => $newAccessToken->getResourceOwnerId(),
+                    'values' => $newAccessToken->getValues(),
+                ]), $gateway);
+
+                return $newAccessToken;
+            }
+
+            return $accessToken;
+        } catch (Exception $e) {
+            throw new OauthRefreshAccessTokenException(/* TODO: more precise message */);
+        }
+    }
+
+    /**
+     * Saves Oauth access token by gateway.
+     *
+     * @param AccessToken $accessToken
+     * @param Gateway $gateway
+     * @return void
+     * @throws OauthSaveAccessTokenException
+     *
+     * @since 3.0.0
+     */
+    public function saveOauthAccessTokenByGateway(AccessToken $accessToken, Gateway $gateway): void
+    {
+        try {
+            $token = Token::findOne(['gateway' => $gateway->getHandle()]);
+
+            if ($token === null) {
+                $token = new Token();
+                $token->gateway = $gateway->getHandle();
+            }
+
+            $token->accessToken = [
+                'accessToken' => $accessToken->getToken(),
+                'expires' => $accessToken->getExpires(),
+                'refreshToken' => $accessToken->getRefreshToken(),
+                'resourceOwnerId' => $accessToken->getResourceOwnerId(),
+                'values' => $accessToken->getValues(),
+            ];
+
+            if ($token->save() === false) {
+                //throw new TokenInvalidException(/* TODO: more precise message */);
+                throw new TokenSaveException(/* TODO: more precise message */);
+            }
+        } catch (Exception $e) {
+            throw new OauthSaveAccessTokenException(/* TODO: more precise message */);
+        }
+    }
+
+    /**
+     * Deletes Oauth access token by gateway.
+     *
+     * @param Gateway $gateway
+     * @return void
+     * @throws OauthDeleteAccessTokenException
+     *
+     * @since 3.0.0
+     */
+    public function deleteOauthAccessTokenByGateway(Gateway $gateway): void
+    {
+        try {
+            $token = Token::findOne(['gateway' => $gateway->getHandle()]);
+
+            if ($token === null) {
+                throw new TokenNotFoundException(/* TODO: more precise message */);
+            }
+
+            if ($token->delete() === false) {
+                throw new TokenDeleteException(/* TODO: more precise message */);
+            }
+        } catch (Exception $e) {
+            throw new OauthDeleteAccessTokenException(/* TODO: more precise message */);
+        }
+    }
+
+    /**
+     * Returns a token by its gateway handle.
+     *
+     * @param string $gatewayHandle
      * @param bool $refresh
-     * @return AccessToken|null
-     * @throws \yii\base\InvalidConfigException
+     * @return null|AccessToken
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Oauth::getOauthAccessTokenByGateway]] instead.
      */
     public function getToken($gatewayHandle, $refresh = true)
     {
-        $token = Plugin::getInstance()->getTokens()->getToken($gatewayHandle);
+        try {
+            $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, true);
 
-        if (!$token) {
-            return null;
+            return $this->getOauthAccessTokenByGateway($gateway);
+        } catch (Exception $e) {
         }
 
-        return $this->createTokenFromData($gatewayHandle, $token->accessToken, $refresh);
+        return null;
     }
 
     /**
      * Saves a token.
      *
-     * @param $gatewayHandle
+     * @param string $gatewayHandle
      * @param AccessToken $token
      * @return bool
-     * @throws Exception
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Oauth::saveOauthAccessTokenByGateway]] instead.
      */
     public function saveToken($gatewayHandle, AccessToken $token): bool
     {
-        $tokenModel = Plugin::getInstance()->getTokens()->getToken($gatewayHandle);
+        try {
+            $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, true);
 
-        if (!$tokenModel) {
-            $tokenModel = new Token();
-            $tokenModel->gateway = $gatewayHandle;
+            return $this->saveOauthAccessTokenByGateway($token, $gateway);
+        } catch (Exception $e) {
+            return false;
         }
-
-        $tokenModel->accessToken = [
-            'accessToken' => $token->getToken(),
-            'expires' => $token->getExpires(),
-            'resourceOwnerId' => $token->getResourceOwnerId(),
-            'values' => $token->getValues(),
-        ];
-
-        if (!empty($token->getRefreshToken())) {
-            $tokenModel->accessToken['refreshToken'] = $token->getRefreshToken();
-        }
-
-        Plugin::getInstance()->getTokens()->saveToken($tokenModel);
 
         return true;
     }
@@ -82,68 +253,22 @@ class Oauth extends Component
     /**
      * Deletes a token.
      *
-     * @param $gatewayHandle
+     * @param string $gatewayHandle
      * @return bool
-     * @throws \Throwable
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\db\StaleObjectException
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Oauth::deleteOauthAccessTokenByGateway]] instead.
      */
     public function deleteToken($gatewayHandle): bool
     {
-        $token = Plugin::getInstance()->getTokens()->getToken($gatewayHandle);
+        try {
+            $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, true);
 
-        if (!$token) {
-            return true;
+            return $this->deleteOauthAccessTokenByGateway($gateway);
+        } catch (Exception $e) {
+            return false;
         }
 
-        return Plugin::getInstance()->getTokens()->deleteTokenById($token->id);
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Create token from data.
-     *
-     * @param string $gatewayHandle
-     * @param array  $data
-     * @param bool   $refreshToken
-     *
-     * @return AccessToken|null
-     * @throws \yii\base\InvalidConfigException
-     */
-    private function createTokenFromData(string $gatewayHandle, array $data, $refreshToken = true)
-    {
-        if (!isset($data['accessToken'])) {
-            return null;
-        }
-
-        $token = new AccessToken([
-            'access_token' => $data['accessToken'] ?? null,
-            'expires' => $data['expires'] ?? null,
-            'refresh_token' => $data['refreshToken'] ?? null,
-            'resource_owner_id' => $data['resourceOwnerId'] ?? null,
-            'values' => $data['values'] ?? null,
-        ]);
-
-        // Refresh OAuth token
-        if ($refreshToken && !empty($token->getRefreshToken()) && $token->getExpires() && $token->hasExpired()) {
-            $gateway = Plugin::$plugin->getGateways()->getGateway($gatewayHandle);
-            $provider = $gateway->getOauthProvider();
-            $grant = new RefreshToken();
-            $newToken = $provider->getAccessToken($grant, ['refresh_token' => $token->getRefreshToken()]);
-
-            $token = new AccessToken([
-                'access_token' => $newToken->getToken(),
-                'expires' => $newToken->getExpires(),
-                'refresh_token' => $token->getRefreshToken(),
-                'resource_owner_id' => $newToken->getResourceOwnerId(),
-                'values' => $newToken->getValues(),
-            ]);
-
-            Plugin::$plugin->getOauth()->saveToken($gateway->getHandle(), $token);
-        }
-
-        return $token;
+        return true;
     }
 }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\services;
@@ -10,84 +10,55 @@ namespace dukt\videos\services;
 use Craft;
 use dukt\videos\Plugin as VideosPlugin;
 use yii\base\Component;
-use DateInterval;
 
 /**
- * Class Cache service.
+ * Cache service.
  *
  * An instance of the Cache service is globally accessible via [[Plugin::cache `VideosPlugin::$plugin->getCache()`]].
  *
  * @author Dukt <support@dukt.net>
- * @since  2.0
+ * @since 2.0.0
  */
 class Cache extends Component
 {
-    // Public Methods
-    // =========================================================================
+    /**
+     * Is cache enabled.
+     *
+     * @return bool
+     *
+     * @since 3.0.0
+     */
+    public function isEnabled(): bool
+    {
+        return VideosPlugin::$plugin->getSettings()->enableCache;
+    }
 
     /**
-     * Get cache.
+     * Get cache data by cache key.
      *
-     * @param $id
+     * @param string $cacheKey
+     * @return mixed the value stored in cache, false if the value is not in the cache, expired, or the dependency associated with the cached data has changed
      *
-     * @return mixed
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
-    public function get($id)
+    public function get(string $cacheKey)
     {
-        $cacheKey = $this->getCacheKey($id);
-
         return Craft::$app->getCache()->get($cacheKey);
     }
 
     /**
-     * Set cache.
+     * Set data to the cache.
      *
-     * @param      $id
-     * @param      $value
-     * @param null $expire
-     * @param null $dependency
-     * @param null $enableCache
+     * @param string $cacheKey
+     * @param mixed $value
+     * @return bool whether the value is successfully stored into cache
      *
-     * @return bool|null
-     * @throws \Exception
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
-    public function set($id, $value, $expire = null, $dependency = null, $enableCache = null)
+    public function set(string $cacheKey, $value): bool
     {
-        if (null === $enableCache) {
-            $enableCache = VideosPlugin::$plugin->getSettings()->cacheDuration;
-        }
-
-        if ($enableCache) {
-            $cacheKey = $this->getCacheKey($id);
-
-            if (!$expire) {
-                $expire = VideosPlugin::$plugin->getSettings()->cacheDuration;
-                $expire = new DateInterval($expire);
-                $expire = $expire->format('%s');
-            }
-
-            return Craft::$app->cache->set($cacheKey, $value, $expire, $dependency);
-        }
-
-        return null;
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Return the cache key
-     *
-     * @param array $request
-     *
-     * @return string
-     */
-    private function getCacheKey(array $request): string
-    {
-        unset($request['CRAFT_CSRF_TOKEN']);
-
-        $hash = md5(serialize($request));
-
-        return 'videos.'.$hash;
+        return Craft::$app->cache->set($cacheKey, $value, VideosPlugin::$plugin->getSettings()->cacheDuration);
     }
 }

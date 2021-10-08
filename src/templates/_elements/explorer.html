@@ -10,7 +10,6 @@
                     {% set gatewayOptions = gatewayOptions|merge([{ label: gateway.name|t('videos'), value: gateway.handle }]) %}
                 {% endfor %}
 
-
                 {% if namespaceInputId is defined %}
                     {% set targetPrefix = 'gateway-' ~ namespaceInputId %}
                 {% else %}
@@ -27,23 +26,21 @@
                 </div>
 
                 <nav>
-                    {% for k, gateway in gateways %}
+                    {% for gateway in gateways %}
                         {% set showGateway = (loop.first ? true : false) %}
                         <div id="{{ targetPrefix }}{{ gateway.handle }}"{% if not showGateway %} class="hidden"{% endif %}>
-
-                            {% set sections = gatewaySections[k] %}
-
-                            {% if sections %}
+                            {% if gateway.explorer.sections|length > 0 %}
                                 <ul>
-                                    {% for section in sections %}
-                                        <li class="heading">
-                                            <span>{{ section.name }}</span></li>
+                                    {% for section in gateway.explorer.sections %}
+                                        <li class="heading"><span>{{ section.name }}</span></li>
 
                                         {% for collection in section.collections %}
                                             <li>
                                                 <a href="#"
                                                    data-gateway="{{ gateway.handle }}"
-                                                   data-method="{{ collection.method }}"{% if collection.options is defined %} data-options="{{ collection.options|json_encode }}"{% endif %}>{{ collection.name }}</a>
+                                                   data-method="{{ collection.method }}"{% if collection.options is defined %} data-options="{{ collection.options|json_encode }}"{% endif %}>
+                                                   {{ collection.name }}
+                                                </a>
                                             </li>
                                         {% endfor %}
                                     {% endfor %}
