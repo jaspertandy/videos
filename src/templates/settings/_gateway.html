@@ -11,33 +11,28 @@
 {% import "_includes/forms" as forms %}
 
 {% set content %}
-
-    <img src="{{ gateway.getIconUrl() }}" width="36"/>
+    <img src="{{ gateway.iconUrl }}" width="36"/>
 
     <h2>{{ gateway.name }} account</h2>
 
-    {% if error %}
-        <p class="error">{{ "Couldn’t retrieve account: {error}"|t('videos', {error: error}) }}</p>
-        <p class="error">{{ "If the problem persists, try to disconnect and connect again."|t('videos') }}</p>
-    {% endif %}
+    {% if gateway.oauthLoggedIn %}
+        <ul>
+            <li><strong>Name:</strong> {{ gateway.oauthAccount.name }}</li>
+            <li><strong>Account ID:</strong> <code>{{ gateway.oauthAccount.id }}</code>
+            </li>
+        </ul>
 
-    {% if gateway.isOauthLoggedIn() %}
-        {% if account %}
-            <ul>
-                <li><strong>Name:</strong> {{ account.name }}</li>
-                <li><strong>Account ID:</strong> <code>{{ account.id }}</code>
-                </li>
-            </ul>
-        {% endif %}
-
-        <p><a class="btn small"
-              href="{{ actionUrl('videos/oauth/disconnect', { gateway: gateway.handle }) }}">{{ 'Disconnect'|t('videos') }}</a>
+        <p>
+            <a class="btn small" href="{{ actionUrl('videos/oauth/disconnect', { gateway: gateway.handle }) }}">
+                {{ 'Disconnect'|t('videos') }}
+            </a>
         </p>
     {% else %}
         <p>{{ 'Gettings errors trying to connect? Check your {link}.'|t('videos', { link: '<a href="'~url('videos/settings/'~gateway.handle~'/oauth')~'">OAuth settings</a>' })|raw }}</p>
-        <p><a class="btn submit"
-              href="{{ actionUrl('videos/oauth/connect', { gateway: gateway.handle }) }}">{{ "Connect to {gateway}"|t('videos', { gateway: gateway.name }) }}</a>
+        <p>
+            <a class="btn submit" href="{{ actionUrl('videos/oauth/connect', { gateway: gateway.handle }) }}">
+                {{ "Connect to {gateway}"|t('videos', { gateway: gateway.name }) }}
+            </a>
         </p>
     {% endif %}
-
 {% endset %}

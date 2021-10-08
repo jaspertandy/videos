@@ -31,9 +31,8 @@ class OauthController extends Controller
      */
     public function actionLogin(): Response
     {
-        $gatewayHandle = Craft::$app->getRequest()->getParam('gateway');
-
         try {
+            $gatewayHandle = Craft::$app->getRequest()->getParam('gateway');
             $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
 
             Craft::$app->getSession()->set('videos.oauthGateway', $gatewayHandle);
@@ -88,9 +87,8 @@ class OauthController extends Controller
      */
     public function actionLogout(): Response
     {
-        $gatewayHandle = Craft::$app->getRequest()->getParam('gateway');
-
         try {
+            $gatewayHandle = Craft::$app->getRequest()->getParam('gateway');
             $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
 
             $gateway->oauthLogout();
