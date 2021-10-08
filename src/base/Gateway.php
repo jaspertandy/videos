@@ -565,8 +565,9 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
      * @throws GatewayMethodNotFoundException
      *
      * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
-    public function getVideos(string $method, array $options = [])
+    final public function getVideos(string $method, array $options = [])
     {
         $realMethod = 'getVideos'.ucwords($method);
 
@@ -604,7 +605,7 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
      *
      * @since 3.0.0
      */
-    public function jsonSerialize()
+    final public function jsonSerialize()
     {
         return [
             'name' => $this->getName(),
