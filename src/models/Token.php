@@ -15,6 +15,7 @@ use craft\helpers\Json;
  *
  * @author Dukt <support@dukt.net>
  * @since 2.0.8
+ * @deprecated in 3.0.0, will be removed in 3.1.0.
  */
 class Token extends Model
 {

@@ -20,7 +20,6 @@ use dukt\videos\errors\OauthLogoutException;
 use dukt\videos\errors\VideoNotFoundException;
 use dukt\videos\helpers\UrlHelper as VideosUrlHelper;
 use dukt\videos\models\OauthAccount;
-use dukt\videos\models\Token;
 use dukt\videos\models\Video;
 use dukt\videos\Plugin as VideosPlugin;
 use Exception;

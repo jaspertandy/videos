@@ -8,15 +8,18 @@
 namespace dukt\videos\services;
 
 use Craft;
+use craft\helpers\Json;
 use dukt\videos\base\Gateway;
 use dukt\videos\errors\OauthAccessTokenNotFoundException;
 use dukt\videos\errors\OauthDeleteAccessTokenException;
 use dukt\videos\errors\OauthRefreshAccessTokenException;
 use dukt\videos\errors\OauthSaveAccessTokenException;
+use dukt\videos\errors\TokenDeleteException;
 use dukt\videos\errors\TokenInvalidException;
 use dukt\videos\errors\TokenNotFoundException;
-use dukt\videos\models\Token;
+use dukt\videos\errors\TokenSaveException;
 use dukt\videos\Plugin as VideosPlugin;
+use dukt\videos\records\Token;
 use Exception;
 use League\OAuth2\Client\Grant\RefreshToken;
 use League\OAuth2\Client\Token\AccessToken;
@@ -76,18 +79,24 @@ class Oauth extends Component
     public function getOauthAccessTokenByGateway(Gateway $gateway): AccessToken
     {
         try {
-            $token = VideosPlugin::$plugin->getTokens()->getTokenByGateway($gateway);
+            $token = Token::findOne(['gateway' => $gateway->getHandle()]);
 
-            if (isset($token->accessToken['accessToken']) === false) {
+            if ($token === null) {
+                throw new TokenNotFoundException(/* TODO: more precise message */);
+            }
+
+            $accessTokenData = Json::decode($token->accessToken);
+
+            if (isset($accessTokenData['accessToken']) === false) {
                 throw new TokenInvalidException(/* TODO: more precise message */);
             }
 
             $accessToken = new AccessToken([
-                'access_token' => $token->accessToken['accessToken'] ?? null,
-                'expires' => $token->accessToken['expires'] ?? null,
-                'refresh_token' => $token->accessToken['refreshToken'] ?? null,
-                'resource_owner_id' => $token->accessToken['resourceOwnerId'] ?? null,
-                'values' => $token->accessToken['values'] ?? null,
+                'access_token' => $accessTokenData['accessToken'] ?? null,
+                'expires' => $accessTokenData['expires'] ?? null,
+                'refresh_token' => $accessTokenData['refreshToken'] ?? null,
+                'resource_owner_id' => $accessTokenData['resourceOwnerId'] ?? null,
+                'values' => $accessTokenData['values'] ?? null,
             ]);
 
             return $this->refreshOauthAccessTokenByGateway($accessToken, $gateway);
@@ -146,26 +155,25 @@ class Oauth extends Component
     public function saveOauthAccessTokenByGateway(AccessToken $accessToken, Gateway $gateway): void
     {
         try {
-            $token = new Token();
+            $token = Token::findOne(['gateway' => $gateway->getHandle()]);
 
-            try {
-                $token = VideosPlugin::$plugin->getTokens()->getTokenByGateway($gateway);
-            } catch (TokenNotFoundException $e) {
+            if ($token === null) {
+                $token = new Token();
                 $token->gateway = $gateway->getHandle();
             }
 
             $token->accessToken = [
                 'accessToken' => $accessToken->getToken(),
                 'expires' => $accessToken->getExpires(),
+                'refreshToken' => $accessToken->getRefreshToken(),
                 'resourceOwnerId' => $accessToken->getResourceOwnerId(),
                 'values' => $accessToken->getValues(),
             ];
 
-            if (empty($accessToken->getRefreshToken()) === false) {
-                $token->accessToken['refreshToken'] = $accessToken->getRefreshToken();
+            if ($token->save() === false) {
+                //throw new TokenInvalidException(/* TODO: more precise message */);
+                throw new TokenSaveException(/* TODO: more precise message */);
             }
-
-            VideosPlugin::$plugin->getTokens()->saveToken($token);
         } catch (Exception $e) {
             throw new OauthSaveAccessTokenException(/* TODO: more precise message */);
         }
@@ -183,7 +191,15 @@ class Oauth extends Component
     public function deleteOauthAccessTokenByGateway(Gateway $gateway): void
     {
         try {
-            VideosPlugin::$plugin->getTokens()->deleteTokenByGateway($gateway);
+            $token = Token::findOne(['gateway' => $gateway->getHandle()]);
+
+            if ($token === null) {
+                throw new TokenNotFoundException(/* TODO: more precise message */);
+            }
+
+            if ($token->delete() === false) {
+                throw new TokenDeleteException(/* TODO: more precise message */);
+            }
         } catch (Exception $e) {
             throw new OauthDeleteAccessTokenException(/* TODO: more precise message */);
         }

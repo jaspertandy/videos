@@ -8,7 +8,6 @@
 namespace dukt\videos\services;
 
 use dukt\videos\base\Gateway;
-use dukt\videos\errors\TokenDeleteException;
 use dukt\videos\errors\TokenInvalidException;
 use dukt\videos\errors\TokenNotFoundException;
 use dukt\videos\errors\TokenSaveException;
@@ -25,33 +24,10 @@ use yii\base\Component;
  *
  * @author Dukt <support@dukt.net>
  * @since 2.0.8
+ * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Oauth]] instead.
  */
 class Tokens extends Component
 {
-    /**
-     * Returns one token by gateway.
-     *
-     * @param Gateway $gateway
-     * @return Token
-     * @throws TokenNotFoundException
-     *
-     * @since 3.0.0
-     */
-    public function getTokenByGateway(Gateway $gateway): Token
-    {
-        $tokenRecord = TokenRecord::findOne(['gateway' => $gateway->getHandle()]);
-
-        if ($tokenRecord === null) {
-            throw new TokenNotFoundException(/* TODO: more precise message */);
-        }
-
-        return new Token($tokenRecord->toArray([
-            'id',
-            'gateway',
-            'accessToken',
-        ]));
-    }
-
     /**
      * Saves a token.
      *
@@ -60,7 +36,7 @@ class Tokens extends Component
      * @throws TokenSaveException
      *
      * @since 2.0.8
-     * TODO: report breaking changes (and update since ?)
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Oauth::getOauthAccessTokenByGateway]] instead.
      */
     public function saveToken(Token $token): void
     {
@@ -89,39 +65,13 @@ class Tokens extends Component
     }
 
     /**
-     * Deletes a token by gateway.
-     *
-     * @param Gateway $gateway
-     * @return void
-     * @throws TokenDeleteException
-     *
-     * @since 3.0.0
-     */
-    public function deleteTokenByGateway(Gateway $gateway): void
-    {
-        try {
-            $tokenRecord = TokenRecord::findOne(['gateway' => $gateway->getHandle()]);
-
-            if ($tokenRecord === null) {
-                throw new TokenNotFoundException(/* TODO: more precise message */);
-            }
-
-            if ($tokenRecord->delete() === false) {
-                throw new TokenDeleteException(/* TODO: more precise message */);
-            }
-        } catch (Exception $e) {
-            throw new TokenDeleteException(/* TODO: more precise message */);
-        }
-    }
-
-    /**
      * Get a token by its gateway handle.
      *
      * @param string $gatewayHandle
      * @return null|Token
      *
      * @since 2.0.8
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Tokens::getTokenByGateway]] instead.
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Oauth::getOauthAccessTokenByGateway]] instead.
      */
     public function getToken($gatewayHandle)
     {
@@ -142,7 +92,7 @@ class Tokens extends Component
      * @return bool
      *
      * @since 2.0.8
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Tokens::getTokenByGateway]] instead.
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Oauth::deleteOauthAccessTokenByGateway]] instead.
      */
     public function deleteTokenById(int $id): bool
     {
