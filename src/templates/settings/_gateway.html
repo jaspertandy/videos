@@ -15,7 +15,7 @@
 
     <h2>{{ gateway.name }} account</h2>
 
-    {% if gateway.oauthLoggedIn %}
+    {% if gateway.activated %}
         <ul>
             <li><strong>Name:</strong> {{ gateway.oauthAccount.name }}</li>
             <li><strong>Account ID:</strong> <code>{{ gateway.oauthAccount.id }}</code>

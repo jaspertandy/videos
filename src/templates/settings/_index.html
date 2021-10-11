@@ -22,7 +22,7 @@
                         <a href="{{ url('videos/settings/'~gateway.handle) }}">{{ gateway.name }}</a>
                     </th>
                     <td>
-                        {% if gateway.oauthLoggedIn %}
+                        {% if gateway.activated %}
                             {{ gateway.oauthAccount.name }} <span class="light">— <code>{{ gateway.oauthAccount.id }}</code></span>
                         {% else %}
                             <span class="light">—</span>

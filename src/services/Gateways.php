@@ -62,7 +62,7 @@ class Gateways extends Component
     /**
      * Get all gateways.
      *
-     * @param null|bool $loggedInStatus
+     * @param null|bool $activated
      * @return Gateway[]
      * @throws InvalidConfigException
      * @throws GatewayNotFoundException
@@ -70,11 +70,11 @@ class Gateways extends Component
      * @since 2.0.0
      * TODO: report breaking changes (and update since ?)
      */
-    public function getGateways(?bool $loggedInStatus = null): array
+    public function getGateways(?bool $activated = null): array
     {
-        if ($loggedInStatus !== null) {
-            return array_filter($this->_gateways, function ($_gateway) use ($loggedInStatus) {
-                return $_gateway->isOauthLoggedIn() === $loggedInStatus;
+        if ($activated !== null) {
+            return array_filter($this->_gateways, function ($_gateway) use ($activated) {
+                return $_gateway->isActivated() === $activated;
             });
         }
 
@@ -99,7 +99,7 @@ class Gateways extends Component
      * Get one gateway by handle.
      *
      * @param string $gatewayHandle
-     * @param null|bool $loggedInStatus
+     * @param null|bool $activated
      * @return Gateway
      * @throws InvalidConfigException
      * @throws GatewayNotFoundException
@@ -107,9 +107,9 @@ class Gateways extends Component
      * @since 2.0.0
      * TODO: report breaking changes (and update since ?)
      */
-    public function getGatewayByHandle(string $gatewayHandle, ?bool $loggedInStatus = null): Gateway
+    public function getGatewayByHandle(string $gatewayHandle, ?bool $activated = null): Gateway
     {
-        foreach ($this->getGateways($loggedInStatus) as $gateway) {
+        foreach ($this->getGateways($activated) as $gateway) {
             if ($gateway->getHandle() === $gatewayHandle) {
                 return $gateway;
             }
