@@ -284,13 +284,13 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
     }
 
     /**
-     * Is OAuth logged in.
+     * Is enabled.
      *
      * @return bool
      *
      * @since 3.0.0
      */
-    final public function isActivated(): bool
+    final public function isEnabled(): bool
     {
         try {
             $this->getOauthAccessToken();
@@ -307,11 +307,11 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
      * @return bool
      *
      * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Gateway::isActivated]] instead.
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Gateway::isEnabled]] instead.
      */
     public function hasToken(): bool
     {
-        return $this->isActivated();
+        return $this->isEnabled();
     }
 
     /**

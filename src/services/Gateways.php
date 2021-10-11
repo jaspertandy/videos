@@ -62,7 +62,7 @@ class Gateways extends Component
     /**
      * Get all gateways.
      *
-     * @param null|bool $activated
+     * @param null|bool $enabled
      * @return Gateway[]
      * @throws InvalidConfigException
      * @throws GatewayNotFoundException
@@ -70,11 +70,11 @@ class Gateways extends Component
      * @since 2.0.0
      * TODO: report breaking changes (and update since ?)
      */
-    public function getGateways(?bool $activated = null): array
+    public function getGateways(?bool $enabled = null): array
     {
-        if ($activated !== null) {
-            return array_filter($this->_gateways, function ($_gateway) use ($activated) {
-                return $_gateway->isActivated() === $activated;
+        if ($enabled !== null) {
+            return array_filter($this->_gateways, function ($_gateway) use ($enabled) {
+                return $_gateway->isEnabled() === $enabled;
             });
         }
 
@@ -99,7 +99,7 @@ class Gateways extends Component
      * Get one gateway by handle.
      *
      * @param string $gatewayHandle
-     * @param null|bool $activated
+     * @param null|bool $enabled
      * @return Gateway
      * @throws InvalidConfigException
      * @throws GatewayNotFoundException
@@ -107,9 +107,9 @@ class Gateways extends Component
      * @since 2.0.0
      * TODO: report breaking changes (and update since ?)
      */
-    public function getGatewayByHandle(string $gatewayHandle, ?bool $activated = null): Gateway
+    public function getGatewayByHandle(string $gatewayHandle, ?bool $enabled = null): Gateway
     {
-        foreach ($this->getGateways($activated) as $gateway) {
+        foreach ($this->getGateways($enabled) as $gateway) {
             if ($gateway->getHandle() === $gatewayHandle) {
                 return $gateway;
             }
