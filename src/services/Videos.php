@@ -7,7 +7,6 @@
 
 namespace dukt\videos\services;
 
-use dukt\videos\errors\VideoIdExtractException;
 use dukt\videos\errors\VideoNotFoundException;
 use dukt\videos\models\Video;
 use dukt\videos\Plugin as VideosPlugin;
@@ -42,10 +41,8 @@ class Videos extends Component
     {
         foreach (VideosPlugin::$plugin->getGateways()->getGateways(true) as $gateway) {
             try {
-                $videoId = $gateway->extractVideoIdFromVideoUrl($videoUrl);
-
-                return $gateway->getVideoById($videoId);
-            } catch (VideoIdExtractException $e) {
+                return $gateway->getVideoByUrl($videoUrl);
+            } catch (VideoNotFoundException $e) {
                 continue;
             }
         }

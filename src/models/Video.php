@@ -302,7 +302,7 @@ class Video extends AbstractVideo implements Cachable
      */
     public function getEmbed(array $options = []): Markup
     {
-        $embed = $this->getGateway()->getEmbedHtml($this->id, $options);
+        $embed = $this->getGateway()->getEmbedHtml($this, $options);
         $charset = Craft::$app->getView()->getTwig()->getCharset();
 
         return new Markup($embed, $charset);
@@ -319,7 +319,7 @@ class Video extends AbstractVideo implements Cachable
      */
     public function getEmbedUrl(array $options = []): string
     {
-        return $this->getGateway()->getEmbedUrl($this->id, $options);
+        return $this->getGateway()->getEmbedUrl($this, $options);
     }
 
     /**

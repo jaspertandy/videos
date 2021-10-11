@@ -17,6 +17,7 @@ use dukt\videos\errors\OauthAccessTokenNotFoundException;
 use dukt\videos\errors\OauthAccountNotFoundException;
 use dukt\videos\errors\OauthLoginException;
 use dukt\videos\errors\OauthLogoutException;
+use dukt\videos\errors\VideoIdExtractException;
 use dukt\videos\errors\VideoNotFoundException;
 use dukt\videos\helpers\UrlHelper as VideosUrlHelper;
 use dukt\videos\models\OauthAccount;
@@ -403,6 +404,27 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
     }
 
     /**
+     * Return a video from its public URL.
+     *
+     * @param $videoUrl
+     * @return Video
+     * @throws VideoNotFoundException
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
+     */
+    final public function getVideoByUrl(string $videoUrl): Video
+    {
+        try {
+            $videoId = $this->extractVideoIdFromVideoUrl($videoUrl);
+
+            return $this->getVideoById($videoId);
+        } catch (VideoIdExtractException $e) {
+            throw new VideoNotFoundException(/* TODO: more precise message */);
+        }
+    }
+
+    /**
      * Returns one video by its ID.
      *
      * @param string $videoId
@@ -436,31 +458,16 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
     }
 
     /**
-     * Return a video from its public URL.
-     *
-     * @param $videoUrl
-     * @return Video
-     * @throws VideoNotFoundException
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Videos::getVideoByUrl]] instead.
-     */
-    public function getVideoByUrl($videoUrl)
-    {
-        return VideosPlugin::$plugin->getVideos()->getVideoByUrl($videoUrl);
-    }
-
-    /**
      * Returns the HTML of the embed from a video ID.
      *
-     * @param string $videoId
+     * @param Video $video
      * @param array $options
      * @return string
      *
      * @since 2.0.0
      * TODO: report breaking changes (and update since ?)
      */
-    final public function getEmbedHtml(string $videoId, array $options = []): string
+    final public function getEmbedHtml(Video $video, array $options = []): string
     {
         $urlOptions = [];
         $attributeOptions = [
@@ -521,7 +528,7 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
             $attributeOptions[$key] = $attributeOption['value'];
         }
 
-        $embedUrl = $this->getEmbedUrl($videoId, $urlOptions);
+        $embedUrl = $this->getEmbedUrl($video, $urlOptions);
 
         $embedAttributesString = implode(' ', array_map(function ($value, $attr) {
             return sprintf('%s="%s"', $attr, $value);
@@ -533,14 +540,14 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
     /**
      * Returns the URL of the embed from a video ID.
      *
-     * @param string $videoId
+     * @param Video $video
      * @param array $options
      * @return string
      *
      * @since 2.0.0
      * TODO: report breaking changes (and update since ?)
      */
-    final public function getEmbedUrl(string $videoId, array $options = []): string
+    final public function getEmbedUrl(Video $video, array $options = []): string
     {
         $format = $this->getEmbedFormat();
 
@@ -553,7 +560,7 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
 
         $formatParts['query'] = http_build_query(array_merge($formatPartQueryParams, $options));
 
-        return sprintf(VideosUrlHelper::buildUrl($formatParts), $videoId);
+        return sprintf(VideosUrlHelper::buildUrl($formatParts), $video->id);
     }
 
     /**
