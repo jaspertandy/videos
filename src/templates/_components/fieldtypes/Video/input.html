@@ -1,6 +1,10 @@
 {% import "_includes/forms" as forms %}
 
 <div class="videos-field">
+    <div id="{{ id }}-vue"></div>
+
+{#
+<div class="videos-field">
     {{ forms.text({
         id:id,
         name: name,
@@ -17,4 +21,5 @@
     <div class="preview">{{ preview|raw }}</div>
 
     <div class="clear"></div>
+#}
 </div>

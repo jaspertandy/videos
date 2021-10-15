@@ -37,4 +37,11 @@ class VideoExplorerCollection extends Model
      * @since 3.0.0
      */
     public array $options = [];
+
+    /**
+     * @var string the collection's icon
+     *
+     * @since 3.0.0
+     */
+    public string $icon = '';
 }

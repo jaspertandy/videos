@@ -1,6 +1,21 @@
 Changelog
 =========
 
+## Unreleased
+
+### Added
+- Added Vimeo folders support.
+- Added collection icon support.
+
+### Changed
+- Renamed Vimeo’s “Playlists” section to “Showcases”.
+- Renamed Vimeo’s “Favorites” to “Likes”.
+
+- Use Vue.js for JavaScript interactions.
+
+### Fixed
+- Fixed a bug where Vimeo video listing might not be loaded properly when the plugin was unable to find one of the videos’ thumbnail.
+
 ## 2.0.15 - 2021-05-19
 
 ### Changed

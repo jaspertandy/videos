@@ -9,6 +9,8 @@ namespace dukt\videos\web\assets\videos;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
+use craft\web\assets\vue\VueAsset;
+use dukt\videos\Plugin;
 
 /**
  * Videos asset class.
@@ -18,6 +20,11 @@ use craft\web\assets\cp\CpAsset;
  */
 class VideosAsset extends AssetBundle
 {
+    // Public Methods
+    // =========================================================================
+
+    private $devServer = true;
+
     /**
      * {@inheritdoc}
      *
@@ -25,25 +32,20 @@ class VideosAsset extends AssetBundle
      */
     public function init()
     {
-        // define the path that your publishable resources live
-        $this->sourcePath = __DIR__.'/dist';
-
-        // define the dependencies
         $this->depends = [
             CpAsset::class,
+            VueAsset::class,
         ];
 
-        // define the relative path to CSS/JS files that should be registered with the page
-        // when this asset bundle is registered
-        $this->js = [
-            'js/Videos'.$this->dotJs(),
-            'js/VideosExplorer'.$this->dotJs(),
-        ];
-
-        $this->css = [
-            'css/videos.css',
-            'css/VideosExplorer.css',
-        ];
+        if (!Plugin::getInstance()->getVideos()->useDevServer) {
+            $this->sourcePath = __DIR__.'/dist';
+            $this->js[] = 'js/chunk-vendors.js';
+            $this->js[] = 'js/app.js';
+            $this->css[] = 'css/app.css';
+        } else {
+            $this->js[] = 'https://localhost:8090/js/chunk-vendors.js';
+            $this->js[] = 'https://localhost:8090/js/app.js';
+        }
 
         parent::init();
     }

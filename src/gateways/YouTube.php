@@ -232,10 +232,12 @@ class YouTube extends Gateway
                 new VideoExplorerCollection([
                     'name' => 'Uploads',
                     'method' => 'uploads',
+                    'icon' => 'video-camera',
                 ]),
                 new VideoExplorerCollection([
                     'name' => 'Liked videos',
                     'method' => 'likes',
+                    'icon' => 'thumb-up'
                 ]),
             ],
         ]);
@@ -253,6 +255,7 @@ class YouTube extends Gateway
                     'name' => $playlistData['snippet']['title'],
                     'method' => 'playlist',
                     'options' => ['id' => $playlistData['id']],
+                    'icon' => 'list'
                 ]);
             }
 

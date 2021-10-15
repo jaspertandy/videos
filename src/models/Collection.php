@@ -38,4 +38,10 @@ class Collection extends Model
      * @since 2.0.0
      */
     public $options;
+
+    /**
+     * @var string|null Icon
+     */
+    public $icon;
+
 }

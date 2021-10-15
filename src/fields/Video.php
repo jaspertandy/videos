@@ -14,7 +14,7 @@ use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use dukt\videos\models\FailedVideo;
 use dukt\videos\Plugin as VideosPlugin;
-use dukt\videos\web\assets\videofield\VideoFieldAsset;
+use dukt\videos\web\assets\videos\VideosAsset;
 
 /**
  * Video field.
@@ -60,23 +60,38 @@ class Video extends Field
         $view->registerJs($js);
 
         // Asset bundle
-        $view->registerAssetBundle(VideoFieldAsset::class);
+        $view->registerAssetBundle(VideosAsset::class);
 
         // Preview
         $preview = $view->renderTemplate('videos/_elements/fieldPreview', ['video' => $value]);
 
-        if (VideosPlugin::$plugin->getGateways()->hasGatewaysLoggedIn()) {
-            // Instantiate Videos Field
-            $view->registerJs('new Videos.Field("'.$view->namespaceInputId($id).'");');
-        }
+        // Variables
 
-        return $view->renderTemplate('videos/_components/fieldtypes/Video/input', [
+        $variables = [
             'id' => $id,
             'name' => $name,
             'value' => $value,
             'preview' => $preview,
             'hasGatewaysLoggedIn' => VideosPlugin::$plugin->getGateways()->hasGatewaysLoggedIn(),
+        ];
+
+        if (VideosPlugin::$plugin->getGateways()->hasGatewaysLoggedIn()) {
+            // Instantiate Videos Field
+            $view->registerJs('new VideoFieldConstructor({data: {fieldVariables: '.\json_encode($variables).'}}).$mount("#'.$view->namespaceInputId($id).'-vue");');
+        }
+
+        // Translations
+        $view->registerTranslations('videos', [
+            'Browse videos…',
+            'Cancel',
+            'Enter a video URL from YouTube or Vimeo',
+            'Remove',
+            'Search {gateway} videos…',
+            'Select',
+            '{plays} plays',
         ]);
+
+        return $view->renderTemplate('videos/_components/fieldtypes/Video/input', $variables);
     }
 
     /**

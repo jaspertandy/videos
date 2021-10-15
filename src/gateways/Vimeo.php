@@ -180,13 +180,37 @@ class Vimeo extends Gateway
                 new VideoExplorerCollection([
                     'name' => 'Uploads',
                     'method' => 'uploads',
+                    'icon' => 'video-camera',
                 ]),
                 new VideoExplorerCollection([
                     'name' => 'Favorites',
                     'method' => 'favorites',
+                    'icon' => 'thumb-up'
                 ]),
             ],
         ]);
+
+
+        // folders section
+        $foldersData = $this->_fetchFolders();
+
+        if (count($foldersData) > 0) {
+            $section = new VideoExplorerSection([
+                'name' => 'Folders',
+            ]);
+
+            foreach ($foldersData as $folder) {
+                $section->collections[] = new VideoExplorerCollection([
+                    'name' => $folder['name'],
+                    'method' => 'folder',
+                    'options' => ['id' => substr($folder['uri'], strrpos($folder['uri'], '/') + 1)],
+                    'icon' => 'folder',
+                ]);
+            }
+
+            $explorer->sections[] = $section;
+        }
+
 
         // albums section
         $albumsData = $this->_fetchAlbums();
@@ -200,6 +224,7 @@ class Vimeo extends Gateway
                 $section->collections[] = new VideoExplorerCollection([
                     'name' => $albumData['name'],
                     'method' => 'album',
+                    'icon' => 'layout',
                     'options' => ['id' => substr($albumData['uri'], strpos($albumData['uri'], '/albums/') + strlen('/albums/'))],
                 ]);
             }
@@ -275,6 +300,23 @@ class Vimeo extends Gateway
     protected function getVideosFavorites(array $options = []): array
     {
         return $this->_fetchVideos('me/likes', $options);
+    }
+
+    /**
+     * Returns a list of folder videos.
+     *
+     * @param array $options
+     * @return array
+     * @throws ApiResponseException
+     *
+     * @since 2.0.0
+     */
+    protected function getVideosFolder(array $options = []): array
+    {
+        $folderId = $options['id'];
+        unset($options['id']);
+
+        return $this->_fetchVideos('me/folders/'.$folderId.'/videos', $options);
     }
 
     /**
@@ -388,6 +430,21 @@ class Vimeo extends Gateway
     }
 
     /**
+     * Fetches folders from API.
+     *
+     * @return array
+     * @throws ApiResponseException
+     */
+    private function _fetchFolders(): array
+    {
+        $data = $this->fetch('me/folders');
+
+        return $data['data'];
+    }
+
+
+
+    /**
      * Parses videos from data.
      *
      * @param array $data
@@ -412,7 +469,8 @@ class Vimeo extends Gateway
         $video->id = (int)substr($data['uri'], strlen('/videos/'));
         $video->url = 'https://vimeo.com/'.substr($data['uri'], 8);
         $video->title = $data['name'];
-        $video->description = $data['description'];
+        $video->description = $data['description'] ?? '';
+
         $video->duration = (new DateTime())->modify('+'.(int)$data['duration'].' seconds')->diff(new DateTime());
         $video->publishedAt = new DateTime($data['created_time']);
         $video->thumbnailSourceUrl = $this->_getThumbnailSource($data);
