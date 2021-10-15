@@ -1,34 +1,35 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\helpers;
 
 use Craft;
 use craft\helpers\FileHelper;
-use dukt\videos\errors\ApiResponseException;
-use dukt\videos\models\Video;
-use dukt\videos\Plugin;
+use dukt\videos\Plugin as VideosPlugin;
 
 /**
- * Videos helper
+ * Videos helper.
+ *
+ * @author Dukt <support@dukt.net>
+ * @since 2.0.0
+ * @deprecated in 3.0.0, will be removed in 3.1.0, use [[DatimeHelper|ThumbnailHelper]] instead.
  */
 class VideosHelper
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Formats seconds to hh:mm:ss.
      *
-     * @param $seconds
-     *
+     * @param int $seconds
      * @return string
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[DatimeHelper::formatDateIntervalToReadable]] instead.
      */
-    public static function getDuration($seconds): string
+    public static function getDuration(int $seconds): string
     {
         $hours = (int)((int)$seconds / 3600);
         $minutes = (($seconds / 60) % 60);
@@ -48,13 +49,15 @@ class VideosHelper
     }
 
     /**
-     * Formats seconds to ISO 8601 duration
+     * Formats seconds to ISO 8601 duration.
      *
-     * @param $seconds
-     *
+     * @param int $seconds
      * @return string
+     *
+     * @since 2.0.11
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[DatimeHelper::formatDateIntervalToISO8601]] instead.
      */
-    public static function getDuration8601($seconds): string
+    public static function getDuration8601(int $seconds): string
     {
         $hours = (int)((int)$seconds / 3600);
         $minutes = (($seconds / 60) % 60);
@@ -81,12 +84,14 @@ class VideosHelper
      * @param $gatewayHandle
      * @param $videoId
      * @param $size
-     *
      * @return null|string
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \craft\errors\ImageException
      * @throws \yii\base\Exception
      * @throws \yii\base\InvalidConfigException
+     *
+     * @since 2.0.0
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[ThumbnailHelper::getBySize]] instead.
      */
     public static function getVideoThumbnail($gatewayHandle, $videoId, $size)
     {
@@ -109,15 +114,9 @@ class VideosHelper
             }
 
             if (!$originalPath) {
-                try {
-                    $video = Plugin::$plugin->getVideos()->getVideoById($gatewayHandle, $videoId);
-                } catch(ApiResponseException $e) {
-                    Craft::info('Couldn’t get video thumbnail:'."\r\n"
-                        .'Message: '."\r\n".$e->getMessage()."\r\n"
-                        .'Trace: '."\r\n".$e->getTraceAsString(), __METHOD__);
-                    return null;
-                }
-
+                // Copy the original thumbnail
+                $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle, true);
+                $video = $gateway->getVideoById($videoId);
                 $url = $video->thumbnailSource;
 
                 $name = pathinfo($url, PATHINFO_BASENAME);
@@ -128,6 +127,24 @@ class VideosHelper
                 $response = $client->request('GET', $url, [
                     'sink' => $originalPath,
                 ]);
+
+                // Make sure the original file has an extension
+                $mimeByExt = FileHelper::getMimeTypeByExtension($originalPath);
+
+                if (!$mimeByExt) {
+                    // Add the extension to the filename if it doesn’t have one
+                    $mime = FileHelper::getMimeType($originalPath);
+                    $ext = FileHelper::getExtensionByMimeType($mime);
+
+                    if ($ext) {
+                        $name .= '.'.$ext;
+                        $targetPath = $originalDir.DIRECTORY_SEPARATOR.$name;
+
+                        rename($originalPath, $targetPath);
+
+                        $originalPath = $targetPath;
+                    }
+                }
 
                 if ($response->getStatusCode() !== 200) {
                     return null;
@@ -141,7 +158,8 @@ class VideosHelper
             FileHelper::createDirectory($dir);
             Craft::$app->getImages()->loadImage($originalPath, false, $size)
                 ->scaleToFit($size, $size)
-                ->saveAs(parse_url($path, PHP_URL_PATH));
+                ->saveAs(parse_url($path, PHP_URL_PATH))
+            ;
         } else {
             $name = pathinfo($file, PATHINFO_BASENAME);
         }
@@ -150,45 +168,12 @@ class VideosHelper
     }
 
     /**
-     * Transforms a video model into an array.
-     *
-     * @param Video $videoModel
-     * @return array
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \craft\errors\ImageException
-     * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
-     */
-    public static function videoToArray(Video $videoModel): array
-    {
-        $video = $videoModel->toArray([
-            'id',
-            'gatewayHandle',
-            'title',
-            'url',
-            'authorName',
-            'authorUrl',
-            'durationSeconds',
-            'plays',
-            'private'
-        ]);
-
-        $video['thumbnail'] = $videoModel->getThumbnail();
-        $video['embedUrl'] = $videoModel->getEmbedUrl();
-        $video['duration'] = $videoModel->getDuration();
-
-        return $video;
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
      * Get thumbnail file.
      *
      * @param $dir
-     *
      * @return null|string
+     *
+     * @since 2.0.0
      */
     private static function getThumbnailFile($dir)
     {

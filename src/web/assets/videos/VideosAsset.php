@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
- * @copyright Copyright (c) 2019, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @link https://dukt.net/videos/
+ * @copyright Copyright (c) 2021, Dukt
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\web\assets\videos;
@@ -12,6 +12,12 @@ use craft\web\assets\cp\CpAsset;
 use craft\web\assets\vue\VueAsset;
 use dukt\videos\Plugin;
 
+/**
+ * Videos asset class.
+ *
+ * @author Dukt <support@dukt.net>
+ * @since 2.0.0
+ */
 class VideosAsset extends AssetBundle
 {
     // Public Methods
@@ -20,7 +26,9 @@ class VideosAsset extends AssetBundle
     private $devServer = true;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function init()
     {

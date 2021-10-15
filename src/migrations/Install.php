@@ -1,29 +1,29 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\migrations;
 
 use Craft;
 use craft\db\Migration;
-use dukt\videos\models\Info;
-use dukt\videos\Plugin;
 
+/**
+ * Install migration class.
+ *
+ * @author Dukt <support@dukt.net>
+ * @since 2.0.8
+ */
 class Install extends Migration
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var string The database driver to use
+     *
+     * @since 2.0.8
      */
     public $driver;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * This method contains the logic to be executed when applying this migration.
@@ -32,8 +32,10 @@ class Install extends Migration
      * Child classes may implement this method instead of [[up()]] if the DB logic
      * needs to be within a transaction.
      *
-     * @return boolean return a false value to indicate the migration fails
-     * and should not proceed further. All other return values mean the migration succeeds.
+     * @return bool return a false value to indicate the migration fails
+     *              and should not proceed further. All other return values mean the migration succeeds.
+     *
+     * @since 2.0.8
      */
     public function safeUp()
     {
@@ -53,8 +55,10 @@ class Install extends Migration
      * Child classes may implement this method instead of [[down()]] if the DB logic
      * needs to be within a transaction.
      *
-     * @return boolean return a false value to indicate the migration fails
-     * and should not proceed further. All other return values mean the migration succeeds.
+     * @return bool return a false value to indicate the migration fails
+     *              and should not proceed further. All other return values mean the migration succeeds.
+     *
+     * @since 2.0.8
      */
     public function safeDown()
     {
@@ -66,13 +70,12 @@ class Install extends Migration
         return true;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
-     * Creates the tables needed for the Records used by the plugin
+     * Creates the tables needed for the Records used by the plugin.
      *
      * @return void
+     *
+     * @since 2.0.8
      */
     protected function createTables()
     {
@@ -85,15 +88,17 @@ class Install extends Migration
 
                 'dateCreated' => $this->dateTime()->notNull(),
                 'dateUpdated' => $this->dateTime()->notNull(),
-                'uid' => $this->uid()
+                'uid' => $this->uid(),
             ]
         );
     }
 
     /**
-     * Creates the indexes needed for the Records used by the plugin
+     * Creates the indexes needed for the Records used by the plugin.
      *
      * @return void
+     *
+     * @since 2.0.8
      */
     protected function createIndexes()
     {
@@ -101,9 +106,11 @@ class Install extends Migration
     }
 
     /**
-     * Creates the foreign keys needed for the Records used by the plugin
+     * Creates the foreign keys needed for the Records used by the plugin.
      *
      * @return void
+     *
+     * @since 2.0.8
      */
     protected function addForeignKeys()
     {
@@ -113,15 +120,19 @@ class Install extends Migration
      * Populates the DB with the default data.
      *
      * @return void
+     *
+     * @since 2.0.8
      */
     protected function insertDefaultData()
     {
     }
 
     /**
-     * Removes the tables needed for the Records used by the plugin
+     * Removes the tables needed for the Records used by the plugin.
      *
      * @return void
+     *
+     * @since 2.0.8
      */
     protected function removeTables()
     {
@@ -129,9 +140,11 @@ class Install extends Migration
     }
 
     /**
-     * Removes the indexes needed for the Records used by the plugin
+     * Removes the indexes needed for the Records used by the plugin.
      *
      * @return void
+     *
+     * @since 2.0.8
      */
     protected function removeIndexes()
     {
@@ -139,9 +152,11 @@ class Install extends Migration
     }
 
     /**
-     * Removes the foreign keys needed for the Records used by the plugin
+     * Removes the foreign keys needed for the Records used by the plugin.
      *
      * @return void
+     *
+     * @since 2.0.8
      */
     protected function removeForeignKeys()
     {

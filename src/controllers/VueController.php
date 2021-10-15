@@ -36,7 +36,7 @@ class VueController extends Controller
             $gatewaysArray[] = [
                 'name' => $gateway->getName(),
                 'handle' => $gateway->getHandle(),
-                'sections' => $gateway->getExplorerSections()
+                'sections' => $gateway->getExplorer()
             ];
         }
 
@@ -61,7 +61,7 @@ class VueController extends Controller
         $method = $payload['method'];
         $options = $payload['options'] ?? [];
 
-        $gateway = Videos::$plugin->getGateways()->getGateway($gatewayHandle);
+        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
 
         if (!$gateway) {
             throw new GatewayNotFoundException('Gateway not found.');
@@ -75,13 +75,13 @@ class VueController extends Controller
         $videos = array();
 
         foreach($videosResponse['videos'] as $video) {
-            $videos[] = VideosHelper::videoToArray($video);
+            $videos[] = $video->toArray();
         }
 
         return $this->asJson([
             'videos' => $videos,
-            'more' => $videosResponse['more'],
-            'moreToken' => $videosResponse['moreToken']
+            'more' => $videosResponse['pagination']['more'],
+            'moreToken' => $videosResponse['pagination']['moreToken']
         ]);
     }
 
@@ -99,9 +99,7 @@ class VueController extends Controller
             return $this->asErrorJson("Video not found.");
         }
 
-        $videoArray = VideosHelper::videoToArray($video);
-
-        return $this->asJson($videoArray);
+        return $this->asJson($video->toArray());
     }
 
     public function actionGetVideoEmbedHtml(): Response

@@ -12,7 +12,7 @@ use craft\helpers\ProjectConfig;
 class m200925_135118_refactor_oauth_provider_options extends Migration
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function safeUp()
     {
@@ -25,28 +25,29 @@ class m200925_135118_refactor_oauth_provider_options extends Migration
             // Get OAuth provider options
             $oauthProviderOptions = $projectConfig->get('plugins.videos.settings.oauthProviderOptions', true);
 
-            if(!is_array($oauthProviderOptions)) {
+            if (!is_array($oauthProviderOptions)) {
                 return true;
             }
 
             $oauthProviderOptions = ProjectConfig::unpackAssociativeArray($oauthProviderOptions);
 
             // Reset OAuth provider options
-            $projectConfig->set('plugins.videos.settings.oauthProviderOptions', [], "Reset the oauth provider options");
+            $projectConfig->set('plugins.videos.settings.oauthProviderOptions', [], 'Reset the oauth provider options');
 
             // Rebuild OAuth provider options
-            foreach($oauthProviderOptions as $providerHandle => $provider) {
+            foreach ($oauthProviderOptions as $providerHandle => $provider) {
                 $projectConfig->set('plugins.videos.settings.oauthProviderOptions.'.$providerHandle, $provider, "Save the “{$providerHandle}” provider");
             }
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function safeDown()
     {
         echo "m200925_135118_refactor_oauth_provider_options cannot be reverted.\n";
+
         return false;
     }
 }

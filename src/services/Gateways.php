@@ -1,158 +1,121 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\services;
 
-use Craft;
 use dukt\videos\base\Gateway;
+use dukt\videos\errors\GatewayNotFoundException;
 use dukt\videos\events\RegisterGatewayTypesEvent;
-use dukt\videos\Plugin;
-use yii\base\Component;
 use dukt\videos\gateways\Vimeo;
 use dukt\videos\gateways\YouTube;
+use yii\base\Component;
 
 /**
- * Class Gateways service.
+ * Gateways service.
  *
  * An instance of the Gateways service is globally accessible via [[Plugin::gateways `Videos::$plugin->getGateways()`]].
  *
  * @author Dukt <support@dukt.net>
- * @since  2.0
+ * @since 2.0.0
  */
 class Gateways extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterLoginProviderTypesEvent The event that is triggered when registering login providers.
+     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[RegisterGatewayTypesEvent::NAME]] instead.
      */
     const EVENT_REGISTER_GATEWAY_TYPES = 'registerGatewayTypes';
 
-    // Properties
-    // =========================================================================
-
     /**
-     * @var array
+     * @var array all gateways
      */
-    private $_gateways = [];
+    private array $_gateways = [];
 
     /**
-     * @var array
-     */
-    private $_allGateways = [];
-
-    /**
-     * @var bool
-     */
-    private $_gatewaysLoaded = false;
-
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * Get gateway by handle.
+     * {@inheritdoc}
      *
-     * @param      $gatewayHandle
-     * @param bool $enabledOnly
+     * @throws InvalidConfigException
+     * @throws GatewayNotFoundException
      *
-     * @return Gateway|null
+     * @since 3.0.0
      */
-    public function getGateway($gatewayHandle, $enabledOnly = true)
+    public function init(): void
     {
-        $this->loadGateways();
+        parent::init();
 
-        if ($enabledOnly) {
-            $gateways = $this->_gateways;
-        } else {
-            $gateways = $this->_allGateways;
-        }
-
-        foreach ($gateways as $g) {
-            if ($g->getHandle() === $gatewayHandle) {
-                return $g;
+        foreach ($this->_getGatewayTypes() as $gatewayType) {
+            // type needs to be a valid path to an existing class
+            if (class_exists($gatewayType) === false) {
+                throw new GatewayNotFoundException(/* TODO: more precise message */);
             }
-        }
 
-        return null;
+            $gateway = new $gatewayType();
+
+            $this->_gateways[] = $gateway;
+        }
     }
 
     /**
-     * Get gateways.
+     * Get all gateways.
      *
-     * @param bool $enabledOnly
-     *
+     * @param null|bool $enabled
      * @return Gateway[]
+     * @throws InvalidConfigException
+     * @throws GatewayNotFoundException
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
-    public function getGateways($enabledOnly = true): array
+    public function getGateways(?bool $enabled = null): array
     {
-        $this->loadGateways();
-
-        if ($enabledOnly) {
-            return $this->_gateways;
+        if ($enabled !== null) {
+            return array_filter($this->_gateways, function ($_gateway) use ($enabled) {
+                return $_gateway->isEnabled() === $enabled;
+            });
         }
 
-        return $this->_allGateways;
+        return $this->_gateways;
     }
 
-    // Private Methods
-    // =========================================================================
+    /**
+     * Has gateway logged in.
+     *
+     * @return bool
+     * @throws InvalidConfigException
+     * @throws GatewayNotFoundException
+     *
+     * @since 3.0.0
+     */
+    public function hasGatewaysLoggedIn(): bool
+    {
+        return count($this->getGateways(true)) > 0;
+    }
 
     /**
-     * Load gateways.
+     * Get one gateway by handle.
      *
-     * @return null
-     * @throws \yii\base\InvalidConfigException
+     * @param string $gatewayHandle
+     * @param null|bool $enabled
+     * @return Gateway
+     * @throws InvalidConfigException
+     * @throws GatewayNotFoundException
+     *
+     * @since 2.0.0
+     * TODO: report breaking changes (and update since ?)
      */
-    private function loadGateways()
+    public function getGatewayByHandle(string $gatewayHandle, ?bool $enabled = null): Gateway
     {
-        if ($this->_gatewaysLoaded) {
-            return null;
-        }
-
-        foreach ($this->_getGateways() as $gateway) {
-            if ($gateway->enableOauthFlow()) {
-                $gatewayHandle = $gateway->getHandle();
-
-                $token = Plugin::getInstance()->getTokens()->getToken($gatewayHandle);
-
-                if ($token) {
-                    $this->_gateways[] = $gateway;
-                }
-            } else {
-                $this->_gateways[] = $gateway;
+        foreach ($this->getGateways($enabled) as $gateway) {
+            if ($gateway->getHandle() === $gatewayHandle) {
+                return $gateway;
             }
-
-            $this->_allGateways[] = $gateway;
         }
 
-        $this->_gatewaysLoaded = true;
-
-        return null;
-    }
-
-    /**
-     * Returns all gateway instances.
-     *
-     * @return array
-     */
-    private function _getGateways(): array
-    {
-        $gatewayTypes = $this->_getGatewayTypes();
-
-        $gateways = [];
-
-        foreach ($gatewayTypes as $gatewayType) {
-            $gateways[$gatewayType] = $this->_createGateway($gatewayType);
-        }
-
-        ksort($gateways);
-
-        return $gateways;
+        throw new GatewayNotFoundException(/* TODO: more precise message */);
     }
 
     /**
@@ -167,26 +130,14 @@ class Gateways extends Component
             YouTube::class,
         ];
 
-        $eventName = self::EVENT_REGISTER_GATEWAY_TYPES;
-
         $event = new RegisterGatewayTypesEvent([
-            'gatewayTypes' => $gatewayTypes
+            'gatewayTypes' => $gatewayTypes,
         ]);
 
-        $this->trigger($eventName, $event);
+        $this->trigger(RegisterGatewayTypesEvent::NAME, $event);
+
+        sort($event->gatewayTypes);
 
         return $event->gatewayTypes;
-    }
-
-    /**
-     * Instantiates a gateway.
-     *
-     * @param $gatewayType
-     *
-     * @return mixed
-     */
-    private function _createGateway($gatewayType)
-    {
-        return new $gatewayType;
     }
 }

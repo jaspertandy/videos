@@ -1,47 +1,42 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\gateways;
 
+use DateTime;
+use Dukt\OAuth2\Client\Provider\Vimeo as VimeoProvider;
 use dukt\videos\base\Gateway;
-use dukt\videos\errors\CollectionParsingException;
+use dukt\videos\errors\ApiClientCreateException;
+use dukt\videos\errors\VideoIdExtractException;
 use dukt\videos\errors\VideoNotFoundException;
-use dukt\videos\helpers\VideosHelper;
-use dukt\videos\models\Collection;
 use dukt\videos\models\Section;
 use dukt\videos\models\Video;
+use dukt\videos\models\VideoAuthor;
+use dukt\videos\models\VideoExplorer;
+use dukt\videos\models\VideoExplorerCollection;
+use dukt\videos\models\VideoExplorerSection;
+use dukt\videos\models\VideoSize;
+use dukt\videos\models\VideoStatistic;
+use Exception;
 use GuzzleHttp\Client;
-use DateTime;
+use League\OAuth2\Client\Provider\AbstractProvider;
 
 /**
- * Vimeo represents the Vimeo gateway
+ * Vimeo gateway.
  *
- * @author    Dukt <support@dukt.net>
- * @since     1.0
+ * @author Dukt <support@dukt.net>
+ * @since 2.0.0
  */
 class Vimeo extends Gateway
 {
-    // Public Methods
-    // =========================================================================
-
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      *
-     * @return string
-     */
-    public function getIconAlias(): string
-    {
-        return '@dukt/videos/icons/vimeo.svg';
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @return string
+     * @since 2.0.0
      */
     public function getName(): string
     {
@@ -49,19 +44,29 @@ class Vimeo extends Gateway
     }
 
     /**
-     * Returns the OAuth provider’s API console URL.
+     * {@inheritdoc}
      *
-     * @return string
+     * @since 2.0.0
      */
-    public function getOauthProviderApiConsoleUrl(): string
+    public function getIconAlias(): string
     {
-        return 'https://developer.vimeo.com/apps';
+        return '@dukt/videos/icons/vimeo.svg';
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      *
-     * @return array
+     * @since 2.0.0
+     */
+    public function createOauthProvider(array $options): AbstractProvider
+    {
+        return new VimeoProvider($options);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function getOauthScope(): array
     {
@@ -72,145 +77,77 @@ class Vimeo extends Gateway
     }
 
     /**
-     * Creates the OAuth provider.
+     * {@inheritdoc}
      *
-     * @param array $options
-     *
-     * @return \Dukt\OAuth2\Client\Provider\Vimeo
+     * @since 2.0.0
      */
-    public function createOauthProvider(array $options): \Dukt\OAuth2\Client\Provider\Vimeo
+    public function getOauthProviderApiConsoleUrl(): string
     {
-        return new \Dukt\OAuth2\Client\Provider\Vimeo($options);
+        return 'https://developer.vimeo.com/apps';
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      *
-     * @return array
-     * @throws CollectionParsingException
-     * @throws \dukt\videos\errors\ApiResponseException
+     * @since 3.0.0
      */
-    public function getExplorerSections(): array
+    public function extractVideoIdFromVideoUrl(string $videoUrl): string
     {
-        $sections = [];
+        $regexp = '/^https?:\/\/(www\.)?vimeo\.com\/([0-9]*)/';
 
-
-        // Library
-
-        $sections[] = new Section([
-            'name' => 'Library',
-            'collections' => [
-                new Collection([
-                    'name' => 'Uploads',
-                    'method' => 'uploads',
-                    'icon' => 'video-camera',
-                ]),
-                new Collection([
-                    'name' => 'Likes',
-                    'method' => 'likes',
-                    'icon' => 'thumb-up'
-                ]),
-            ]
-        ]);
-
-
-        // Folders
-
-        $folders = $this->getCollectionsFolders();
-
-        $collections = [];
-
-        foreach ($folders as $folder) {
-            $collections[] = new Collection([
-                'name' => $folder['title'],
-                'method' => 'folder',
-                'options' => ['id' => $folder['id']],
-                'icon' => 'folder',
-            ]);
+        if (preg_match($regexp, $videoUrl, $matches, PREG_OFFSET_CAPTURE) > 0) {
+            return $matches[2][0];
         }
 
-        if (\count($collections) > 0) {
-            $sections[] = new Section([
-                'name' => 'Folders',
-                'collections' => $collections,
-            ]);
-        }
-
-        // Albums
-
-        $albums = $this->getCollectionsAlbums();
-
-        $collections = [];
-
-        foreach ($albums as $album) {
-            $collections[] = new Collection([
-                'name' => $album['title'],
-                'method' => 'album',
-                'options' => ['id' => $album['id']],
-                'icon' => 'layout'
-            ]);
-        }
-
-        if (\count($collections) > 0) {
-            $sections[] = new Section([
-                'name' => 'Showcases',
-                'collections' => $collections,
-            ]);
-        }
-
-
-        // channels
-
-        $channels = $this->getCollectionsChannels();
-
-        $collections = [];
-
-        foreach ($channels as $channel) {
-            $collections[] = new Collection([
-                'name' => $channel['title'],
-                'method' => 'channel',
-                'options' => ['id' => $channel['id']],
-            ]);
-        }
-
-        if (\count($collections) > 0) {
-            $sections[] = new Section([
-                'name' => 'Channels',
-                'collections' => $collections,
-            ]);
-        }
-
-        return $sections;
+        throw new VideoIdExtractException(/* TODO: more precise message */);
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      *
-     * @param string $id
-     *
-     * @return Video
-     * @throws VideoNotFoundException
-     * @throws \dukt\videos\errors\ApiResponseException
+     * @since 3.0.0
      */
-    public function getVideoById(string $id): Video
+    public function createApiClient(): Client
     {
-        $data = $this->get('videos/'.$id, [
-            'query' => [
-                'fields' => 'created_time,description,duration,height,link,name,pictures,pictures,privacy,stats,uri,user,width,download,review_link,files'
-            ],
-        ]);
+        try {
+            $options = [
+                'base_uri' => 'https://api.vimeo.com/',
+                'headers' => [
+                    'Accept' => 'application/vnd.vimeo.*+json;version=3.0',
+                    'Authorization' => 'Bearer '.$this->getOauthAccessToken()->getToken(),
+                ],
+            ];
 
-        if ($data) {
-            return $this->parseVideo($data);
+            return new Client($options);
+        } catch (Exception $e) {
+            throw new ApiClientCreateException(/* TODO: more precise message */);
         }
-
-        throw new VideoNotFoundException('Video not found.');
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      *
-     * @return string
+     * @since 3.0.0
+     */
+    public function fetchVideoById(string $videoId): Video
+    {
+        try {
+            $data = $this->fetch('videos/'.$videoId, [
+                'query' => [
+                    'fields' => 'created_time,description,duration,height,link,name,pictures,pictures,privacy,stats,uri,user,width,download,review_link,files',
+                ],
+            ]);
+
+            return $this->_parseVideo($data);
+        } catch (Exception $e) {
+            throw new VideoNotFoundException(/* TODO: more precise message */);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @since 2.0.0
      */
     public function getEmbedFormat(): string
     {
@@ -218,488 +155,383 @@ class Vimeo extends Gateway
     }
 
     /**
-     * @param string $url
+     * {@inheritdoc}
      *
-     * @return bool|string
-     */
-    public function extractVideoIdFromUrl(string $url)
-    {
-        // check if url works with this service and extract video_id
-
-        $videoId = false;
-
-        $regexp = ['/^https?:\/\/(www\.)?vimeo\.com\/([0-9]*)/', 2];
-
-        if (preg_match($regexp[0], $url, $matches, PREG_OFFSET_CAPTURE) > 0) {
-
-            // regexp match key
-            $match_key = $regexp[1];
-
-
-            // define video id
-            $videoId = $matches[$match_key][0];
-
-
-            // Fixes the youtube &feature_gdata bug
-            if (strpos($videoId, '&')) {
-                $videoId = substr($videoId, 0, strpos($videoId, '&'));
-            }
-        }
-
-        // here we should have a valid video_id or false if service not matching
-        return $videoId;
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @return bool
+     * @since 2.0.0
      */
     public function supportsSearch(): bool
     {
         return true;
     }
 
-    // Protected
-    // =========================================================================
+    /**
+     * {@inheritdoc}
+     *
+     * @since 3.0.0
+     */
+    public function getExplorer(): VideoExplorer
+    {
+        $explorer = new VideoExplorer();
+
+        // library section
+        $explorer->sections[] = new VideoExplorerSection([
+            'name' => 'Library',
+            'collections' => [
+                new VideoExplorerCollection([
+                    'name' => 'Uploads',
+                    'method' => 'uploads',
+                    'icon' => 'video-camera',
+                ]),
+                new VideoExplorerCollection([
+                    'name' => 'Favorites',
+                    'method' => 'favorites',
+                    'icon' => 'thumb-up'
+                ]),
+            ],
+        ]);
+
+
+        // folders section
+        $foldersData = $this->_fetchFolders();
+
+        if (count($foldersData) > 0) {
+            $section = new VideoExplorerSection([
+                'name' => 'Folders',
+            ]);
+
+            foreach ($foldersData as $folder) {
+                $section->collections[] = new VideoExplorerCollection([
+                    'name' => $folder['name'],
+                    'method' => 'folder',
+                    'options' => ['id' => substr($folder['uri'], strrpos($folder['uri'], '/') + 1)],
+                    'icon' => 'folder',
+                ]);
+            }
+
+            $explorer->sections[] = $section;
+        }
+
+
+        // albums section
+        $albumsData = $this->_fetchAlbums();
+
+        if (count($albumsData) > 0) {
+            $section = new VideoExplorerSection([
+                'name' => 'Albums',
+            ]);
+
+            foreach ($albumsData as $albumData) {
+                $section->collections[] = new VideoExplorerCollection([
+                    'name' => $albumData['name'],
+                    'method' => 'album',
+                    'icon' => 'layout',
+                    'options' => ['id' => substr($albumData['uri'], strpos($albumData['uri'], '/albums/') + strlen('/albums/'))],
+                ]);
+            }
+
+            $explorer->sections[] = $section;
+        }
+
+        // channels section
+        $channelsData = $this->_fetchChannels();
+
+        if (count($channelsData) > 0) {
+            $section = new VideoExplorerSection([
+                'name' => 'Channels',
+            ]);
+
+            foreach ($channelsData as $channelData) {
+                $section->collections[] = new VideoExplorerCollection([
+                    'name' => $channelData['name'],
+                    'method' => 'channel',
+                    'options' => ['id' => substr($channelData['uri'], strpos($channelData['uri'], '/channels/') + strlen('/channels/'))],
+                ]);
+            }
+
+            $explorer->sections[] = $section;
+        }
+
+        return $explorer;
+    }
 
     /**
-     * Returns an authenticated Guzzle client
+     * Returns a list of videos in an album.
      *
-     * @return Client
-     * @throws \yii\base\InvalidConfigException
+     * @param array $options
+     * @return array
+     * @throws ApiResponseException
+     *
+     * @since 2.0.0
      */
-    protected function createClient(): Client
+    protected function getVideosAlbum(array $options = []): array
     {
-        $options = [
-            'base_uri' => $this->getApiUrl(),
-            'headers' => [
-                'Accept' => 'application/vnd.vimeo.*+json;version='.$this->getApiVersion(),
-                'Authorization' => 'Bearer '.$this->getOauthToken()->getToken()
-            ],
+        $albumId = $options['id'];
+        unset($options['id']);
+
+        return $this->_fetchVideos('me/albums/'.$albumId.'/videos', $options);
+    }
+
+    /**
+     * Returns a list of videos in a channel.
+     *
+     * @param array $options
+     * @return array
+     * @throws ApiResponseException
+     *
+     * @since 2.0.0
+     */
+    protected function getVideosChannel(array $options = []): array
+    {
+        $options['channel_id'] = $options['id'];
+        unset($options['id']);
+
+        return $this->_fetchVideos('channels/'.$options['channel_id'].'/videos', $options);
+    }
+
+    /**
+     * Returns a list of favorite videos.
+     *
+     * @param array $options
+     * @return array
+     * @throws ApiResponseException
+     *
+     * @since 2.0.0
+     */
+    protected function getVideosFavorites(array $options = []): array
+    {
+        return $this->_fetchVideos('me/likes', $options);
+    }
+
+    /**
+     * Returns a list of folder videos.
+     *
+     * @param array $options
+     * @return array
+     * @throws ApiResponseException
+     *
+     * @since 2.0.0
+     */
+    protected function getVideosFolder(array $options = []): array
+    {
+        $folderId = $options['id'];
+        unset($options['id']);
+
+        return $this->_fetchVideos('me/folders/'.$folderId.'/videos', $options);
+    }
+
+    /**
+     * Returns a list of videos from a search request.
+     *
+     * @param array $options
+     * @return array
+     * @throws ApiResponseException
+     *
+     * @since 2.0.0
+     */
+    protected function getVideosSearch(array $options = []): array
+    {
+        if (empty($options['q']) === false) {
+            $options['query'] = $options['q'];
+            unset($options['q']);
+        }
+
+        return $this->_fetchVideos('videos', $options);
+    }
+
+    /**
+     * Returns a list of uploaded videos.
+     *
+     * @param array $options
+     * @return array
+     * @throws ApiResponseException
+     *
+     * @since 2.0.0
+     */
+    protected function getVideosUploads(array $options = []): array
+    {
+        return $this->_fetchVideos('me/videos', $options);
+    }
+
+    /**
+     * Sanitize query.
+     *
+     * @param array $options
+     * @return array
+     */
+    private function _sanitizeQueryPagination(array $options = []): array
+    {
+        $query = [
+            'full_response' => 1,
         ];
 
-        return new Client($options);
-    }
-
-    /**
-     * Returns a list of videos in an album
-     *
-     * @param array $params
-     *
-     * @return array
-     * @throws \dukt\videos\errors\ApiResponseException
-     */
-    protected function getVideosAlbum(array $params = []): array
-    {
-        $albumId = $params['id'];
-        unset($params['id']);
-
-        // albums/#album_id
-        return $this->performVideosRequest('me/albums/'.$albumId.'/videos', $params);
-    }
-
-    /**
-     * Returns a list of videos in an folder
-     *
-     * @param array $params
-     *
-     * @return array
-     * @throws \dukt\videos\errors\ApiResponseException
-     */
-    protected function getVideosFolder(array $params = []): array
-    {
-        $folderId = $params['id'];
-        unset($params['id']);
-
-        // folders/#folder_id
-        return $this->performVideosRequest('me/folders/'.$folderId.'/videos', $params);
-    }
-
-    /**
-     * Returns a list of videos in a channel
-     *
-     * @param array $params
-     *
-     * @return array
-     * @throws \dukt\videos\errors\ApiResponseException
-     */
-    protected function getVideosChannel(array $params = []): array
-    {
-        $params['channel_id'] = $params['id'];
-        unset($params['id']);
-
-        return $this->performVideosRequest('channels/'.$params['channel_id'].'/videos', $params);
-    }
-
-    /**
-     * Returns a list of favorite videos
-     *
-     * @param array $params
-     *
-     * @return array
-     * @throws \dukt\videos\errors\ApiResponseException
-     */
-    protected function getVideosLikes(array $params = []): array
-    {
-        return $this->performVideosRequest('me/likes', $params);
-    }
-
-    /**
-     * Returns a list of videos from a search request
-     *
-     * @param array $params
-     *
-     * @return array
-     * @throws \dukt\videos\errors\ApiResponseException
-     */
-    protected function getVideosSearch(array $params = []): array
-    {
-        return $this->performVideosRequest('videos', $params);
-    }
-
-    /**
-     * Returns a list of uploaded videos
-     *
-     * @param array $params
-     *
-     * @return array
-     * @throws \dukt\videos\errors\ApiResponseException
-     */
-    protected function getVideosUploads(array $params = []): array
-    {
-        return $this->performVideosRequest('me/videos', $params);
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * @return string
-     */
-    private function getApiUrl(): string
-    {
-        return 'https://api.vimeo.com/';
-    }
-
-    /**
-     * @return string
-     */
-    private function getApiVersion(): string
-    {
-        return '3.0';
-    }
-
-    /**
-     * @param array $params
-     *
-     * @return array
-     * @throws CollectionParsingException
-     * @throws \dukt\videos\errors\ApiResponseException
-     */
-    private function getCollectionsAlbums(array $params = []): array
-    {
-        $data = $this->get('me/albums', [
-            'query' => $this->queryFromParams($params)
-        ]);
-
-        return $this->parseCollections('album', $data['data']);
-    }
-
-    /**
-     * @param array $params
-     *
-     * @return array
-     * @throws CollectionParsingException
-     * @throws \dukt\videos\errors\ApiResponseException
-     */
-    private function getCollectionsFolders(array $params = []): array
-    {
-        $data = $this->get('me/folders', [
-            'query' => $this->queryFromParams($params)
-        ]);
-
-        return $this->parseCollections('folder', $data['data']);
-    }
-
-    /**
-     * @param array $params
-     *
-     * @return array
-     * @throws CollectionParsingException
-     * @throws \dukt\videos\errors\ApiResponseException
-     */
-    private function getCollectionsChannels(array $params = []): array
-    {
-        $data = $this->get('me/channels', [
-            'query' => $this->queryFromParams($params)
-        ]);
-
-        return $this->parseCollections('channel', $data['data']);
-    }
-
-    /**
-     * @param $type
-     * @param $collections
-     *
-     * @return array
-     * @throws CollectionParsingException
-     */
-    private function parseCollections($type, array $collections): array
-    {
-        $parseCollections = [];
-
-        foreach ($collections as $collection) {
-
-            switch ($type) {
-                case 'folder':
-                    $parsedCollection = $this->parseCollectionFolder($collection);
-                    break;
-                case 'album':
-                    $parsedCollection = $this->parseCollectionAlbum($collection);
-                    break;
-                case 'channel':
-                    $parsedCollection = $this->parseCollectionChannel($collection);
-                    break;
-
-                default:
-                    throw new CollectionParsingException('Couldn’t parse collection of type ”'.$type.'“.');
-            }
-
-            $parseCollections[] = $parsedCollection;
+        if (empty($options['moreToken']) === false) {
+            $query['page'] = $options['moreToken'];
+            unset($options['moreToken']);
+        } else {
+            $query['page'] = 1;
         }
 
-        return $parseCollections;
+        $query['per_page'] = $this->getVideosPerPage();
+
+        return array_merge($query, $options);
     }
 
     /**
-     * @param $data
+     * Fetches videos from API.
+     *
+     * @param string $uri
+     * @param array $options
+     * @return array
+     * @throws ApiResponseException
+     */
+    private function _fetchVideos(string $uri, array $options = []): array
+    {
+        $query = $this->_sanitizeQueryPagination($options);
+
+        $data = $this->fetch($uri, [
+            'query' => $query,
+        ]);
+
+        $videos = $this->_parseVideos($data['data']);
+
+        return [
+            'videos' => $videos,
+            'pagination' => [
+                'moreToken' => empty($data['paging']['next']) === false ? $query['page'] + 1 : null,
+                'more' => empty($data['paging']['next']) === false ? true : false,
+            ],
+        ];
+    }
+
+    /**
+     * Fetches albums from API.
      *
      * @return array
+     * @throws ApiResponseException
      */
-    private function parseCollectionAlbum($data): array
+    private function _fetchAlbums(): array
     {
-        $collection = [];
-        $collection['id'] = substr($data['uri'], strpos($data['uri'], '/albums/') + \strlen('/albums/'));
-        $collection['url'] = $data['uri'];
-        $collection['title'] = $data['name'];
-        $collection['totalVideos'] = $data['stats']['videos'];
+        $data = $this->fetch('me/albums');
 
-        return $collection;
+        return $data['data'];
     }
 
     /**
-     * @param $data
+     * Fetches channels from API.
      *
      * @return array
+     * @throws ApiResponseException
      */
-    private function parseCollectionFolder($data): array
+    private function _fetchChannels(): array
     {
-        $collection = [];
-        $collection['id'] = substr($data['uri'], strpos($data['uri'], '/projects/') + \strlen('/projects/'));
-        $collection['url'] = $data['uri'];
-        $collection['title'] = $data['name'];
-        $collection['totalVideos'] = $data['metadata']['connections']['videos']['total'] ?? 0;
+        $data = $this->fetch('me/channels');
 
-        return $collection;
+        return $data['data'];
     }
 
     /**
-     * @param $data
+     * Fetches folders from API.
      *
      * @return array
+     * @throws ApiResponseException
      */
-    private function parseCollectionChannel($data): array
+    private function _fetchFolders(): array
     {
-        $collection = [];
-        $collection['id'] = substr($data['uri'], strpos($data['uri'], '/channels/') + \strlen('/channels/'));
-        $collection['url'] = $data['uri'];
-        $collection['title'] = $data['name'];
-        $collection['totalVideos'] = $data['stats']['videos'];
+        $data = $this->fetch('me/folders');
 
-        return $collection;
+        return $data['data'];
     }
 
-    /**
-     * @param $data
-     *
-     * @return array
-     */
-    private function parseVideos(array $data): array
-    {
-        $videos = [];
 
-        if (!empty($data)) {
-            foreach ($data as $videoData) {
-                $video = $this->parseVideo($videoData);
-
-                $videos[] = $video;
-            }
-        }
-
-        return $videos;
-    }
 
     /**
-     * Parse video.
+     * Parses videos from data.
      *
      * @param array $data
+     * @return Video[]
+     */
+    private function _parseVideos(array $data): array
+    {
+        return array_map(function (array $videoData) {
+            return $this->_parseVideo($videoData);
+        }, $data);
+    }
+
+    /**
+     * Parses video from data.
      *
+     * @param array $data
      * @return Video
      */
-    private function parseVideo(array $data): Video
+    private function _parseVideo(array $data): Video
     {
-        $video = new Video;
-        $video->raw = $data;
-        $video->authorName = $data['user']['name'];
-        $video->authorUrl = $data['user']['link'];
-        $video->date = new DateTime($data['created_time']);
-        $video->description = $data['description'];
-        $video->gatewayHandle = 'vimeo';
-        $video->gatewayName = 'Vimeo';
-        $video->id = (int) substr($data['uri'], \strlen('/videos/'));
-        $video->plays = $data['stats']['plays'] ?? 0;
-        $video->title = $data['name'];
+        $video = new Video();
+        $video->id = (int)substr($data['uri'], strlen('/videos/'));
         $video->url = 'https://vimeo.com/'.substr($data['uri'], 8);
-        $video->width = $data['width'];
-        $video->height = $data['height'];
+        $video->title = $data['name'];
+        $video->description = $data['description'] ?? '';
 
-        // Video duration
-        $video->durationSeconds = $data['duration'];
-        $video->duration8601 = VideosHelper::getDuration8601($data['duration']);
+        $video->duration = (new DateTime())->modify('+'.(int)$data['duration'].' seconds')->diff(new DateTime());
+        $video->publishedAt = new DateTime($data['created_time']);
+        $video->thumbnailSourceUrl = $this->_getThumbnailSource($data);
+        $video->gatewayHandle = $this->getHandle();
+        $video->raw = $data;
 
-        $this->parsePrivacy($video, $data);
-        $this->parseThumbnails($video, $data);
+        // author
+        $author = new VideoAuthor();
+        $author->name = $data['user']['name'];
+        $author->url = $data['user']['link'];
+        $video->author = $author;
+
+        // size
+        $size = new VideoSize();
+        $size->width = (int)$data['width'];
+        $size->height = (int)$data['height'];
+        $video->size = $size;
+
+        // statistic
+        $statistic = new VideoStatistic();
+        $statistic->playCount = $data['stats']['plays'] ?? 0;
+        $video->statistic = $statistic;
+
+        // privacy
+        if (in_array($data['privacy']['view'], ['nobody', 'contacts', 'password', 'users', 'disable'], true) === true) {
+            $video->private = true;
+        }
 
         return $video;
     }
 
     /**
-     * Parse video’s privacy data.
+     * Get the thumbnail source.
      *
-     * @param Video $video
-     * @param array $data
-     * @return null
+     * @param array $thumbnails
+     * @return null|string
      */
-    private function parsePrivacy(Video $video, array $data)
+    private function _getThumbnailSource(array $data): ?string
     {
-        $privacyOptions = ['nobody', 'contacts', 'password', 'users', 'disable'];
-
-        if(in_array($data['privacy']['view'], $privacyOptions, true)) {
-            $video->private = true;
-        }
-
-        return null;
-    }
-
-
-    /**
-     * Parse thumbnails.
-     *
-     * @param Video $video
-     * @param array $data
-     *
-     * @return null
-     */
-    private function parseThumbnails(Video $video, array $data)
-    {
-        if (!\is_array($data['pictures'])) {
+        if (is_array($data['pictures']) === false) {
             return null;
         }
 
-        $largestSize = 0;
-
-        foreach ($this->getVideoDataPictures($data, 'thumbnail') as $picture) {
-            // Retrieve highest quality thumbnail
-            if ($picture['width'] > $largestSize) {
-                $video->thumbnailSource = $picture['link'];
-                $largestSize = $picture['width'];
-            }
-        }
-
-
-        $video->thumbnailLargeSource = $video->thumbnailSource;
-
-        return null;
-    }
-
-    /**
-     * Get video data pictures.
-     *
-     * @param array $data
-     * @param string $type
-     * @return array
-     */
-    private function getVideoDataPictures(array $data, string $type = 'thumbnail'): array
-    {
-        $pictures = [];
-
+        // need to find all thumbnails
+        $thumbnails = [];
         foreach ($data['pictures'] as $picture) {
-            if ($picture['type'] === $type) {
-                $pictures[] = $picture;
+            if ($picture['type'] === 'thumbnail') {
+                $thumbnails[] = $picture;
             }
         }
 
-        return $pictures;
-    }
-
-    /**
-     * @param $uri
-     * @param $params
-     *
-     * @return array
-     * @throws \dukt\videos\errors\ApiResponseException
-     */
-    private function performVideosRequest($uri, $params): array
-    {
-        $query = $this->queryFromParams($params);
-
-        $data = $this->get($uri, [
-            'query' => $query
-        ]);
-
-        $videos = $this->parseVideos($data['data']);
-
-        $more = false;
-        $moreToken = null;
-
-        if ($data['paging']['next']) {
-            $more = true;
-            $moreToken = $query['page'] + 1;
+        // need to find the largest thumbnail
+        $largestSize = 0;
+        $largestThumbnailSource = null;
+        foreach ($thumbnails as $thumbnail) {
+            if ((int)$thumbnail['width'] > $largestSize) {
+                $largestThumbnailSource = $picture['link'];
+                $largestSize = (int)$thumbnail['width'];
+            }
         }
 
-        return [
-            'videos' => $videos,
-            'moreToken' => $moreToken,
-            'more' => $more
-        ];
-    }
-
-    /**
-     * @param array $params
-     *
-     * @return array
-     */
-    private function queryFromParams(array $params = []): array
-    {
-        $query = [
-            'full_response' => 1,
-            'page' => 1,
-            'per_page' => $this->getVideosPerPage(),
-        ];
-
-        if (!empty($params['moreToken'])) {
-            $query['page'] = $params['moreToken'];
-            unset($params['moreToken']);
-        }
-
-        if (!empty($params['q'])) {
-            $query['query'] = $params['q'];
-            unset($params['q']);
-        }
-
-        $query = array_merge($query, $params);
-
-        return $query;
+        return $largestThumbnailSource;
     }
 }
