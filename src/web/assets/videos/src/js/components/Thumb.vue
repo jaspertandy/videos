@@ -8,7 +8,7 @@
         </div>
 
         <div class="duration">
-            {{ duration }}
+            <!--{{ duration }}-->
         </div>
         <div class="play" @click.prevent="$emit('playVideo')"></div>
     </div>

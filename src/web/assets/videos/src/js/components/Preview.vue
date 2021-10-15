@@ -3,7 +3,7 @@
         <div class="flex-shrink-0">
 <!--            <div class="videos-thumb pt-0 w-44">
                 <div class="videos-thumb-image-container">
-                    <div class="videos-thumb-image" :style="'background-image: url(' + previewVideo.thumbnail + ')'"></div>
+                    <div class="videos-thumb-image" :style="'background-image: url(' + previewVideo.thumbnailSourceUrl + ')'"></div>
                 </div>
 
                 <div class="duration">
@@ -12,7 +12,7 @@
                 <div class="play" @click="$emit('playVideo', previewVideo)"></div>
             </div>-->
 
-            <thumb class="pt-0 w-44" :url="previewVideo.thumbnail" :duration="previewVideo.duration" @playVideo="$emit('playVideo', previewVideo)"></thumb>
+            <thumb class="pt-0 w-44" :url="previewVideo.thumbnailSourceUrl" :duration="previewVideo.duration" @playVideo="$emit('playVideo', previewVideo)"></thumb>
         </div>
         <div class="ml-2 flex-shrink max-w-sm min-w-0">
             <div class="line-clamp-2"><strong>{{previewVideo.title}}</strong></div>

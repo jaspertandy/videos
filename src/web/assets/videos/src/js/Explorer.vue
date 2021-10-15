@@ -136,7 +136,7 @@
                         const currentGateway = this.gateways[0]
                         this.$store.commit('updateCurrentGatewayHandle', currentGateway.handle)
 
-                        const collection = currentGateway.sections[0].collections[0]
+                        const collection = currentGateway.sections.sections[0].collections[0]
                         const selectedCollection = this.getCollectionUniqueKey(currentGateway.handle, 0, 0)
                         this.$store.commit('updateSelectedCollection', selectedCollection)
 

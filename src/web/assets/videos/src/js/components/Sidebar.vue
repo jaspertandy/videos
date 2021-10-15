@@ -11,7 +11,7 @@
         <nav>
             <ul>
                 <template v-if="currentGateway">
-                    <template v-for="(section, sectionKey) in currentGateway.sections">
+                    <template v-for="(section, sectionKey) in currentGateway.sections.sections">
                         <li class="heading" :key="`section-${sectionKey}`"><span>{{section.name}}</span></li>
 
                         <template v-for="(collection, collectionKey) in section.collections">
