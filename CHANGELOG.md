@@ -10,8 +10,8 @@ Changelog
 ### Changed
 - Renamed Vimeo’s “Playlists” section to “Showcases”.
 - Renamed Vimeo’s “Favorites” to “Likes”.
-
 - Use Vue.js for JavaScript interactions.
+- Updated NPM dependencies.
 
 ### Fixed
 - Fixed a bug where Vimeo video listing might not be loaded properly when the plugin was unable to find one of the videos’ thumbnail.
