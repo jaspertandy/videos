@@ -72,10 +72,10 @@ class Video extends Field
             'name' => $name,
             'value' => $value,
             'preview' => $preview,
-            'hasGatewaysLoggedIn' => VideosPlugin::$plugin->getGateways()->hasGatewaysLoggedIn(),
+            'hasEnabledGateways' => VideosPlugin::$plugin->getGateways()->hasEnabledGateways(),
         ];
 
-        if (VideosPlugin::$plugin->getGateways()->hasGatewaysLoggedIn()) {
+        if (VideosPlugin::$plugin->getGateways()->hasEnabledGateways()) {
             // Instantiate Videos Field
             $view->registerJs('new VideoFieldConstructor({data: {fieldVariables: '.\json_encode($variables).'}}).$mount("#'.$view->namespaceInputId($id).'-vue");');
         }

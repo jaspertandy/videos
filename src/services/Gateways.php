@@ -82,7 +82,7 @@ class Gateways extends Component
     }
 
     /**
-     * Has gateway logged in.
+     * Has enabled gateways.
      *
      * @return bool
      * @throws InvalidConfigException
@@ -90,7 +90,7 @@ class Gateways extends Component
      *
      * @since 3.0.0
      */
-    public function hasGatewaysLoggedIn(): bool
+    public function hasEnabledGateways(): bool
     {
         return count($this->getGateways(true)) > 0;
     }
