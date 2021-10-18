@@ -8,12 +8,12 @@
 namespace dukt\videos\base;
 
 /**
- * Cachable defines the common interface to be implemented by cachables.
+ * Cacheable defines the common interface to be implemented by cacheables.
  *
  * @author Dukt <support@dukt.net>
  * @since 3.0.0
  */
-interface Cachable
+interface Cacheable
 {
     /**
      * Generate cache key.

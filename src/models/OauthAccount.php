@@ -8,7 +8,7 @@
 namespace dukt\videos\models;
 
 use craft\base\Model;
-use dukt\videos\base\Cachable;
+use dukt\videos\base\Cacheable;
 use dukt\videos\Plugin as VideosPlugin;
 
 /**
@@ -17,7 +17,7 @@ use dukt\videos\Plugin as VideosPlugin;
  * @author Dukt <support@dukt.net>
  * @since 3.0.0
  */
-class OauthAccount extends Model implements Cachable
+class OauthAccount extends Model implements Cacheable
 {
     /**
      * @var string prefix for cache key

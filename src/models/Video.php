@@ -10,7 +10,7 @@ namespace dukt\videos\models;
 use Craft;
 use DateInterval;
 use DateTime;
-use dukt\videos\base\Cachable;
+use dukt\videos\base\Cacheable;
 use dukt\videos\base\Gateway;
 use dukt\videos\errors\GatewayNotFoundException;
 use dukt\videos\helpers\ThumbnailHelper;
@@ -24,7 +24,7 @@ use Twig\Markup;
  * @author Dukt <support@dukt.net>
  * @since 2.0.0
  */
-class Video extends AbstractVideo implements Cachable
+class Video extends AbstractVideo implements Cacheable
 {
     /**
      * @var string prefix for cache key
