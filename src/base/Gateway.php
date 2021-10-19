@@ -22,6 +22,7 @@ use dukt\videos\errors\VideoNotFoundException;
 use dukt\videos\helpers\UrlHelper as VideosUrlHelper;
 use dukt\videos\models\OauthAccount;
 use dukt\videos\models\Video;
+use dukt\videos\models\VideoExplorer;
 use dukt\videos\Plugin as VideosPlugin;
 use Exception;
 use GuzzleHttp\Client;
@@ -37,7 +38,7 @@ use yii\base\InvalidConfigException;
  * @author Dukt <support@dukt.net>
  * @since 2.0.0
  */
-abstract class Gateway implements GatewayInterface, JsonSerializable
+abstract class Gateway implements JsonSerializable
 {
     /**
      * @var null|AbstractProvider the oauth provider (used for non reinit on each call)
@@ -50,13 +51,26 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
     private ?Client $_apiClient = null;
 
     /**
+     * Returns the name of the gateway.
+     *
+     * @return string
+     *
+     * @since 2.0.0
+     */
+    public function getName(): string
+    {
+        $reflection = new ReflectionClass($this);
+
+        return $reflection->getShortName();
+    }
+
+    /**
      * Returns the handle of the gateway based on its class name.
      *
      * @return string
      * @throws ReflectionException
      *
-     * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
+     * @since 3.0.0
      */
     final public function getHandle(): string
     {
@@ -66,13 +80,21 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
     }
 
     /**
+     * Returns the icon’s alias.
+     *
+     * @return string
+     *
+     * @since 2.0.0
+     */
+    abstract public function getIconAlias(): string;
+
+    /**
      * Returns the icon URL.
      *
      * @return null|string
      * @throws InvalidArgumentException
      *
-     * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
+     * @since 3.0.0
      */
     final public function getIconUrl(): ?string
     {
@@ -110,7 +132,6 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
      * @throws InvalidConfigException
      *
      * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
      */
     public function getOauthProviderOptions(bool $parseEnv = true): array
     {
@@ -118,13 +139,22 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
     }
 
     /**
+     * Creates the OAuth provider’s instance.
+     *
+     * @param array $options
+     * @return AbstractProvider
+     *
+     * @since 2.0.0
+     */
+    abstract public function createOauthProvider(array $options): AbstractProvider;
+
+    /**
      * Returns the OAuth provider.
      *
      * @return AbstractProvider
      * @throws InvalidConfigException
      *
-     * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
+     * @since 3.0.0
      */
     final public function getOauthProvider(): AbstractProvider
     {
@@ -148,19 +178,6 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
     }
 
     /**
-     * Returns the redirect URI.
-     *
-     * @return string
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Gateway::getOauthRedirectUri]] instead.
-     */
-    public function getRedirectUri(): string
-    {
-        return $this->getOauthRedirectUri();
-    }
-
-    /**
      * Returns the OAuth javascript origin URL.
      *
      * @return string
@@ -174,26 +191,11 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
     }
 
     /**
-     * Returns the javascript origin URL.
-     *
-     * @return string
-     * @throws SiteNotFoundException
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Gateway::getOauthJavascriptOrigin]] instead.
-     */
-    public function getJavascriptOrigin(): string
-    {
-        return $this->getOauthJavascriptOrigin();
-    }
-
-    /**
      * Returns the OAuth scope.
      *
      * @return array
      *
-     * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
+     * @since 3.0.0
      */
     public function getOauthScope(): array
     {
@@ -205,8 +207,7 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
      *
      * @return array
      *
-     * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
+     * @since 3.0.0
      */
     public function getOauthAuthorizationOptions(): array
     {
@@ -230,6 +231,15 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
     }
 
     /**
+     * Returns the OAuth provider’s API console URL.
+     *
+     * @return string
+     *
+     * @since 2.0.0
+     */
+    abstract public function getOauthProviderApiConsoleUrl(): string;
+
+    /**
      * Returns the OAuth access token.
      *
      * @return AccessToken
@@ -240,24 +250,6 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
     final public function getOauthAccessToken(): AccessToken
     {
         return VideosPlugin::$plugin->getOauth()->getOauthAccessTokenByGateway($this);
-    }
-
-    /**
-     * Returns the OAuth token.
-     *
-     * @return null|AccessToken
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Gateway::getOauthAccessToken]] instead.
-     */
-    public function getOauthToken()
-    {
-        try {
-            return $this->getOauthAccessToken();
-        } catch (Exception $e) {
-        }
-
-        return null;
     }
 
     /**
@@ -302,19 +294,6 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
     }
 
     /**
-     * Has token.
-     *
-     * @return bool
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Gateway::isEnabled]] instead.
-     */
-    public function hasToken(): bool
-    {
-        return $this->isEnabled();
-    }
-
-    /**
      * Oauth logout.
      *
      * @return void
@@ -329,23 +308,6 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
         } catch (Exception $e) {
             throw new OauthLogoutException(/* TODO: more precise message */);
         }
-    }
-
-    /**
-     * Returns an authenticated guzzle client.
-     *
-     * @return Client
-     * @throws ApiClientCreateException
-     *
-     * @since 3.0.0
-     */
-    final public function getApiClient(): Client
-    {
-        if ($this->_apiClient === null) {
-            $this->_apiClient = $this->createApiClient();
-        }
-
-        return $this->_apiClient;
     }
 
     /**
@@ -385,22 +347,41 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
     }
 
     /**
-     * Returns the account.
+     * Extracts the video ID from the video URL.
      *
-     * @return mixed
-     * @throws Exception
+     * @param string $videoUrl
+     * @return string
+     * @throws VideoIdExtractException
      *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Gateway::getOauthAccount]] instead.
+     * @since 3.0.0
      */
-    public function getAccount()
+    abstract public function extractVideoIdFromVideoUrl(string $videoUrl): string;
+
+    /**
+     * Creates an authenticated guzzle client.
+     *
+     * @return Client
+     * @throws ApiClientCreateException
+     *
+     * @since 3.0.0
+     */
+    abstract public function createApiClient(): Client;
+
+    /**
+     * Returns an authenticated guzzle client.
+     *
+     * @return Client
+     * @throws ApiClientCreateException
+     *
+     * @since 3.0.0
+     */
+    final public function getApiClient(): Client
     {
-        try {
-            return $this->getOauthAccount();
-        } catch (Exception $e) {
+        if ($this->_apiClient === null) {
+            $this->_apiClient = $this->createApiClient();
         }
 
-        return null;
+        return $this->_apiClient;
     }
 
     /**
@@ -410,8 +391,7 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
      * @return Video
      * @throws VideoNotFoundException
      *
-     * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
+     * @since 3.0.0
      */
     final public function getVideoByUrl(string $videoUrl): Video
     {
@@ -431,8 +411,7 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
      * @return Video
      * @throws VideoNotFoundException
      *
-     * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
+     * @since 3.0.0
      */
     final public function getVideoById(string $videoId): Video
     {
@@ -458,14 +437,33 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
     }
 
     /**
+     * Requests the video from the API and then returns it as video object.
+     *
+     * @param string $videoId
+     * @return Video
+     * @throws VideoNotFoundException
+     *
+     * @since 3.0.0
+     */
+    abstract public function fetchVideoById(string $videoId): Video;
+
+    /**
+     * Returns the URL format of the embed.
+     *
+     * @return string
+     *
+     * @since 2.0.0
+     */
+    abstract public function getEmbedFormat(): string;
+
+    /**
      * Returns the HTML of the embed from a video ID.
      *
      * @param Video $video
      * @param array $options
      * @return string
      *
-     * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
+     * @since 3.0.0
      */
     final public function getEmbedHtml(Video $video, array $options = []): string
     {
@@ -544,8 +542,7 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
      * @param array $options
      * @return string
      *
-     * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
+     * @since 3.0.0
      */
     final public function getEmbedUrl(Video $video, array $options = []): string
     {
@@ -571,8 +568,7 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
      * @return mixed
      * @throws GatewayMethodNotFoundException
      *
-     * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
+     * @since 3.0.0
      */
     final public function getVideos(string $method, array $options = [])
     {
@@ -606,6 +602,16 @@ abstract class Gateway implements GatewayInterface, JsonSerializable
     {
         return false;
     }
+
+    /**
+     * Returns the videos'explorer.
+     *
+     * @return VideoExplorer
+     * @throws ApiResponseException
+     *
+     * @since 3.0.0
+     */
+    abstract public function getExplorer(): VideoExplorer;
 
     /**
      * {@inheritdoc}

@@ -9,6 +9,21 @@ Changelog
 - Added `dukt\videos\Plugin::CACHE_KEY_PREFIX` used for cache key prefix with new cache system
 - Added `dukt\videos\base\Cacheable` interface to mark an object as cacheable
 - Added `dukt\videos\base\Exception` base class for plugin exceptions
+- Added `dukt\videos\base\Gateway::getOauthRedirectUri()` returns the oauth redirect URI
+- Added `dukt\videos\base\Gateway::getOauthJavascriptOrigin()` returns the oauth javascript origin URL
+- Added `dukt\videos\base\Gateway::getOauthAuthorizationUrl()` returns the oauth authorization URL
+- Added `dukt\videos\base\Gateway::getOauthAccessToken()` returns the oauth access token
+- Added `dukt\videos\base\Gateway::oauthLogin()` login to oauth provider and save token in database
+- Added `dukt\videos\base\Gateway::isEnabled()` check if gateway is enable (= logged in to oauth provider)
+- Added `dukt\videos\base\Gateway::oauthLogout()` remove token from database and so logout to oauth provider
+- Added `dukt\videos\base\Gateway::getOauthAccount()` returns oauth account information (in a `dukt\videos\models\OAuthAccount`instance)
+- Added `dukt\videos\base\Gateway::extractVideoIdFromVideoUrl()` to extracts the video ID from the video URL
+- Added `dukt\videos\base\Gateway::createApiClient()` to creates an authenticated guzzle client
+- Added `dukt\videos\base\Gateway::getApiClient()` returns api client
+- Added `dukt\videos\base\Gateway::fetchVideoById()` to get video data from the gateway API
+- Added `dukt\videos\base\Gateway::jsonSerialize()` to serialize gateway information (used by javascript layer)
+- Added `dukt\videos\base\Gateway::getExplorer()` returns the videos'explorer
+- Added `dukt\videos\base\Gateway::fetch()` to get data from the gateway API
 - Added `dukt\videos\errors\ApiClientCreateException`
 - Added `dukt\videos\errors\OauthAccessTokenNotFoundException`
 - Added `dukt\videos\errors\OauthAccountNotFoundException`
@@ -47,6 +62,28 @@ Changelog
 - Renamed Vimeo’s “Favorites” to “Likes”.
 - Use Vue.js for JavaScript interactions.
 - Updated NPM dependencies.
+- Changed `dukt\videos\base\Gateway::getHandle()` is now final
+- Changed `dukt\videos\base\Gateway::getIconUrl()` is now final
+- Changed `dukt\videos\base\Gateway::getOauthProvider()` is now final
+- Moved `dukt\videos\base\Gateway::getRedirectUri()` to `dukt\videos\base\Gateway::getOauthRedirectUri()`
+- Moved `dukt\videos\base\Gateway::getJavascriptOrigin()` to `dukt\videos\base\Gateway::getOauthJavascriptOrigin()`
+- Changed `dukt\videos\base\Gateway::getOauthScope()` always returns an array
+- Changed `dukt\videos\base\Gateway::getOauthAuthorizationOptions()` always returns an array
+- Moved `dukt\videos\base\Gateway::getOauthToken()` to `dukt\videos\base\Gateway::getOauthAccessToken()`
+- Moved `dukt\videos\base\Gateway::hasToken()` to `dukt\videos\base\Gateway::isEnabled()`
+- Moved `dukt\videos\base\Gateway::getAccount()` to `dukt\videos\base\Gateway::getOauthAccount()`
+- Changed `dukt\videos\base\Gateway::getVideoByUrl()` is now final
+- Changed `dukt\videos\base\Gateway::getVideoById()` is now final ; use `dukt\videos\base\Gateway::fetchVideoById()` to get video from the gateway API
+- Changed `dukt\videos\base\Gateway::getEmbedHtml()` is now final and need `dukt\videos\model\Video` as params (instead of video id)
+- Changed `dukt\videos\base\Gateway::getEmbedUrl()` is now final and need `dukt\videos\model\Video` as params (instead of video id)
+- Changed `dukt\videos\base\Gateway::getVideos()` is now final
+- Moved `dukt\videos\base\Gateway::getExplorerSections()` to `dukt\videos\base\Gateway::getExplorer()`
+- Moved `dukt\videos\base\Gateway::extractVideoIdFromUrl()` to `dukt\videos\base\Gateway::extractVideoIdFromVideoUrl()`
+- Removed `dukt\videos\base\Gateway::oauthConnect()`
+- Removed `dukt\videos\base\Gateway::oauthCallback()`
+- Moved `dukt\videos\base\Gateway::createClient()` to `dukt\videos\base\Gateway::createApiClient()`
+- Moved `dukt\videos\base\Gateway::get()` to `dukt\videos\base\Gateway::fetch()`
+- Removed `dukt\videos\base\GatewayInterface`
 - Removed `dukt\videos\errors\CollectionParsingException`
 - Removed `dukt\videos\errors\JsonParsingException`
 - Moved `dukt\videos\models\Collection` to `dukt\videos\models\VideoExplorerCollection`

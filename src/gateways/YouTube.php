@@ -38,16 +38,6 @@ class YouTube extends Gateway
      *
      * @since 2.0.0
      */
-    public function getName(): string
-    {
-        return 'YouTube';
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @since 2.0.0
-     */
     public function getIconAlias(): string
     {
         return '@dukt/videos/icons/youtube.svg';
@@ -237,7 +227,7 @@ class YouTube extends Gateway
                 new VideoExplorerCollection([
                     'name' => 'Liked videos',
                     'method' => 'likes',
-                    'icon' => 'thumb-up'
+                    'icon' => 'thumb-up',
                 ]),
             ],
         ]);
@@ -255,7 +245,7 @@ class YouTube extends Gateway
                     'name' => $playlistData['snippet']['title'],
                     'method' => 'playlist',
                     'options' => ['id' => $playlistData['id']],
-                    'icon' => 'list'
+                    'icon' => 'list',
                 ]);
             }
 

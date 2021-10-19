@@ -38,16 +38,6 @@ class Vimeo extends Gateway
      *
      * @since 2.0.0
      */
-    public function getName(): string
-    {
-        return 'Vimeo';
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @since 2.0.0
-     */
     public function getIconAlias(): string
     {
         return '@dukt/videos/icons/vimeo.svg';
@@ -185,11 +175,10 @@ class Vimeo extends Gateway
                 new VideoExplorerCollection([
                     'name' => 'Favorites',
                     'method' => 'favorites',
-                    'icon' => 'thumb-up'
+                    'icon' => 'thumb-up',
                 ]),
             ],
         ]);
-
 
         // folders section
         $foldersData = $this->_fetchFolders();
@@ -210,7 +199,6 @@ class Vimeo extends Gateway
 
             $explorer->sections[] = $section;
         }
-
 
         // albums section
         $albumsData = $this->_fetchAlbums();
@@ -252,6 +240,23 @@ class Vimeo extends Gateway
         }
 
         return $explorer;
+    }
+
+    /**
+     * Returns a list of folder videos.
+     *
+     * @param array $options
+     * @return array
+     * @throws ApiResponseException
+     *
+     * @since 3.0.0
+     */
+    protected function getVideosFolder(array $options = []): array
+    {
+        $folderId = $options['id'];
+        unset($options['id']);
+
+        return $this->_fetchVideos('me/folders/'.$folderId.'/videos', $options);
     }
 
     /**
@@ -300,23 +305,6 @@ class Vimeo extends Gateway
     protected function getVideosFavorites(array $options = []): array
     {
         return $this->_fetchVideos('me/likes', $options);
-    }
-
-    /**
-     * Returns a list of folder videos.
-     *
-     * @param array $options
-     * @return array
-     * @throws ApiResponseException
-     *
-     * @since 2.0.0
-     */
-    protected function getVideosFolder(array $options = []): array
-    {
-        $folderId = $options['id'];
-        unset($options['id']);
-
-        return $this->_fetchVideos('me/folders/'.$folderId.'/videos', $options);
     }
 
     /**
@@ -441,8 +429,6 @@ class Vimeo extends Gateway
 
         return $data['data'];
     }
-
-
 
     /**
      * Parses videos from data.
