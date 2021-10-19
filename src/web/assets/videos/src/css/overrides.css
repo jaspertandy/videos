@@ -1,0 +1,10 @@
+/* Override the sidebar for the video selector modal */
+
+.videoselectormodal .sidebar .heading {
+    @apply mx-4;
+}
+
+body.ltr .videoselectormodal .sidebar nav > ul > li > a,
+body.rtl .videoselectormodal .sidebar nav > ul > li > a {
+    @apply px-4;
+}
