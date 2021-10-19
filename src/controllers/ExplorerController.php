@@ -24,6 +24,7 @@ class ExplorerController extends Controller
     /**
      * @return Response
      * @throws InvalidConfigException
+     * @throws \dukt\videos\errors\ApiResponseException
      */
     public function actionGetGateways(): Response
     {
@@ -68,9 +69,6 @@ class ExplorerController extends Controller
 
         $videosResponse = $gateway->getVideos($method, $options);
 
-
-        // Todo: Make this happen in the Video model toArray()
-
         $videos = array();
 
         foreach($videosResponse['videos'] as $video) {
@@ -84,6 +82,12 @@ class ExplorerController extends Controller
         ]);
     }
 
+    /**
+     * @return Response
+     * @throws InvalidConfigException
+     * @throws \dukt\videos\errors\VideoNotFoundException
+     * @throws \yii\web\BadRequestHttpException
+     */
     public function actionGetVideo()
     {
         $this->requireAcceptsJson();
@@ -101,6 +105,15 @@ class ExplorerController extends Controller
         return $this->asJson($video->toArray());
     }
 
+    /**
+     * @return Response
+     * @throws InvalidConfigException
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
+     * @throws \yii\base\Exception
+     * @throws \yii\web\BadRequestHttpException
+     */
     public function actionGetVideoEmbedHtml(): Response
     {
         $this->requireAcceptsJson();
