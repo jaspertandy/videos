@@ -8,7 +8,9 @@
         </div>
 
         <div class="duration">
-            <!--{{ duration }}-->
+            <!-- TODO: Fix duration -->
+            <!-- {{ duration }} -->
+            00:00
         </div>
         <div class="play" @click.prevent="$emit('playVideo')"></div>
     </div>
