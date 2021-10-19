@@ -59,7 +59,7 @@
                     return null
                 }
 
-                return this.fieldVariables.namespaceName
+                return this.fieldVariables.name
             }
         },
 

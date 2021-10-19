@@ -69,7 +69,7 @@ class Video extends Field
 
         $variables = [
             'id' => $id,
-            'name' => $name,
+            'name' => $view->namespaceInputName($id),
             'value' => $value,
             'preview' => $preview,
             'hasEnabledGateways' => VideosPlugin::$plugin->getGateways()->hasEnabledGateways(),
