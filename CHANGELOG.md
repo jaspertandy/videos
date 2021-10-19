@@ -6,12 +6,89 @@ Changelog
 ### Added
 - Added Vimeo folders support.
 - Added collection icon support.
+- Added `dukt\videos\Plugin::CACHE_KEY_PREFIX` used for cache key prefix with new cache system
+- Added `dukt\videos\base\Cacheable` interface to mark an object as cacheable
+- Added `dukt\videos\base\Exception` base class for plugin exceptions
+- Added `dukt\videos\errors\ApiClientCreateException`
+- Added `dukt\videos\errors\OauthAccessTokenNotFoundException`
+- Added `dukt\videos\errors\OauthAccountNotFoundException`
+- Added `dukt\videos\errors\OauthDeleteAccessTokenException`
+- Added `dukt\videos\errors\OauthLoginException`
+- Added `dukt\videos\errors\OauthLogoutException`
+- Added `dukt\videos\errors\OauthRefreshAccessTokenException`
+- Added `dukt\videos\errors\OauthSaveAccessTokenException`
+- Added `dukt\videos\errors\TokenDeleteException`
+- Added `dukt\videos\errors\TokenInvalidException`
+- Added `dukt\videos\errors\TokenNotFoundException`
+- Added `dukt\videos\errors\TokenSaveException`
+- Added `dukt\videos\errors\VideoIdExtractException`
+- Added `dukt\videos\events\RegisterGatewayTypesEvent::NAME`
+- Added `dukt\videos\helpers\DateTimeHelper`
+- Added `dukt\videos\helpers\ThumbnailHelper`
+- Added `dukt\videos\helpers\UrlHelper`
+- Added `dukt\videos\models\AbstractVideo` as parent video model class
+- Added `dukt\videos\models\FailedVideo` returns when Video can’t be load for technical reason (api call failed, gateway disconnected and so on)
+- Added `dukt\videos\models\OauthAccount` used for keep Gateway account information
+- Added `dukt\videos\models\VideoAuthor` used for Video object author property
+- Added `dukt\videos\models\VideoExplorer` the new explorer object
+- Added `dukt\videos\models\VideoExplorerCollection` used by new explorer
+- Added `dukt\videos\models\VideoExplorerSection` used by new explorer
+- Added `dukt\videos\models\VideoSize` used for Video object size property
+- Added `dukt\videos\models\VideoStatistic` used for Video object statistic property
+- Added `dukt\videos\models\Video::CACHE_KEY_PREFIX` used for cache key prefix with new cache system
+- Added `dukt\videos\models\Video::generateCacheKey()` used for generate cache key with new cache system
+- Added `dukt\videos\services\Cache::isEnabled()` to check if cache for plugin data is enabled
+- Added `dukt\videos\services\Cache::duration()` returns cache duration for plugin data
+- Added `dukt\videos\services\Gateways::hasEnabledGateways()` to check if at least one gateway has been enabled (= logged in with oauth)
+- Added `dukt\videos\web\twig\Extension` with two twig filter : durationNumeric and durationIso8601 that use `dukt\videos\helpers\DateTimeHelper` to work with `\DateInterval` in twig
 
 ### Changed
 - Renamed Vimeo’s “Playlists” section to “Showcases”.
 - Renamed Vimeo’s “Favorites” to “Likes”.
 - Use Vue.js for JavaScript interactions.
 - Updated NPM dependencies.
+- Removed `dukt\videos\errors\CollectionParsingException`
+- Removed `dukt\videos\errors\JsonParsingException`
+- Moved `dukt\videos\models\Collection` to `dukt\videos\models\VideoExplorerCollection`
+- Moved `dukt\videos\models\Section` to `dukt\videos\models\VideoExplorerSection`
+- Changed `dukt\videos\models\Settings::$cacheDuration` is now integer of seconds before the cache will expire
+- Moved `dukt\videos\models\Video::$date` to `dukt\videos\models\Video::$publishedAt`
+- Moved `dukt\videos\models\Video::$plays` to `dukt\videos\models\Video::$statistic::$playCount` $statistic is a `dukt\videos\models\VideoStatistic` instance
+- Moved `dukt\videos\models\Video::$width` to `dukt\videos\models\Video::$size::$width` $size is a `dukt\videos\models\VideoSize` instance
+- Moved `dukt\videos\models\Video::$height` to `dukt\videos\models\Video::$size::$height` $size is a `dukt\videos\models\VideoSize` instance
+- Moved `dukt\videos\models\Video::$authorName` to `dukt\videos\models\Video::$author::$name` $author is a `dukt\videos\models\VideoAuthor` instance
+- Moved `dukt\videos\models\Video::$authorUrl` to `dukt\videos\models\Video::$author::$url` $author is a `dukt\videos\models\VideoAuthor` instance
+- Moved `dukt\videos\models\Video::$authorUsername` to `dukt\videos\models\Video::$author::$name` $author is a `dukt\videos\models\VideoAuthor` instance
+- Moved `dukt\videos\models\Video::$gatewayName` to `dukt\videos\models\Video::$gateway::getName()` $gateway is a `dukt\videos\base\Gateway` instance
+- Moved `dukt\videos\models\Video::$thumbnailSource` to `dukt\videos\models\Video::$thumbnailSourceUrl`
+- Moved `dukt\videos\models\Video::$thumbnailLargeSource` to `dukt\videos\models\Video::$thumbnailSourceUrl`
+- Moved `dukt\videos\models\Video::$durationSeconds` to `dukt\videos\models\Video::$duration` $duration is a `\DateInterval` instance
+- Moved `dukt\videos\models\Video::$duration8601` to `dukt\videos\models\Video::$duration` $duration is a `\DateInterval` instance
+- Removed `dukt\videos\models\Video::getDuration()` use `dukt\videos\models\Video::$duration` instead ; $duration is a `\DateInterval` instance (use DateTimeHelper to format and twig filter in template)
+- Changed `dukt\videos\models\Video::getGateway()` returns `dukt\videos\base\Gateway` instance or throw `dukt\videos\errors\GatewayNotFoundException` if not found
+- Changed `dukt\videos\models\Video::getEmbed()` returns `\Twig\Markup`
+- Removed `dukt\videos\helpers\VideosHelper`
+- Moved `dukt\videos\helpers\VideosHelper::getDuration()` to `dukt\videos\helpers\DateTimeHelper::formatDateIntervalToReadable()`
+- Moved `dukt\videos\helpers\VideosHelper::getDuration8601()` to `dukt\videos\helpers\DateTimeHelper::formatDateIntervalToISO8601()`
+- Moved `dukt\videos\helpers\VideosHelper::getVideoThumbnail()` to `dukt\videos\helpers\ThumbnailHelper::getByVideoAndSize()`
+- Changed `dukt\videos\services\Cache::get()` need to be called with cachekey param
+- Changed `dukt\videos\services\Cache::set()` need to be called with cachekey param ; can’t override plugin cache settings anymore
+- Moved `dukt\videos\services\Gateways::EVENT_REGISTER_GATEWAY_TYPES` to `dukt\videos\events\RegisterGatewayTypesEvent::NAME`
+- `dukt\videos\services\Gateways::getGateways()` param to check enabled status has null default value
+- Moved `dukt\videos\services\Gateways::getGateway()` to dukt\videos\services\Gateways::getGatewayByHandle()` and param to check enabled status has null default value ; throw `dukt\videos\errors\GatewayNotFoundException` if no gateway was found with given gateway handle
+- `dukt\videos\services\Oauth` is now fully in charge of token management
+- Moved `dukt\videos\services\Oauth::getToken()` to `dukt\videos\services\Oauth::getOauthAccessTokenByGateway()`
+- Moved `dukt\videos\services\Oauth::saveToken()` to `dukt\videos\services\Oauth::saveOauthAccessTokenByGateway()`
+- Moved `dukt\videos\services\Oauth::deleteToken()` to `dukt\videos\services\Oauth::deleteOauthAccessTokenByGateway()`
+- Moved `dukt\videos\Plugin::getOauthProviderOptions()` to `dukt\videos\services\Oauth::getOauthProviderOptions()`
+- Removed `dukt\videos\base\PluginTrait::getTokens()`
+- Removed `dukt\videos\services\Tokens`
+- Removed `dukt\videos\models\Token`
+- Changed `dukt\videos\services\Videos::getVideoByUrl()` signature: no more cache management inside ; throw `dukt\videos\errors\VideoNotFoundException` if no video was found with the given url
+- Removed `dukt\videos\services\Videos::getEmbed()` use `dukt\videos\models\Video::getEmbed()` or dukt\videos\web\twig\variables\VideosVariable::getEmbed() (in twig template) instead
+- Removed `dukt\videos\services\Videos::getVideoById()` use `dukt\videos\base\Gateway::getVideoById()` instead
+- Changed `dukt\videos\web\twig\variables\VideosVariable::getVideoByUrl()` signature: no more cache management inside
+- Changed `dukt\videos\web\twig\variables\VideosVariable::url()` signature: no more cache management inside
 
 ### Fixed
 - Fixed a bug where Vimeo video listing might not be loaded properly when the plugin was unable to find one of the videos’ thumbnail.
