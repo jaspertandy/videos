@@ -23,11 +23,9 @@ use dukt\videos\models\Settings;
 use dukt\videos\services\Cache;
 use dukt\videos\services\Gateways;
 use dukt\videos\services\Oauth;
-use dukt\videos\services\Tokens;
 use dukt\videos\services\Videos;
 use dukt\videos\web\twig\Extension;
 use dukt\videos\web\twig\variables\VideosVariable;
-use Exception;
 use yii\base\Event;
 
 /**
@@ -99,31 +97,6 @@ class Plugin extends BasePlugin
     }
 
     /**
-     * Get OAuth provider options.
-     *
-     * @param string $gatewayHandle
-     * @param bool $parse
-     * @return null|array
-     *
-     * @since 2.0.2
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Oauth::getOauthProviderOptions]] instead.
-     */
-    public function getOauthProviderOptions(string $gatewayHandle, bool $parse = true)
-    {
-        try {
-            $gateway = $this->getGateways()->getGatewayByHandle($gatewayHandle);
-            $options = $this->getOauth()->getOauthProviderOptions($gateway, $parse);
-
-            if (empty($options) === false) {
-                return $options;
-            }
-        } catch (Exception $e) {
-        }
-
-        return null;
-    }
-
-    /**
      * {@inheritdoc}
      *
      * @since 2.0.0
@@ -137,8 +110,6 @@ class Plugin extends BasePlugin
      * Set plugin components.
      *
      * @return void
-     *
-     * @since 2.0.3
      */
     private function _setPluginComponents(): void
     {
@@ -147,7 +118,6 @@ class Plugin extends BasePlugin
             'cache' => Cache::class,
             'gateways' => Gateways::class,
             'oauth' => Oauth::class,
-            'tokens' => Tokens::class, // @deprecated
         ]);
     }
 
@@ -155,8 +125,6 @@ class Plugin extends BasePlugin
      * Register CP routes.
      *
      * @return void
-     *
-     * @since 2.0.3
      */
     private function _registerCpRoutes(): void
     {
@@ -175,8 +143,6 @@ class Plugin extends BasePlugin
      * Register field types.
      *
      * @return void
-     *
-     * @since 2.0.3
      */
     private function _registerFieldTypes(): void
     {
@@ -189,8 +155,6 @@ class Plugin extends BasePlugin
      * Register cache options.
      *
      * @return void
-     *
-     * @since 2.0.3
      */
     private function _registerCacheOptions(): void
     {
@@ -207,8 +171,6 @@ class Plugin extends BasePlugin
      * Register template variable.
      *
      * @return void
-     *
-     * @since 2.0.3
      */
     private function _registerVariable(): void
     {
@@ -223,8 +185,6 @@ class Plugin extends BasePlugin
      * Register twig extensions.
      *
      * @return void
-     *
-     * @since 3.0.0
      */
     private function _registerTwigExtensions(): void
     {

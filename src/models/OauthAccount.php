@@ -45,7 +45,7 @@ class OauthAccount extends Model implements Cacheable
      *
      * @since 3.0.0
      */
-    public static function generateCacheKey(array $identifiers): string
+    final public static function generateCacheKey(array $identifiers): string
     {
         return VideosPlugin::CACHE_KEY_PREFIX.'.'.self::CACHE_KEY_PREFIX.'.'.$identifiers['gateway_handle'];
     }

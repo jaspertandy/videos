@@ -18,13 +18,13 @@ use craft\base\Model;
 class Settings extends Model
 {
     /**
-     * @var string the amount of time cache should last
+     * @var null|int duration in seconds before the cache will expire
      *
      * @see http://www.php.net/manual/en/dateinterval.construct.php
      *
-     * @since 2.0.0
+     * @since 3.0.0
      */
-    public $cacheDuration = 'PT15M';
+    public $cacheDuration;
 
     /**
      * @var bool whether request to APIs should be cached or not

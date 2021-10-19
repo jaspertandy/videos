@@ -46,14 +46,11 @@ class VideosVariable
      * Get a video from its URL.
      *
      * @param string $videoUrl
-     * @param bool $enableCache @deprecated
-     * @param int $cacheExpiry @deprecated
      * @return null|Video
      *
-     * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
+     * @since 3.0.0
      */
-    public function getVideoByUrl(string $videoUrl, $enableCache = true, $cacheExpiry = 3600): ?Video
+    public function getVideoByUrl(string $videoUrl): ?Video
     {
         try {
             return VideosPlugin::$plugin->getVideos()->getVideoByUrl($videoUrl);
@@ -68,14 +65,11 @@ class VideosVariable
      * Alias for the `getVideoByUrl()` method.
      *
      * @param string $videoUrl
-     * @param bool $enableCache @deprecated
-     * @param int $cacheExpiry @deprecated
      * @return null|Video
      *
-     * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
+     * @since 3.0.0
      */
-    public function url($videoUrl, $enableCache = true, $cacheExpiry = 3600): ?Video
+    public function url($videoUrl): ?Video
     {
         return $this->getVideoByUrl($videoUrl);
     }

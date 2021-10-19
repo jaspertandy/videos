@@ -34,13 +34,24 @@ class Cache extends Component
     }
 
     /**
-     * Get cache data by cache key.
+     * Returns defined cache duration.
+     *
+     * @return null|int
+     *
+     * @since 3.0.0
+     */
+    public function duration(): ?int
+    {
+        return VideosPlugin::$plugin->getSettings()->cacheDuration;
+    }
+
+    /**
+     * Returns cache data by cache key.
      *
      * @param string $cacheKey
      * @return mixed the value stored in cache, false if the value is not in the cache, expired, or the dependency associated with the cached data has changed
      *
-     * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
+     * @since 3.0.0
      */
     public function get(string $cacheKey)
     {
@@ -54,11 +65,10 @@ class Cache extends Component
      * @param mixed $value
      * @return bool whether the value is successfully stored into cache
      *
-     * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
+     * @since 3.0.0
      */
     public function set(string $cacheKey, $value): bool
     {
-        return Craft::$app->cache->set($cacheKey, $value, VideosPlugin::$plugin->getSettings()->cacheDuration);
+        return Craft::$app->cache->set($cacheKey, $value, $this->duration());
     }
 }

@@ -14,7 +14,6 @@ use dukt\videos\base\Cacheable;
 use dukt\videos\base\Gateway;
 use dukt\videos\errors\GatewayNotFoundException;
 use dukt\videos\helpers\ThumbnailHelper;
-use dukt\videos\helpers\VideosHelper;
 use dukt\videos\Plugin as VideosPlugin;
 use Twig\Markup;
 
@@ -130,121 +129,9 @@ class Video extends AbstractVideo implements Cacheable
     public bool $loaded = true;
 
     /**
-     * @var null|\DateTime the date the video was uploaded
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::publishedAt]] instead.
-     */
-    public $date;
-
-    /**
-     * @var null|int the number of times the video has been played
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::statitic::playCount]] instead.
-     */
-    public $plays;
-
-    /**
-     * @var null|int the video’s width
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::size::width]] instead.
-     */
-    public $width;
-
-    /**
-     * @var null|int the video’s height
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::size::height]] instead.
-     */
-    public $height;
-
-    /**
-     * @var null|string the author’s name
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::author::name]] instead.
-     */
-    public $authorName;
-
-    /**
-     * @var null|string the author’s URL
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::author::url]] instead.
-     */
-    public $authorUrl;
-
-    /**
-     * @var null|string the author’s username
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::author::name]] instead.
-     */
-    public $authorUsername;
-
-    /**
-     * @var null|string the gateway’s name
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::gateway]] instead.
-     */
-    public $gatewayName;
-
-    /**
-     * @var null|string the thumbnail’s source
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::thumbnail::source]] instead.
-     */
-    public $thumbnailSource;
-
-    /**
-     * @var null|string the thumbnail’s large source
-     *
-     * @since 2.0.0
-     * @deprecated in 2.1.0, will be removed in 3.1.0, use [[Video::thumbnail::source]] instead.
-     */
-    public $thumbnailLargeSource;
-
-    /**
-     * @var null|int duration of the video in seconds
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::duration]] instead.
-     */
-    public $durationSeconds;
-
-    /**
-     * @var null|int duration of the video in ISO 8601 format
-     *
-     * @since 2.0.11
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::duration]] instead.
-     */
-    public $duration8601;
-
-    /**
      * @var null|Gateway the gateway (used for non reinit on each call)
-     *
-     * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
      */
     private ?Gateway $_gateway = null;
-
-    /**
-     * Returns the video’s duration.
-     *
-     * @return string
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[Video::duration]] instead.
-     */
-    public function getDuration(): string
-    {
-        return VideosHelper::getDuration($this->durationSeconds);
-    }
 
     /**
      * {@inheritdoc}
@@ -264,8 +151,7 @@ class Video extends AbstractVideo implements Cacheable
      * @return Gateway
      * @throws GatewayNotFoundException
      *
-     * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
+     * @since 3.0.0
      */
     public function getGateway(): Gateway
     {
@@ -283,7 +169,6 @@ class Video extends AbstractVideo implements Cacheable
      * @return null|string
      *
      * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
      */
     public function getThumbnail(int $size = 300): string
     {
@@ -297,8 +182,7 @@ class Video extends AbstractVideo implements Cacheable
      * @return Markup
      * @throws GatewayNotFoundException
      *
-     * @since 2.0.0
-     * TODO: report breaking changes (and update since ?)
+     * @since 3.0.0
      */
     public function getEmbed(array $options = []): Markup
     {
@@ -327,7 +211,7 @@ class Video extends AbstractVideo implements Cacheable
      *
      * @since 3.0.0
      */
-    public static function generateCacheKey(array $identifiers): string
+    final public static function generateCacheKey(array $identifiers): string
     {
         return VideosPlugin::CACHE_KEY_PREFIX.'.'.self::CACHE_KEY_PREFIX.'.'.$identifiers['gateway_handle'].'.'.md5($identifiers['id']);
     }
