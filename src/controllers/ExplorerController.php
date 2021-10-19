@@ -11,16 +11,15 @@ use Craft;
 use craft\helpers\Json;
 use craft\web\Controller;
 use dukt\videos\errors\GatewayNotFoundException;
-use dukt\videos\helpers\VideosHelper;
 use dukt\videos\Plugin as Videos;
 use dukt\videos\Plugin;
 use yii\base\InvalidConfigException;
 use yii\web\Response;
 
 /**
- * Vue controller
+ * Explorer controller
  */
-class VueController extends Controller
+class ExplorerController extends Controller
 {
     /**
      * @return Response
