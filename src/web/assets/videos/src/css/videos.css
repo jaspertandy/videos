@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 
+@import "overrides.css";
 @import "components/field.css";
 @import "components/thumb.css";
 
