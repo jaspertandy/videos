@@ -211,7 +211,7 @@ class Video extends AbstractVideo implements Cacheable
      *
      * @since 3.0.0
      */
-    final public static function generateCacheKey(array $identifiers): string
+    public static function generateCacheKey(array $identifiers): string
     {
         return VideosPlugin::CACHE_KEY_PREFIX.'.'.self::CACHE_KEY_PREFIX.'.'.$identifiers['gateway_handle'].'.'.md5($identifiers['id']);
     }
