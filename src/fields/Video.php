@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
+use dukt\videos\errors\GatewayNotFoundException;
 use dukt\videos\models\FailedVideo;
 use dukt\videos\Plugin as VideosPlugin;
 use dukt\videos\web\assets\videos\VideosAsset;
@@ -156,8 +157,12 @@ class Video extends Field
             $keywords[] = $value->title;
             $keywords[] = $value->description;
             $keywords[] = $value->author->name;
-            $keywords[] = $value->gateway->handle;
-            $keywords[] = $value->gateway->name;
+
+            try {
+                $keywords[] = $value->getGateway()->getHandle();
+                $keywords[] = $value->getGateway()->getName();
+            } catch (GatewayNotFoundException $e) {
+            }
         }
 
         $searchKeywords = StringHelper::toString($keywords, ' ');

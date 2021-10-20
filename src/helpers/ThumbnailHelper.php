@@ -9,6 +9,7 @@ namespace dukt\videos\helpers;
 
 use Craft;
 use craft\helpers\FileHelper;
+use dukt\videos\errors\GatewayNotFoundException;
 use dukt\videos\models\Video;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
@@ -28,6 +29,7 @@ class ThumbnailHelper
      * @param Video $video
      * @param int $size
      * @return null|string
+     * @throws GatewayNotFoundException
      *
      * @since 3.0.0
      */
