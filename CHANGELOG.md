@@ -24,6 +24,8 @@ Changelog
 - Added `dukt\videos\base\Gateway::jsonSerialize()` to serialize gateway information (used by javascript layer)
 - Added `dukt\videos\base\Gateway::getExplorer()` returns the videos'explorer
 - Added `dukt\videos\base\Gateway::fetch()` to get data from the gateway API
+- Added `dukt\videos\controllers\ExplorerController::actionGetGateways()` returns all enabled gateways
+- Added `dukt\videos\controllers\ExplorerController::actionGetVideo()` returns a video by url
 - Added `dukt\videos\errors\ApiClientCreateException`
 - Added `dukt\videos\errors\OauthAccessTokenNotFoundException`
 - Added `dukt\videos\errors\OauthAccountNotFoundException`
@@ -52,6 +54,7 @@ Changelog
 - Added `dukt\videos\models\VideoStatistic` used for Video object statistic property
 - Added `dukt\videos\models\Video::CACHE_KEY_PREFIX` used for cache key prefix with new cache system
 - Added `dukt\videos\models\Video::generateCacheKey()` used for generate cache key with new cache system
+- Added `dukt\videos\models\Video::jsonSerialize()` used for json encode
 - Added `dukt\videos\services\Cache::isEnabled()` to check if cache for plugin data is enabled
 - Added `dukt\videos\services\Cache::duration()` returns cache duration for plugin data
 - Added `dukt\videos\services\Gateways::hasEnabledGateways()` to check if at least one gateway has been enabled (= logged in with oauth)
