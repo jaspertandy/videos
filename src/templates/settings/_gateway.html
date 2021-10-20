@@ -23,14 +23,14 @@
         </ul>
 
         <p>
-            <a class="btn small" href="{{ actionUrl('videos/oauth/disconnect', { gateway: gateway.handle }) }}">
+            <a class="btn small" href="{{ gateway.oauthLogoutUrl }}">
                 {{ 'Disconnect'|t('videos') }}
             </a>
         </p>
     {% else %}
         <p>{{ 'Gettings errors trying to connect? Check your {link}.'|t('videos', { link: '<a href="'~url('videos/settings/'~gateway.handle~'/oauth')~'">OAuth settings</a>' })|raw }}</p>
         <p>
-            <a class="btn submit" href="{{ actionUrl('videos/oauth/connect', { gateway: gateway.handle }) }}">
+            <a class="btn submit" href="{{ gateway.oauthLoginUrl }}">
                 {{ "Connect to {gateway}"|t('videos', { gateway: gateway.name }) }}
             </a>
         </p>

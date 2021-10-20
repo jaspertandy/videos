@@ -166,15 +166,39 @@ abstract class Gateway implements JsonSerializable
     }
 
     /**
-     * Returns the OAuth redirect URI.
+     * Returns the OAuth login URL.
      *
      * @return string
      *
      * @since 3.0.0
      */
-    public function getOauthRedirectUri(): string
+    public function getOauthLoginUrl(): string
+    {
+        return UrlHelper::actionUrl('videos/oauth/login', ['gatewayHandle' => $this->getHandle()]);
+    }
+
+    /**
+     * Returns the OAuth redirect URL.
+     *
+     * @return string
+     *
+     * @since 3.0.0
+     */
+    public function getOauthRedirectUrl(): string
     {
         return UrlHelper::actionUrl('videos/oauth/callback');
+    }
+
+    /**
+     * Returns the OAuth logout URL.
+     *
+     * @return string
+     *
+     * @since 3.0.0
+     */
+    public function getOauthLogoutUrl(): string
+    {
+        return UrlHelper::actionUrl('videos/oauth/logout', ['gatewayHandle' => $this->getHandle()]);
     }
 
     /**

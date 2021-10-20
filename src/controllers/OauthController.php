@@ -32,7 +32,7 @@ class OauthController extends Controller
     public function actionLogin(): Response
     {
         try {
-            $gatewayHandle = Craft::$app->getRequest()->getParam('gateway');
+            $gatewayHandle = Craft::$app->getRequest()->getParam('gatewayHandle');
             $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
 
             Craft::$app->getSession()->set('videos.oauthGateway', $gatewayHandle);
@@ -88,7 +88,7 @@ class OauthController extends Controller
     public function actionLogout(): Response
     {
         try {
-            $gatewayHandle = Craft::$app->getRequest()->getParam('gateway');
+            $gatewayHandle = Craft::$app->getRequest()->getParam('gatewayHandle');
             $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
 
             $gateway->oauthLogout();
@@ -103,31 +103,5 @@ class OauthController extends Controller
         }
 
         return $this->redirect(Craft::$app->getRequest()->referrer);
-    }
-
-    /**
-     * Action connect.
-     *
-     * @return Response
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[OauthController::actionLogin]] instead.
-     */
-    public function actionConnect(): Response
-    {
-        return $this->actionLogin();
-    }
-
-    /**
-     * Action disconnect.
-     *
-     * @return Response
-     *
-     * @since 2.0.0
-     * @deprecated in 3.0.0, will be removed in 3.1.0, use [[OauthController::actionLogout]] instead.
-     */
-    public function actionDisconnect(): Response
-    {
-        return $this->actionLogout();
     }
 }

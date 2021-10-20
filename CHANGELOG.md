@@ -9,7 +9,9 @@ Changelog
 - Added `dukt\videos\Plugin::CACHE_KEY_PREFIX` used for cache key prefix with new cache system
 - Added `dukt\videos\base\Cacheable` interface to mark an object as cacheable
 - Added `dukt\videos\base\Exception` base class for plugin exceptions
-- Added `dukt\videos\base\Gateway::getOauthRedirectUri()` returns the oauth redirect URI
+- Added `dukt\videos\base\Gateway::getOauthLoginUrl()` returns the oauth login URL
+- Added `dukt\videos\base\Gateway::getOauthRedirectUrl()` returns the oauth redirect URL
+- Added `dukt\videos\base\Gateway::getOauthLogoutUrl()` returns the oauth logout URL
 - Added `dukt\videos\base\Gateway::getOauthJavascriptOrigin()` returns the oauth javascript origin URL
 - Added `dukt\videos\base\Gateway::getOauthAuthorizationUrl()` returns the oauth authorization URL
 - Added `dukt\videos\base\Gateway::getOauthAccessToken()` returns the oauth access token
@@ -24,6 +26,8 @@ Changelog
 - Added `dukt\videos\base\Gateway::jsonSerialize()` to serialize gateway information (used by javascript layer)
 - Added `dukt\videos\base\Gateway::getExplorer()` returns the videos'explorer
 - Added `dukt\videos\base\Gateway::fetch()` to get data from the gateway API
+- Added `dukt\videos\controllers\OauthController::actionLogin()`
+- Added `dukt\videos\controllers\OauthController::actionLogout()`
 - Added `dukt\videos\controllers\ExplorerController::actionGetGateways()` returns all enabled gateways
 - Added `dukt\videos\controllers\ExplorerController::actionGetVideo()` returns a video by url
 - Added `dukt\videos\errors\ApiClientCreateException`
@@ -68,7 +72,7 @@ Changelog
 - Changed `dukt\videos\base\Gateway::getHandle()` is now final
 - Changed `dukt\videos\base\Gateway::getIconUrl()` is now final
 - Changed `dukt\videos\base\Gateway::getOauthProvider()` is now final
-- Moved `dukt\videos\base\Gateway::getRedirectUri()` to `dukt\videos\base\Gateway::getOauthRedirectUri()`
+- Moved `dukt\videos\base\Gateway::getRedirectUri()` to `dukt\videos\base\Gateway::getOauthRedirectUrl()`
 - Moved `dukt\videos\base\Gateway::getJavascriptOrigin()` to `dukt\videos\base\Gateway::getOauthJavascriptOrigin()`
 - Changed `dukt\videos\base\Gateway::getOauthScope()` always returns an array
 - Changed `dukt\videos\base\Gateway::getOauthAuthorizationOptions()` always returns an array
@@ -87,6 +91,11 @@ Changelog
 - Moved `dukt\videos\base\Gateway::createClient()` to `dukt\videos\base\Gateway::createApiClient()`
 - Moved `dukt\videos\base\Gateway::get()` to `dukt\videos\base\Gateway::fetch()`
 - Removed `dukt\videos\base\GatewayInterface`
+- Moved `dukt\videos\controllers\OauthController::actionConnect()` to `dukt\videos\controllers\OauthController::actionLogin()`
+- Moved `dukt\videos\controllers\OauthController::actionDisonnect()` to `dukt\videos\controllers\OauthController::actionLogout()`
+- Removed `dukt\videos\controllers\ExplorerController::actionGetModal()`
+- Removed `dukt\videos\controllers\ExplorerController::actionFieldPreview()`
+- Removed `dukt\videos\controllers\ExplorerController::actionPlayer()`
 - Removed `dukt\videos\errors\CollectionParsingException`
 - Removed `dukt\videos\errors\JsonParsingException`
 - Moved `dukt\videos\models\Collection` to `dukt\videos\models\VideoExplorerCollection`

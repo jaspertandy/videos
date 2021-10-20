@@ -61,7 +61,7 @@ class Oauth extends Component
         }
 
         if (isset($options['redirectUri']) === false) {
-            $options['redirectUri'] = $gateway->getOauthRedirectUri();
+            $options['redirectUri'] = $gateway->getOauthRedirectUrl();
         }
 
         return $parseEnv === true ? array_map('Craft::parseEnv', $options) : $options;
