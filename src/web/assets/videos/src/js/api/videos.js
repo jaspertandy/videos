@@ -38,18 +38,5 @@ export default {
                 'X-CSRF-Token':  Craft.csrfTokenValue,
             }
         })
-    },
-
-    getVideoEmbedHtml(video) {
-        const data = {
-            gateway: video.gatewayHandle,
-            videoId: video.id,
-        }
-
-        return axios.post(Craft.getActionUrl('videos/explorer/get-video-embed-html'), data, {
-            headers: {
-                'X-CSRF-Token':  Craft.csrfTokenValue,
-            }
-        })
     }
 }

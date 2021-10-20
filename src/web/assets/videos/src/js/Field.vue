@@ -112,7 +112,7 @@
                         }
 
                         this.previewLoading = false
-                        this.previewVideo = response.data
+                        this.previewVideo = response.data.video
                     })
             }, 1000),
 

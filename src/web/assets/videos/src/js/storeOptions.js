@@ -41,7 +41,7 @@ export default {
         getGateways({commit}) {
             return videosApi.getGateways()
                 .then((response) => {
-                    commit('updateGateways', response)
+                    commit('updateGateways', response.data.gateways)
                 })
         },
 
@@ -95,8 +95,8 @@ export default {
             state.currentGatewayHandle = handle
         },
 
-        updateGateways(state, response) {
-            state.gateways = response.data
+        updateGateways(state, gateways) {
+            state.gateways = gateways
         },
 
         updatePlayingVideo(state, playingVideo) {

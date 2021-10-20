@@ -13,8 +13,12 @@ use DateTime;
 use dukt\videos\base\Cacheable;
 use dukt\videos\base\Gateway;
 use dukt\videos\errors\GatewayNotFoundException;
+use dukt\videos\helpers\DateTimeHelper;
 use dukt\videos\helpers\ThumbnailHelper;
 use dukt\videos\Plugin as VideosPlugin;
+use JsonSerializable;
+use ReflectionObject;
+use ReflectionProperty;
 use Twig\Markup;
 
 /**
@@ -23,7 +27,7 @@ use Twig\Markup;
  * @author Dukt <support@dukt.net>
  * @since 2.0.0
  */
-class Video extends AbstractVideo implements Cacheable
+class Video extends AbstractVideo implements Cacheable, JsonSerializable
 {
     /**
      * @var string prefix for cache key
@@ -214,5 +218,27 @@ class Video extends AbstractVideo implements Cacheable
     public static function generateCacheKey(array $identifiers): string
     {
         return VideosPlugin::CACHE_KEY_PREFIX.'.'.self::CACHE_KEY_PREFIX.'.'.$identifiers['gateway_handle'].'.'.md5($identifiers['id']);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @since 3.0.0
+     */
+    final public function jsonSerialize()
+    {
+        $publicReflectionProperties = (new ReflectionObject($this))->getProperties(ReflectionProperty::IS_PUBLIC);
+
+        $publicProps = [];
+        foreach ($publicReflectionProperties as $publicReflectionProperty) {
+            $publicProps[$publicReflectionProperty->getName()] = $publicReflectionProperty->getValue($this);
+        }
+
+        $addedProps = [
+            'durationNumeric' => DateTimeHelper::formatDateIntervalToReadable($this->duration),
+            'embedHtml' => (string)$this->getEmbed(['autoplay' => 1]),
+        ];
+
+        return array_merge($publicProps, $addedProps);
     }
 }

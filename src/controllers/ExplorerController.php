@@ -1,137 +1,113 @@
 <?php
 /**
- * @link      https://dukt.net/videos/
+ * @link https://dukt.net/videos/
  * @copyright Copyright (c) 2021, Dukt
- * @license   https://github.com/dukt/videos/blob/v2/LICENSE.md
+ * @license https://github.com/dukt/videos/blob/v2/LICENSE.md
  */
 
 namespace dukt\videos\controllers;
 
 use Craft;
-use craft\helpers\Json;
 use craft\web\Controller;
-use dukt\videos\errors\GatewayNotFoundException;
-use dukt\videos\Plugin as Videos;
 use dukt\videos\Plugin;
-use yii\base\InvalidConfigException;
+use dukt\videos\Plugin as Videos;
+use Exception;
+use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
 /**
- * Explorer controller
+ * Explorer controller.
+ *
+ * @author Dukt <support@dukt.net>
+ * @since 2.0.0
  */
 class ExplorerController extends Controller
 {
     /**
+     * Returns gateways.
+     *
      * @return Response
-     * @throws InvalidConfigException
-     * @throws \dukt\videos\errors\ApiResponseException
+     * @throws BadRequestHttpException
+     *
+     * @since 3.0.0
      */
     public function actionGetGateways(): Response
     {
-        $gateways = Videos::$plugin->getGateways()->getGateways();
+        $this->requireAcceptsJson();
 
-        $gatewaysArray = [];
+        try {
+            return $this->asJson([
+                'success' => true,
+                'gateways' => Videos::$plugin->getGateways()->getGateways(true),
+            ]);
+        } catch (Exception $e) {
+            // TODO: throw BadRequestHttpException
+            // TODO: exception message
 
-        foreach ($gateways as $gateway) {
-            $gatewaysArray[] = [
-                'name' => $gateway->getName(),
-                'handle' => $gateway->getHandle(),
-                'sections' => $gateway->getExplorer()
-            ];
+            return $this->asJson(['success' => false]);
         }
-
-        return $this->asJson($gatewaysArray);
     }
 
     /**
+     * Returns videos.
+     *
      * @return Response
-     * @throws GatewayNotFoundException
-     * @throws InvalidConfigException
-     * @throws \dukt\videos\errors\GatewayMethodNotFoundException
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
+     *
+     * @since 2.0.0
      */
     public function actionGetVideos(): Response
     {
         $this->requireAcceptsJson();
 
-        $rawBody = Craft::$app->getRequest()->getRawBody();
-        $payload = Json::decodeIfJson($rawBody);
+        try {
+            $gatewayHandle = Craft::$app->getRequest()->getBodyParam('gateway');
+            $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
 
-        $gatewayHandle = strtolower($payload['gateway']);
-        $method = $payload['method'];
-        $options = $payload['options'] ?? [];
+            $method = Craft::$app->getRequest()->getBodyParam('method');
+            $options = Craft::$app->getRequest()->getBodyParam('options', []);
 
-        $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
+            $videosResponse = $gateway->getVideos($method, $options);
 
-        if (!$gateway) {
-            throw new GatewayNotFoundException('Gateway not found.');
+            return $this->asJson([
+                'success' => true,
+                'videos' => $videosResponse['videos'],
+                'more' => $videosResponse['pagination']['more'],
+                'moreToken' => $videosResponse['pagination']['moreToken'],
+            ]);
+        } catch (Exception $e) {
+            // TODO: throw BadRequestHttpException
+            // TODO: exception message
+
+            return $this->asJson(['success' => false]);
         }
-
-        $videosResponse = $gateway->getVideos($method, $options);
-
-        $videos = array();
-
-        foreach($videosResponse['videos'] as $video) {
-            $videos[] = $video->toArray();
-        }
-
-        return $this->asJson([
-            'videos' => $videos,
-            'more' => $videosResponse['pagination']['more'],
-            'moreToken' => $videosResponse['pagination']['moreToken']
-        ]);
     }
 
     /**
+     * Returns video.
+     *
      * @return Response
-     * @throws InvalidConfigException
-     * @throws \dukt\videos\errors\VideoNotFoundException
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
+     *
+     * @since 3.0.0
      */
     public function actionGetVideo()
     {
         $this->requireAcceptsJson();
 
-        $rawBody = Craft::$app->getRequest()->getRawBody();
-        $payload = Json::decodeIfJson($rawBody);
-        $url = $payload['url'];
+        try {
+            $videoUrl = Craft::$app->getRequest()->getBodyParam('url');
+            $video = Plugin::getInstance()->getVideos()->getVideoByUrl($videoUrl);
 
-        $video = Plugin::getInstance()->getVideos()->getVideoByUrl($url);
+            return $this->asJson([
+                'success' => true,
+                'video' => $video,
+            ]);
+        } catch (Exception $e) {
+            // TODO: throw BadRequestHttpException
+            // TODO: exception message
 
-        if (!$video) {
-            return $this->asErrorJson("Video not found.");
+            return $this->asJson(['success' => false]);
         }
-
-        return $this->asJson($video->toArray());
-    }
-
-    /**
-     * @return Response
-     * @throws InvalidConfigException
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\RuntimeError
-     * @throws \Twig\Error\SyntaxError
-     * @throws \yii\base\Exception
-     * @throws \yii\web\BadRequestHttpException
-     */
-    public function actionGetVideoEmbedHtml(): Response
-    {
-        $this->requireAcceptsJson();
-
-        $rawBody = Craft::$app->getRequest()->getRawBody();
-        $payload = Json::decodeIfJson($rawBody);
-
-        $gatewayHandle = strtolower($payload['gateway']);
-        $videoId = $payload['videoId'];
-
-        $video = Videos::$plugin->getVideos()->getVideoById($gatewayHandle, $videoId);
-
-        $html = Craft::$app->getView()->renderTemplate('videos/_elements/embedHtml', [
-            'video' => $video
-        ]);
-
-        return $this->asJson([
-            'html' => $html
-        ]);
     }
 }

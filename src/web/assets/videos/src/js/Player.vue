@@ -8,7 +8,6 @@
 
 <script>
     /* global Garnish */
-    import videosApi from './api/videos'
 
     export default {
         data() {
@@ -20,11 +19,8 @@
 
         mounted() {
             const video = this.$root.video
-
-            videosApi.getVideoEmbedHtml(video)
-                .then((response) => {
-                    this.embed = response.data.html
-                })
+            
+            this.embed = video.embedHtml
 
             this.modal = new Garnish.Modal(this.$refs.modal, {
                 resizable: false,
