@@ -7,6 +7,7 @@
 
 namespace dukt\videos\base;
 
+use dukt\videos\services\Asset;
 use dukt\videos\services\Cache;
 use dukt\videos\services\Gateways;
 use dukt\videos\services\Oauth;
@@ -21,6 +22,19 @@ use yii\base\InvalidConfigException;
  */
 trait PluginTrait
 {
+    /**
+     * Returns the asset service.
+     *
+     * @return Cache
+     * @throws InvalidConfigException
+     *
+     * @since 3.0.0
+     */
+    public function getAsset(): Asset
+    {
+        return $this->get('asset');
+    }
+
     /**
      * Returns the cache service.
      *

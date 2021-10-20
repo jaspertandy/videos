@@ -20,6 +20,7 @@ use craft\web\UrlManager;
 use dukt\videos\base\PluginTrait;
 use dukt\videos\fields\Video as VideoField;
 use dukt\videos\models\Settings;
+use dukt\videos\services\Asset;
 use dukt\videos\services\Cache;
 use dukt\videos\services\Gateways;
 use dukt\videos\services\Oauth;
@@ -114,6 +115,7 @@ class Plugin extends BasePlugin
     private function _setPluginComponents(): void
     {
         $this->setComponents([
+            'asset' => Asset::class,
             'videos' => Videos::class,
             'cache' => Cache::class,
             'gateways' => Gateways::class,

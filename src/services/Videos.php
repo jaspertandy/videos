@@ -24,13 +24,6 @@ use yii\base\InvalidConfigException;
 class Videos extends Component
 {
     /**
-     * @var bool Whether the devServer should be used
-     *
-     * TODO: what is that ?
-     */
-    public bool $useDevServer = false;
-
-    /**
      * Returns one video by its URL.
      *
      * @param string $videoUrl

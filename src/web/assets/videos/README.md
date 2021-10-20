@@ -27,7 +27,8 @@ use craft\services\Plugins;
 use yii\base\Event;
 
 Event::on(Plugins::class, Plugins::EVENT_AFTER_LOAD_PLUGINS, function() {
-     \dukt\videos\Plugin::getInstance()->getVideos()->useDevServer = true;
+     \dukt\videos\Plugin::getInstance()->getAsset()->setDevServerUsed(true);
+     \dukt\videos\Plugin::getInstance()->getAsset()->devServerUrl = 'https://localhost:8090';
 });
 ```
 

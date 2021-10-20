@@ -20,11 +20,6 @@ use dukt\videos\Plugin;
  */
 class VideosAsset extends AssetBundle
 {
-    // Public Methods
-    // =========================================================================
-
-    private $devServer = true;
-
     /**
      * {@inheritdoc}
      *
@@ -37,14 +32,14 @@ class VideosAsset extends AssetBundle
             VueAsset::class,
         ];
 
-        if (!Plugin::getInstance()->getVideos()->useDevServer) {
+        if (Plugin::getInstance()->getAsset()->isDevServerUsed() === false) {
             $this->sourcePath = __DIR__.'/dist';
             $this->js[] = 'js/chunk-vendors.js';
             $this->js[] = 'js/app.js';
             $this->css[] = 'css/app.css';
         } else {
-            $this->js[] = 'https://localhost:8090/js/chunk-vendors.js';
-            $this->js[] = 'https://localhost:8090/js/app.js';
+            $this->js[] = Plugin::getInstance()->getAsset()->devServerUrl.'/js/chunk-vendors.js';
+            $this->js[] = Plugin::getInstance()->getAsset()->devServerUrl.'/js/app.js';
         }
 
         parent::init();
