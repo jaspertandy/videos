@@ -117,7 +117,7 @@ Changelog
 - Moved `dukt\videos\models\Video::$duration8601` to `dukt\videos\models\Video::$duration` $duration is a `\DateInterval` instance
 - Removed `dukt\videos\models\Video::getDuration()` use `dukt\videos\models\Video::$duration` instead ; $duration is a `\DateInterval` instance (use DateTimeHelper to format and twig filter in template)
 - Changed `dukt\videos\models\Video::getGateway()` returns `dukt\videos\base\Gateway` instance or throw `dukt\videos\errors\GatewayNotFoundException` if not found
-- Changed `dukt\videos\models\Video::getEmbed()` returns `\Twig\Markup`
+- Moved `dukt\videos\models\Video::getEmbed()` to `dukt\videos\models\Video::getEmbedHtml()` and it returns `\Twig\Markup`
 - Moved `dukt\videos\models\Video::getThumbnail()` to `dukt\videos\models\VideoThumbnail::getUrl()`
 - Removed `dukt\videos\helpers\VideosHelper`
 - Moved `dukt\videos\helpers\VideosHelper::getDuration()` to `dukt\videos\helpers\DateTimeHelper::formatDateIntervalToReadable()`
@@ -137,7 +137,7 @@ Changelog
 - Removed `dukt\videos\services\Tokens`
 - Removed `dukt\videos\models\Token`
 - Changed `dukt\videos\services\Videos::getVideoByUrl()` signature: no more cache management inside ; throw `dukt\videos\errors\VideoNotFoundException` if no video was found with the given url
-- Removed `dukt\videos\services\Videos::getEmbed()` use `dukt\videos\models\Video::getEmbed()` or dukt\videos\web\twig\variables\VideosVariable::getEmbed() (in twig template) instead
+- Removed `dukt\videos\services\Videos::getEmbed()` use `dukt\videos\models\Video::getEmbedHtml()` or dukt\videos\web\twig\variables\VideosVariable::getEmbedHtml() (in twig template) instead
 - Removed `dukt\videos\services\Videos::getVideoById()` use `dukt\videos\base\Gateway::getVideoById()` instead
 - Changed `dukt\videos\web\twig\variables\VideosVariable::getVideoByUrl()` signature: no more cache management inside
 - Changed `dukt\videos\web\twig\variables\VideosVariable::url()` signature: no more cache management inside

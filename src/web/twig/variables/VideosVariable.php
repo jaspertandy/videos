@@ -21,20 +21,20 @@ use Exception;
 class VideosVariable
 {
     /**
-     * Get embed from a video url.
+     * Get embed html from a video url.
      *
      * @param string $videoUrl
      * @param array $options
      * @return null|string
      *
-     * @since 2.0.0
+     * @since 3.0.0
      */
-    public function getEmbed(string $videoUrl, array $options = []): ?string
+    public function getEmbedHtml(string $videoUrl, array $options = []): ?string
     {
         try {
             $video = VideosPlugin::$plugin->getVideos()->getVideoByUrl($videoUrl);
 
-            return $video->getEmbed($options);
+            return $video->getEmbedHtml($options);
         } catch (Exception $e) {
             Craft::info('Couldn’t get video from its url ('.$videoUrl.'): '.$e->getMessage(), __METHOD__);
         }

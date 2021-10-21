@@ -174,7 +174,7 @@ class Video extends AbstractVideo implements Cacheable, JsonSerializable
      *
      * @since 3.0.0
      */
-    public function getEmbed(array $options = []): Markup
+    public function getEmbedHtml(array $options = []): Markup
     {
         $embed = $this->getGateway()->getEmbedHtml($this, $options);
         $charset = Craft::$app->getView()->getTwig()->getCharset();
@@ -226,7 +226,7 @@ class Video extends AbstractVideo implements Cacheable, JsonSerializable
 
         if (Craft::$app->request->getIsCpRequest() === true) {
             $addedProps['durationNumeric'] = DateTimeHelper::formatDateIntervalToReadable($this->duration);
-            $addedProps['embedHtml'] = (string)$this->getEmbed(['autoplay' => 1]);
+            $addedProps['embedHtml'] = (string)$this->getEmbedHtml(['autoplay' => 1]);
         }
 
         return array_merge($publicProps, $addedProps);
