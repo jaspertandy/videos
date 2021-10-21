@@ -26,7 +26,7 @@ class Extension extends AbstractExtension
     {
         return [
             new TwigFilter('durationNumeric', [DateTimeHelper::class, 'formatDateIntervalToReadable'], ['is_safe' => ['html']]),
-            new TwigFilter('durationIso8601', [DateTimeHelper::class, 'formatDateIntervalToISO8601'], ['is_safe' => ['html']]),
+            new TwigFilter('durationISO8601', [DateTimeHelper::class, 'formatDateIntervalToISO8601'], ['is_safe' => ['html']]),
         ];
     }
 }

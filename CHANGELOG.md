@@ -65,7 +65,7 @@ Changelog
 - Added `dukt\videos\services\Cache::isEnabled()` to check if cache for plugin data is enabled
 - Added `dukt\videos\services\Cache::duration()` returns cache duration for plugin data
 - Added `dukt\videos\services\Gateways::hasEnabledGateways()` to check if at least one gateway has been enabled (= logged in with oauth)
-- Added `dukt\videos\web\twig\Extension` with two twig filter : durationNumeric and durationIso8601 that use `dukt\videos\helpers\DateTimeHelper` to work with `\DateInterval` in twig
+- Added `dukt\videos\web\twig\Extension` with two twig filter : durationNumeric and durationISO8601 that use `dukt\videos\helpers\DateTimeHelper` to work with `\DateInterval` in twig
 
 ### Changed
 - Renamed Vimeo’s “Playlists” section to “Showcases”.
