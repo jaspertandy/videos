@@ -237,6 +237,7 @@ class Video extends AbstractVideo implements Cacheable, JsonSerializable
         $addedProps = [
             'durationNumeric' => DateTimeHelper::formatDateIntervalToReadable($this->duration),
             'embedHtml' => (string)$this->getEmbed(['autoplay' => 1]),
+            'embedUrl' => $this->getEmbedUrl(),
         ];
 
         return array_merge($publicProps, $addedProps);
