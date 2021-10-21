@@ -477,7 +477,7 @@ abstract class Gateway implements JsonSerializable
      *
      * @since 2.0.0
      */
-    abstract public function getEmbedFormat(): string;
+    abstract public function getEmbedUrlFormat(): string;
 
     /**
      * Returns a list of videos.

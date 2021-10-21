@@ -32,7 +32,7 @@ class EmbedHelper
      */
     public static function getEmbedUrl(Video $video, array $options = []): string
     {
-        $format = $video->getGateway()->getEmbedFormat();
+        $format = $video->getGateway()->getEmbedUrlFormat();
 
         $formatParts = parse_url($format);
         $formatPartQueryParams = [];

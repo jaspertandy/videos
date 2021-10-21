@@ -140,7 +140,7 @@ class Vimeo extends Gateway
      *
      * @since 2.0.0
      */
-    public function getEmbedFormat(): string
+    public function getEmbedUrlFormat(): string
     {
         return 'https://player.vimeo.com/video/%s';
     }
