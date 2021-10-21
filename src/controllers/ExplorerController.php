@@ -10,7 +10,7 @@ namespace dukt\videos\controllers;
 use Craft;
 use craft\web\Controller;
 use dukt\videos\Plugin;
-use dukt\videos\Plugin as Videos;
+use dukt\videos\Plugin as VideosPlugin;
 use Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -38,7 +38,7 @@ class ExplorerController extends Controller
         try {
             return $this->asJson([
                 'success' => true,
-                'gateways' => Videos::$plugin->getGateways()->getGateways(true),
+                'gateways' => VideosPlugin::$plugin->getGateways()->getGateways(true),
             ]);
         } catch (Exception $e) {
             // TODO: throw BadRequestHttpException
@@ -62,7 +62,7 @@ class ExplorerController extends Controller
 
         try {
             $gatewayHandle = Craft::$app->getRequest()->getBodyParam('gateway');
-            $gateway = Videos::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
+            $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
 
             $method = Craft::$app->getRequest()->getBodyParam('method');
             $options = Craft::$app->getRequest()->getBodyParam('options', []);
