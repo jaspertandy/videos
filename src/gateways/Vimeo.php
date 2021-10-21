@@ -465,9 +465,9 @@ class Vimeo extends Gateway
 
         // author
         $author = new VideoAuthor();
+        $author->setVideo($video);
         $author->name = $data['user']['name'];
         $author->url = $data['user']['link'];
-        $video->author = $author;
 
         // thumbnail
         $thumbnail = new VideoThumbnail();
@@ -476,14 +476,14 @@ class Vimeo extends Gateway
 
         // size
         $size = new VideoSize();
+        $size->setVideo($video);
         $size->width = (int)$data['width'];
         $size->height = (int)$data['height'];
-        $video->size = $size;
 
         // statistic
         $statistic = new VideoStatistic();
+        $statistic->setVideo($video);
         $statistic->playCount = $data['stats']['plays'] ?? 0;
-        $video->statistic = $statistic;
 
         // privacy
         if (in_array($data['privacy']['view'], ['nobody', 'contacts', 'password', 'users', 'disable'], true) === true) {

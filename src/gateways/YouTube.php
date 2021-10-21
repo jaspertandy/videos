@@ -496,9 +496,9 @@ class YouTube extends Gateway
 
         // author
         $author = new VideoAuthor();
+        $author->setVideo($video);
         $author->name = $data['snippet']['channelTitle'];
         $author->url = 'http://youtube.com/channel/'.$data['snippet']['channelId'];
-        $video->author = $author;
 
         // thumbnail
         $thumbnail = new VideoThumbnail();
@@ -507,8 +507,8 @@ class YouTube extends Gateway
 
         // statistic
         $statistic = new VideoStatistic();
+        $statistic->setVideo($video);
         $statistic->playCount = (int)$data['statistics']['viewCount'];
-        $video->statistic = $statistic;
 
         // privacy
         if (empty($data['status']['privacyStatus']) === false && $data['status']['privacyStatus'] === 'private') {

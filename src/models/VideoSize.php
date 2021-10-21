@@ -30,4 +30,23 @@ class VideoSize extends Model
      * @since 3.0.0
      */
     public string $height;
+
+    /**
+     * @var Video the video
+     */
+    private Video $_video;
+
+    /**
+     * Set the video.
+     *
+     * @param Video $video
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    public function setVideo(Video $video): void
+    {
+        $this->_video = $video;
+        $video->size = $this;
+    }
 }
