@@ -32,6 +32,8 @@ class EmbedHelper
      */
     public static function getEmbedUrl(Video $video, array $options = []): string
     {
+        $options = $video->getGateway()->resolveEmbedUrlOptions($options, $video);
+
         $format = $video->getGateway()->getEmbedUrlFormat();
 
         $formatParts = parse_url($format);
@@ -50,80 +52,24 @@ class EmbedHelper
      * Returns the HTML of the embed from a video ID.
      *
      * @param Video $video
-     * @param array $options
+     * @param array $htmlOptions
+     * @param array $urlOptions
      * @return Markup
      * @throws GatewayNotFoundException
      *
      * @since 3.0.0
      */
-    public static function getEmbedHtml(Video $video, array $options = []): Markup
+    public static function getEmbedHtml(Video $video, array $htmlOptions = [], array $urlOptions = []): Markup
     {
-        $urlOptions = [];
-        $attributeOptions = [
-            'title' => [
-                'value' => 'External video from '.$video->getGateway()->getHandle(),
-            ],
-            'frameborder' => [
-                'value' => 0,
-            ],
-            'allowfullscreen' => [
-                'value' => true,
-            ],
-            'allowscriptaccess' => [
-                'value' => true,
-            ],
-            'allow' => [
-                'value' => 'autoplay; encrypted-media',
-            ],
-            'disable_size' => [
-                'value' => null,
-            ],
-            'width' => [
-                'value' => null,
-            ],
-            'height' => [
-                'value' => null,
-            ],
-            'iframeClass' => [
-                'attr' => 'class',
-                'value' => null,
-            ],
-        ];
+        $htmlOptions = $video->getGateway()->resolveEmbedHtmlOptions($htmlOptions, $video);
 
-        // split url options / attribute options from options
-        foreach ($options as $optionName => $optionValue) {
-            if (isset($attributeOptions[$optionName]) === true) {
-                $attributeOptions[$optionName]['value'] = $optionValue;
-            } else {
-                $urlOptions[$optionName] = $optionValue;
-            }
-        }
-
-        // special disable size attribute
-        if ($attributeOptions['disable_size']['value'] === true) {
-            $attributeOptions['width']['value'] = null;
-            $attributeOptions['height']['value'] = null;
-        }
-
-        // remove null value attribute options
-        $attributeOptions = array_filter($attributeOptions, function ($attributeOption) {
-            return $attributeOption['value'] !== null;
-        });
-
-        // reformate attribute options
-        foreach ($attributeOptions as $key => $attributeOption) {
-            unset($attributeOptions[$key]);
-            $key = $attributeOption['attr'] ?? $key;
-            $attributeOptions[$key] = $attributeOption['value'];
-        }
+        $htmlAttributesString = implode(' ', array_map(function ($value, $attr) {
+            return is_bool($value) === true ? sprintf('%s', $attr) : sprintf('%s="%s"', $attr, $value);
+        }, $htmlOptions, array_keys($htmlOptions)));
 
         $embedUrl = self::getEmbedUrl($video, $urlOptions);
 
-        $embedAttributesString = implode(' ', array_map(function ($value, $attr) {
-            return sprintf('%s="%s"', $attr, $value);
-        }, $attributeOptions, array_keys($attributeOptions)));
-
-        $html = '<iframe src="'.$embedUrl.'"'.$embedAttributesString.'></iframe>';
+        $html = '<iframe src="'.$embedUrl.'"'.$htmlAttributesString.'></iframe>';
         $charset = Craft::$app->getView()->getTwig()->getCharset();
 
         return new Markup($html, $charset);

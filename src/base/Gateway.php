@@ -29,6 +29,7 @@ use JsonSerializable;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use ReflectionClass;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use yii\base\InvalidConfigException;
 
 /**
@@ -480,6 +481,36 @@ abstract class Gateway implements JsonSerializable
     abstract public function getEmbedUrlFormat(): string;
 
     /**
+     * Resolves embed html options.
+     *
+     * @param array $options
+     * @param Video $video
+     * @return array
+     */
+    final public function resolveEmbedHtmlOptions(array $options, Video $video): array
+    {
+        $resolver = new OptionsResolver();
+        $this->configureEmbedHtmlOptions($resolver, $options, $video);
+
+        return $resolver->resolve($options);
+    }
+
+    /**
+     * Resolves embed url options.
+     *
+     * @param array $options
+     * @param Video $video
+     * @return array
+     */
+    final public function resolveEmbedUrlOptions(array $options, Video $video): array
+    {
+        $resolver = new OptionsResolver();
+        $this->configureEmbedUrlOptions($resolver, $options, $video);
+
+        return $resolver->resolve($options);
+    }
+
+    /**
      * Returns a list of videos.
      *
      * @param string $method
@@ -570,5 +601,41 @@ abstract class Gateway implements JsonSerializable
         } catch (Exception $e) {
             throw new ApiResponseException(/* TODO: more precise message */);
         }
+    }
+
+    /**
+     * Configures embed html options.
+     *
+     * @param OptionsResolver $resolver
+     * @param array $options
+     * @param Video $video
+     * @return void
+     */
+    protected function configureEmbedHtmlOptions(OptionsResolver $resolver, array $options, Video $video): void
+    {
+        $resolver
+            ->define('id')->allowedTypes('string')->default('video-'.$video->id)
+            ->define('class')->allowedTypes('string')
+            ->define('width')->allowedTypes('int')
+            ->define('height')->allowedTypes('int')
+            ->define('frameborder')->allowedTypes('int')->allowedValues(0, 1)->default(0)
+            ->define('allow')->allowedTypes('string')->default('autoplay; encrypted-media')
+            ->define('allowfullscreen')->allowedTypes('bool')->default(true)
+            ->define('allowscriptaccess')->allowedTypes('bool')->default(true)
+            ->define('title')->allowedTypes('string')->default('External video from '.$video->getGateway()->getName())
+        ;
+    }
+
+    /**
+     * Configures embed url options.
+     *
+     * @param OptionsResolver $resolver
+     * @param array $options
+     * @param Video $video
+     * @return void
+     */
+    protected function configureEmbedUrlOptions(OptionsResolver $resolver, array $options, Video $video): void
+    {
+        $resolver->setDefined(array_keys($options));
     }
 }

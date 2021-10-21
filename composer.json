@@ -28,7 +28,8 @@
     "craftcms/cms": "^3.5.0",
     "league/oauth2-client": "^2.5.0",
     "dukt/oauth2-vimeo": "^2.0.1",
-    "league/oauth2-google": "^3.0.0"
+    "league/oauth2-google": "^3.0.0",
+    "symfony/options-resolver": "^5.3"
   },
   "autoload": {
     "psr-4": {

@@ -169,15 +169,16 @@ class Video extends AbstractVideo implements Cacheable, JsonSerializable
     /**
      * Returns the video’s embed html.
      *
-     * @param array $options
+     * @param array $htmlOptions
+     * @param array $urlOptions
      * @return Markup
      * @throws GatewayNotFoundException
      *
      * @since 3.0.0
      */
-    public function getEmbedHtml(array $options = []): Markup
+    public function getEmbedHtml(array $htmlOptions = [], array $urlOptions = []): Markup
     {
-        return EmbedHelper::getEmbedHtml($this, $options);
+        return EmbedHelper::getEmbedHtml($this, $htmlOptions, $urlOptions);
     }
 
     /**
@@ -224,7 +225,7 @@ class Video extends AbstractVideo implements Cacheable, JsonSerializable
 
         if (Craft::$app->request->getIsCpRequest() === true) {
             $addedProps['durationNumeric'] = DateTimeHelper::formatDateIntervalToReadable($this->duration);
-            $addedProps['embedHtml'] = (string)$this->getEmbedHtml(['autoplay' => 1]);
+            $addedProps['embedHtml'] = (string)$this->getEmbedHtml([], ['autoplay' => 1]);
         }
 
         return array_merge($publicProps, $addedProps);
