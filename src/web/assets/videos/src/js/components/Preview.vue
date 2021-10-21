@@ -1,7 +1,7 @@
 <template>
     <div v-if="previewVideo && !previewError" class="preview flex flex-nowrap items-start">
         <div class="flex-shrink-0">
-            <thumb class="pt-0 w-44" :url="previewVideo.thumbnailSourceUrl" :duration="previewVideo.durationNumeric" @playVideo="$emit('playVideo', previewVideo)"></thumb>
+            <thumb class="pt-0 w-44" :url="previewVideo.thumbnail.smallestSourceUrl" :duration="previewVideo.durationNumeric" @playVideo="$emit('playVideo', previewVideo)"></thumb>
         </div>
         <div class="ml-2 flex-shrink max-w-sm min-w-0">
             <div class="line-clamp-2"><strong>{{previewVideo.title}}</strong></div>

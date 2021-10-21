@@ -28,20 +28,20 @@ class ThumbnailHelper
      *
      * @param Video $video
      * @param int $size
-     * @return null|string
+     * @return null|SplFileInfo
      * @throws GatewayNotFoundException
      *
      * @since 3.0.0
      */
-    public static function getByVideoAndSize(Video $video, int $size = 300): ?string
+    public static function getByVideoAndSize(Video $video, int $size = 300): ?SplFileInfo
     {
-        if ($video->thumbnailSourceUrl === null) {
+        if ($video->thumbnail->largestSourceUrl === null) {
             return null;
         }
 
         $directory = Craft::$app->getPath()->getRuntimePath().DIRECTORY_SEPARATOR.'videos'.DIRECTORY_SEPARATOR.'thumbnails'.DIRECTORY_SEPARATOR.$video->getGateway()->getHandle().DIRECTORY_SEPARATOR.$video->id;
 
-        $thumbnailSourceFile = new SplFileInfo($video->thumbnailSourceUrl);
+        $thumbnailSourceFile = new SplFileInfo($video->thumbnail->largestSourceUrl);
         $thumbnailName = $size.'.'.$thumbnailSourceFile->getExtension();
         $thumbnailPath = $directory.DIRECTORY_SEPARATOR.$thumbnailName;
         $originalName = 'original.'.$thumbnailSourceFile->getExtension();
@@ -58,11 +58,7 @@ class ThumbnailHelper
             $file = new SplFileInfo($filePath);
 
             if ($file->getFilename() === $thumbnailName) {
-                $thumbnailUrl = Craft::$app->getAssetManager()->getPublishedUrl($file->getRealPath());
-
-                if ($thumbnailUrl !== false) {
-                    return $thumbnailUrl;
-                }
+                return $file;
             }
 
             if ($file->getFilename() === $originalName) {
@@ -72,7 +68,7 @@ class ThumbnailHelper
 
         if ($originalFile === null) {
             try {
-                (new Client())->request('GET', $video->thumbnailSourceUrl, [
+                (new Client())->request('GET', $video->thumbnail->largestSourceUrl, [
                     'sink' => $originalPath,
                 ]);
 
@@ -88,12 +84,6 @@ class ThumbnailHelper
             ->saveAs($thumbnailPath)
         ;
 
-        $thumbnailUrl = Craft::$app->getAssetManager()->getPublishedUrl($thumbnailPath);
-
-        if ($thumbnailUrl !== false) {
-            return $thumbnailUrl;
-        }
-
-        return null;
+        return new SplFileInfo($thumbnailPath);
     }
 }

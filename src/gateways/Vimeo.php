@@ -21,6 +21,7 @@ use dukt\videos\models\VideoExplorerCollection;
 use dukt\videos\models\VideoExplorerSection;
 use dukt\videos\models\VideoSize;
 use dukt\videos\models\VideoStatistic;
+use dukt\videos\models\VideoThumbnail;
 use Exception;
 use GuzzleHttp\Client;
 use League\OAuth2\Client\Provider\AbstractProvider;
@@ -459,7 +460,6 @@ class Vimeo extends Gateway
 
         $video->duration = (new DateTime())->modify('+'.(int)$data['duration'].' seconds')->diff(new DateTime());
         $video->publishedAt = new DateTime($data['created_time']);
-        $video->thumbnailSourceUrl = $this->_getThumbnailSource($data);
         $video->gatewayHandle = $this->getHandle();
         $video->raw = $data;
 
@@ -468,6 +468,11 @@ class Vimeo extends Gateway
         $author->name = $data['user']['name'];
         $author->url = $data['user']['link'];
         $video->author = $author;
+
+        // thumbnail
+        $thumbnail = new VideoThumbnail();
+        $thumbnail->setVideo($video);
+        $this->_populateThumbnail($thumbnail, $data);
 
         // size
         $size = new VideoSize();
@@ -489,15 +494,16 @@ class Vimeo extends Gateway
     }
 
     /**
-     * Get the thumbnail source.
+     * Populate the thumbnail.
      *
-     * @param array $thumbnails
-     * @return null|string
+     * @param VideoThumbnail $thumbnail
+     * @param array $data
+     * @return void
      */
-    private function _getThumbnailSource(array $data): ?string
+    private function _populateThumbnail(VideoThumbnail $thumbnail, array $data): void
     {
         if (is_array($data['pictures']) === false) {
-            return null;
+            return;
         }
 
         // need to find all thumbnails
@@ -508,16 +514,21 @@ class Vimeo extends Gateway
             }
         }
 
-        // need to find the largest thumbnail
+        $smallestSize = 0;
         $largestSize = 0;
-        $largestThumbnailSource = null;
-        foreach ($thumbnails as $thumbnail) {
-            if ((int)$thumbnail['width'] > $largestSize) {
-                $largestThumbnailSource = $picture['link'];
-                $largestSize = (int)$thumbnail['width'];
+
+        foreach ($thumbnails as $thumbnailData) {
+            if ($smallestSize === 0 || (int)$thumbnailData['width'] < $smallestSize) {
+                if ((int)$thumbnailData['width'] >= 300) {
+                    $smallestSize = (int)$thumbnailData['width'];
+                    $thumbnail->smallestSourceUrl = $thumbnailData['link'];
+                }
+            }
+
+            if ((int)$thumbnailData['width'] > $largestSize) {
+                $largestSize = (int)$thumbnailData['width'];
+                $thumbnail->largestSourceUrl = $thumbnailData['link'];
             }
         }
-
-        return $largestThumbnailSource;
     }
 }

@@ -4,7 +4,7 @@
         <div class="video" data-url="{{ video.url }}">
 
             <div class="thumb">
-                <img src="{{ video.thumbnailSourceUrl }}"/>
+                <img src="{{ video.thumbnailSmallestSourceUrl }}"/>
                 <div class="duration">{{ video.duration|durationNumeric }}</div>
                 <div class="play" data-gateway="{{ video.gateway.handle }}"
                      data-id="{{ video.id }}"></div>

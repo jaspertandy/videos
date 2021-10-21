@@ -20,6 +20,7 @@ use dukt\videos\models\VideoExplorer;
 use dukt\videos\models\VideoExplorerCollection;
 use dukt\videos\models\VideoExplorerSection;
 use dukt\videos\models\VideoStatistic;
+use dukt\videos\models\VideoThumbnail;
 use Exception;
 use GuzzleHttp\Client;
 use League\OAuth2\Client\Provider\AbstractProvider;
@@ -490,7 +491,6 @@ class YouTube extends Gateway
         $video->description = $data['snippet']['description'];
         $video->duration = new DateInterval($data['contentDetails']['duration']);
         $video->publishedAt = new DateTime($data['snippet']['publishedAt']);
-        $video->thumbnailSourceUrl = $this->_getThumbnailSource($data);
         $video->gatewayHandle = $this->getHandle();
         $video->raw = $data;
 
@@ -499,6 +499,11 @@ class YouTube extends Gateway
         $author->name = $data['snippet']['channelTitle'];
         $author->url = 'http://youtube.com/channel/'.$data['snippet']['channelId'];
         $video->author = $author;
+
+        // thumbnail
+        $thumbnail = new VideoThumbnail();
+        $thumbnail->setVideo($video);
+        $this->_populateThumbnail($thumbnail, $data);
 
         // statistic
         $statistic = new VideoStatistic();
@@ -514,28 +519,36 @@ class YouTube extends Gateway
     }
 
     /**
-     * Get the thumbnail source.
+     * Populate the thumbnail.
      *
-     * @param array $thumbnails
-     * @return null|string
+     * @param VideoThumbnail $thumbnail
+     * @param array $data
+     * @return void
      */
-    private function _getThumbnailSource(array $data): ?string
+    private function _populateThumbnail(VideoThumbnail $thumbnail, array $data): void
     {
-        // need to find the largest thumbnail
-        if (isset($data['snippet']['thumbnails']['maxres']) === false) {
-            $largestSize = 0;
-            $largestThumbnailSource = null;
+        $smallestSize = 0;
+        $largestSize = 0;
 
-            foreach ($data['snippet']['thumbnails'] as $thumbnail) {
-                if ((int)$thumbnail['width'] > $largestSize) {
-                    $largestThumbnailSource = $thumbnail['url'];
-                    $largestSize = (int)$thumbnail['width'];
+        if (empty($data['snippet']['thumbnails']['maxres']) === false) {
+            $thumbnail->smallestSourceUrl = $data['snippet']['thumbnails']['maxres']['url'];
+            $smallestSize = (int)$data['snippet']['thumbnails']['maxres']['width'];
+            $thumbnail->largestSourceUrl = $data['snippet']['thumbnails']['maxres']['url'];
+            $largestSize = (int)$data['snippet']['thumbnails']['maxres']['width'];
+        }
+
+        foreach ($data['snippet']['thumbnails'] as $thumbnailData) {
+            if ($smallestSize === 0 || (int)$thumbnailData['width'] < $smallestSize) {
+                if ((int)$thumbnailData['width'] >= 300) {
+                    $smallestSize = (int)$thumbnailData['width'];
+                    $thumbnail->smallestSourceUrl = $thumbnailData['url'];
                 }
             }
 
-            return $largestThumbnailSource;
+            if ((int)$thumbnailData['width'] > $largestSize) {
+                $largestSize = (int)$thumbnailData['width'];
+                $thumbnail->largestSourceUrl = $thumbnailData['url'];
+            }
         }
-
-        return $data['snippet']['thumbnails']['maxres']['url'];
     }
 }

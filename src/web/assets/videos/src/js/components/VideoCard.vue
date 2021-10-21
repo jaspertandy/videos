@@ -1,6 +1,6 @@
 <template>
     <div class="group" @click="selectVideo(video)" @dblclick="useVideo(video)">
-        <thumb :selected="isVideoSelected" :url="video.thumbnailSourceUrl" :duration="video.durationNumeric" @playVideo="play(video)"></thumb>
+        <thumb :selected="isVideoSelected" :url="video.thumbnail.smallestSourceUrl" :duration="video.durationNumeric" @playVideo="play(video)"></thumb>
 
         <div class="mt-2 flex flex-row flex-nowrap items-center">
             <template v-if="video.private">

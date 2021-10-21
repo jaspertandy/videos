@@ -26,10 +26,11 @@ Changelog
 - Added `dukt\videos\base\Gateway::jsonSerialize()` to serialize gateway information (used by javascript layer)
 - Added `dukt\videos\base\Gateway::getExplorer()` returns the videos'explorer
 - Added `dukt\videos\base\Gateway::fetch()` to get data from the gateway API
-- Added `dukt\videos\controllers\OauthController::actionLogin()`
-- Added `dukt\videos\controllers\OauthController::actionLogout()`
+- Added `dukt\videos\controllers\OauthController::actionLogin()` to login to gateway
+- Added `dukt\videos\controllers\OauthController::actionLogout()` to logout from gateway
 - Added `dukt\videos\controllers\ExplorerController::actionGetGateways()` returns all enabled gateways
 - Added `dukt\videos\controllers\ExplorerController::actionGetVideo()` returns a video by url
+- Added `dukt\videos\controllers\ThumbnailController` to show thumbnail
 - Added `dukt\videos\errors\ApiClientCreateException`
 - Added `dukt\videos\errors\OauthAccessTokenNotFoundException`
 - Added `dukt\videos\errors\OauthAccountNotFoundException`
@@ -56,6 +57,7 @@ Changelog
 - Added `dukt\videos\models\VideoExplorerSection` used by new explorer
 - Added `dukt\videos\models\VideoSize` used for Video object size property
 - Added `dukt\videos\models\VideoStatistic` used for Video object statistic property
+- Added `dukt\videos\models\VideoThumbnail` used for Video object thumbnail property
 - Added `dukt\videos\models\Video::CACHE_KEY_PREFIX` used for cache key prefix with new cache system
 - Added `dukt\videos\models\Video::generateCacheKey()` used for generate cache key with new cache system
 - Added `dukt\videos\models\Video::jsonSerialize()` used for json encode
@@ -109,13 +111,14 @@ Changelog
 - Moved `dukt\videos\models\Video::$authorUrl` to `dukt\videos\models\Video::$author::$url` $author is a `dukt\videos\models\VideoAuthor` instance
 - Moved `dukt\videos\models\Video::$authorUsername` to `dukt\videos\models\Video::$author::$name` $author is a `dukt\videos\models\VideoAuthor` instance
 - Moved `dukt\videos\models\Video::$gatewayName` to `dukt\videos\models\Video::$gateway::getName()` $gateway is a `dukt\videos\base\Gateway` instance
-- Moved `dukt\videos\models\Video::$thumbnailSource` to `dukt\videos\models\Video::$thumbnailSourceUrl`
-- Moved `dukt\videos\models\Video::$thumbnailLargeSource` to `dukt\videos\models\Video::$thumbnailSourceUrl`
+- Moved `dukt\videos\models\Video::$thumbnailSource` to `dukt\videos\models\Video::$thumbnail::$smallestSourceUrl`
+- Moved `dukt\videos\models\Video::$thumbnailLargeSource` to `dukt\videos\models\Video::$thumbnail::$largestSourceUrl`
 - Moved `dukt\videos\models\Video::$durationSeconds` to `dukt\videos\models\Video::$duration` $duration is a `\DateInterval` instance
 - Moved `dukt\videos\models\Video::$duration8601` to `dukt\videos\models\Video::$duration` $duration is a `\DateInterval` instance
 - Removed `dukt\videos\models\Video::getDuration()` use `dukt\videos\models\Video::$duration` instead ; $duration is a `\DateInterval` instance (use DateTimeHelper to format and twig filter in template)
 - Changed `dukt\videos\models\Video::getGateway()` returns `dukt\videos\base\Gateway` instance or throw `dukt\videos\errors\GatewayNotFoundException` if not found
 - Changed `dukt\videos\models\Video::getEmbed()` returns `\Twig\Markup`
+- Moved `dukt\videos\models\Video::getThumbnail()` to `dukt\videos\models\VideoThumbnail::getUrl()`
 - Removed `dukt\videos\helpers\VideosHelper`
 - Moved `dukt\videos\helpers\VideosHelper::getDuration()` to `dukt\videos\helpers\DateTimeHelper::formatDateIntervalToReadable()`
 - Moved `dukt\videos\helpers\VideosHelper::getDuration8601()` to `dukt\videos\helpers\DateTimeHelper::formatDateIntervalToISO8601()`

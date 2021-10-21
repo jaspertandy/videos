@@ -14,7 +14,6 @@ use dukt\videos\base\Cacheable;
 use dukt\videos\base\Gateway;
 use dukt\videos\errors\GatewayNotFoundException;
 use dukt\videos\helpers\DateTimeHelper;
-use dukt\videos\helpers\ThumbnailHelper;
 use dukt\videos\Plugin as VideosPlugin;
 use JsonSerializable;
 use ReflectionObject;
@@ -82,11 +81,11 @@ class Video extends AbstractVideo implements Cacheable, JsonSerializable
     public VideoAuthor $author;
 
     /**
-     * @var null|string the thumbnail’s source URL
+     * @var VideoThumbnail the video's thumbnail
      *
      * @since 3.0.0
      */
-    public ?string $thumbnailSourceUrl = null;
+    public VideoThumbnail $thumbnail;
 
     /**
      * @var null|VideoSize the video's size
@@ -164,19 +163,6 @@ class Video extends AbstractVideo implements Cacheable, JsonSerializable
         }
 
         return $this->_gateway;
-    }
-
-    /**
-     * Returns the video’s thumbnail.
-     *
-     * @param int $size
-     * @return null|string
-     *
-     * @since 2.0.0
-     */
-    public function getThumbnail(int $size = 300): string
-    {
-        return ThumbnailHelper::getByVideoAndSize($this, $size);
     }
 
     /**

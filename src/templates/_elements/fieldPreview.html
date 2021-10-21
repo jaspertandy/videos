@@ -1,7 +1,7 @@
 {% if video %}
     {% if video.loaded %}
         <div class="thumb">
-            <img src="{{ video.thumbnail }}" />
+            <img src="{{ video.thumbnail.smallestSourceUrl }}" />
             <div class="duration">{{ video.duration|durationNumeric }}</div>
             <div class="play" data-gateway="{{ video.gateway.handle }}" data-id="{{ video.id }}"></div>
         </div>
