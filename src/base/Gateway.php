@@ -19,7 +19,6 @@ use dukt\videos\errors\OauthLoginException;
 use dukt\videos\errors\OauthLogoutException;
 use dukt\videos\errors\VideoIdExtractException;
 use dukt\videos\errors\VideoNotFoundException;
-use dukt\videos\helpers\UrlHelper as VideosUrlHelper;
 use dukt\videos\models\OauthAccount;
 use dukt\videos\models\Video;
 use dukt\videos\models\VideoExplorer;
@@ -479,110 +478,6 @@ abstract class Gateway implements JsonSerializable
      * @since 2.0.0
      */
     abstract public function getEmbedFormat(): string;
-
-    /**
-     * Returns the HTML of the embed from a video ID.
-     *
-     * @param Video $video
-     * @param array $options
-     * @return string
-     *
-     * @since 3.0.0
-     */
-    final public function getEmbedHtml(Video $video, array $options = []): string
-    {
-        $urlOptions = [];
-        $attributeOptions = [
-            'title' => [
-                'value' => 'External video from '.$this->getHandle(),
-            ],
-            'frameborder' => [
-                'value' => 0,
-            ],
-            'allowfullscreen' => [
-                'value' => true,
-            ],
-            'allowscriptaccess' => [
-                'value' => true,
-            ],
-            'allow' => [
-                'value' => 'autoplay; encrypted-media',
-            ],
-            'disable_size' => [
-                'value' => null,
-            ],
-            'width' => [
-                'value' => null,
-            ],
-            'height' => [
-                'value' => null,
-            ],
-            'iframeClass' => [
-                'attr' => 'class',
-                'value' => null,
-            ],
-        ];
-
-        // split url options / attribute options from options
-        foreach ($options as $optionName => $optionValue) {
-            if (isset($attributeOptions[$optionName]) === true) {
-                $attributeOptions[$optionName]['value'] = $optionValue;
-            } else {
-                $urlOptions[$optionName] = $optionValue;
-            }
-        }
-
-        // special disable size attribute
-        if ($attributeOptions['disable_size']['value'] === true) {
-            $attributeOptions['width']['value'] = null;
-            $attributeOptions['height']['value'] = null;
-        }
-
-        // remove null value attribute options
-        $attributeOptions = array_filter($attributeOptions, function ($attributeOption) {
-            return $attributeOption['value'] !== null;
-        });
-
-        // reformate attribute options
-        foreach ($attributeOptions as $key => $attributeOption) {
-            unset($attributeOptions[$key]);
-            $key = $attributeOption['attr'] ?? $key;
-            $attributeOptions[$key] = $attributeOption['value'];
-        }
-
-        $embedUrl = $this->getEmbedUrl($video, $urlOptions);
-
-        $embedAttributesString = implode(' ', array_map(function ($value, $attr) {
-            return sprintf('%s="%s"', $attr, $value);
-        }, $attributeOptions, array_keys($attributeOptions)));
-
-        return '<iframe src="'.$embedUrl.'"'.$embedAttributesString.'></iframe>';
-    }
-
-    /**
-     * Returns the URL of the embed from a video ID.
-     *
-     * @param Video $video
-     * @param array $options
-     * @return string
-     *
-     * @since 3.0.0
-     */
-    final public function getEmbedUrl(Video $video, array $options = []): string
-    {
-        $format = $this->getEmbedFormat();
-
-        $formatParts = parse_url($format);
-        $formatPartQueryParams = [];
-
-        if (isset($formatParts['query']) === true) {
-            parse_str($formatParts['query'], $formatPartQueryParams);
-        }
-
-        $formatParts['query'] = http_build_query(array_merge($formatPartQueryParams, $options));
-
-        return sprintf(VideosUrlHelper::buildUrl($formatParts), $video->id);
-    }
 
     /**
      * Returns a list of videos.

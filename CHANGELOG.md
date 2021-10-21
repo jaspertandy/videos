@@ -46,6 +46,7 @@ Changelog
 - Added `dukt\videos\errors\VideoIdExtractException`
 - Added `dukt\videos\events\RegisterGatewayTypesEvent::NAME`
 - Added `dukt\videos\helpers\DateTimeHelper`
+- Added `dukt\videos\helpers\EmbedHelper`
 - Added `dukt\videos\helpers\ThumbnailHelper`
 - Added `dukt\videos\helpers\UrlHelper`
 - Added `dukt\videos\models\AbstractVideo` as parent video model class
@@ -83,8 +84,8 @@ Changelog
 - Moved `dukt\videos\base\Gateway::getAccount()` to `dukt\videos\base\Gateway::getOauthAccount()`
 - Changed `dukt\videos\base\Gateway::getVideoByUrl()` is now final
 - Changed `dukt\videos\base\Gateway::getVideoById()` is now final ; use `dukt\videos\base\Gateway::fetchVideoById()` to get video from the gateway API
-- Changed `dukt\videos\base\Gateway::getEmbedHtml()` is now final and need `dukt\videos\model\Video` as params (instead of video id)
-- Changed `dukt\videos\base\Gateway::getEmbedUrl()` is now final and need `dukt\videos\model\Video` as params (instead of video id)
+- Moved `dukt\videos\base\Gateway::getEmbed()` to `dukt\videos\helpers\EmbedHelper::getEmbedHtml()` and need `dukt\videos\model\Video` as params (instead of video id)
+- Moved `dukt\videos\base\Gateway::getEmbedUrl()`  to `dukt\videos\helpers\EmbedHelper::getEmbedUrl()` and need `dukt\videos\model\Video` as params (instead of video id)
 - Changed `dukt\videos\base\Gateway::getVideos()` is now final
 - Moved `dukt\videos\base\Gateway::getExplorerSections()` to `dukt\videos\base\Gateway::getExplorer()`
 - Moved `dukt\videos\base\Gateway::extractVideoIdFromUrl()` to `dukt\videos\base\Gateway::extractVideoIdFromVideoUrl()`

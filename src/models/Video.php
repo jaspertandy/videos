@@ -14,6 +14,7 @@ use dukt\videos\base\Cacheable;
 use dukt\videos\base\Gateway;
 use dukt\videos\errors\GatewayNotFoundException;
 use dukt\videos\helpers\DateTimeHelper;
+use dukt\videos\helpers\EmbedHelper;
 use dukt\videos\Plugin as VideosPlugin;
 use JsonSerializable;
 use ReflectionObject;
@@ -166,7 +167,7 @@ class Video extends AbstractVideo implements Cacheable, JsonSerializable
     }
 
     /**
-     * Returns the video’s embed.
+     * Returns the video’s embed html.
      *
      * @param array $options
      * @return Markup
@@ -176,10 +177,7 @@ class Video extends AbstractVideo implements Cacheable, JsonSerializable
      */
     public function getEmbedHtml(array $options = []): Markup
     {
-        $embed = $this->getGateway()->getEmbedHtml($this, $options);
-        $charset = Craft::$app->getView()->getTwig()->getCharset();
-
-        return new Markup($embed, $charset);
+        return EmbedHelper::getEmbedHtml($this, $options);
     }
 
     /**
@@ -193,7 +191,7 @@ class Video extends AbstractVideo implements Cacheable, JsonSerializable
      */
     public function getEmbedUrl(array $options = []): string
     {
-        return $this->getGateway()->getEmbedUrl($this, $options);
+        return EmbedHelper::getEmbedUrl($this, $options);
     }
 
     /**
