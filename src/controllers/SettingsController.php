@@ -10,6 +10,7 @@ namespace dukt\videos\controllers;
 use Craft;
 use craft\web\Controller;
 use dukt\videos\Plugin as VideosPlugin;
+use dukt\videos\web\assets\videos\VideosAsset;
 use Exception;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -34,6 +35,8 @@ class SettingsController extends Controller
     {
         try {
             $gateways = VideosPlugin::$plugin->getGateways()->getGateways();
+
+            Craft::$app->getView()->registerAssetBundle(VideosAsset::class);
 
             return $this->renderTemplate('videos/settings/_index', [
                 'gateways' => $gateways,

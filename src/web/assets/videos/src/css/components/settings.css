@@ -1,0 +1,11 @@
+.videos-settings {
+    .gateway-cell {
+        a {
+            @apply flex items-center;
+
+            img {
+                @apply mr-3;
+            }
+        }
+    }
+}

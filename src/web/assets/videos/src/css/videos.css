@@ -4,5 +4,6 @@
 @import "overrides.css";
 @import "components/field.css";
 @import "components/thumb.css";
+@import "components/settings.css";
 
 @tailwind utilities;
