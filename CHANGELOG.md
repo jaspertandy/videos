@@ -144,9 +144,11 @@ Changelog
 - Changed `dukt\videos\web\twig\variables\VideosVariable::getVideoByUrl()` signature: no more cache management inside
 - Changed `dukt\videos\web\twig\variables\VideosVariable::url()` signature: no more cache management inside
 - Removed `dukt\videos\migrations\Install::removeForeignKeys()`.
+- Removed `dukt\videos\migrations\Install::removeIndexes()`.
 
 ### Fixed
 - Fixed a bug where Vimeo video listing might not be loaded properly when the plugin was unable to find one of the videos’ thumbnail.
+- Fixed a bug where the plugin couldn’t be uninstalled.
 
 ## 2.0.15 - 2021-05-19
 
