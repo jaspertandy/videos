@@ -7,6 +7,7 @@
 
 namespace dukt\videos\services;
 
+use Craft;
 use dukt\videos\base\Gateway;
 use dukt\videos\errors\GatewayNotFoundException;
 use dukt\videos\events\RegisterGatewayTypesEvent;
@@ -43,7 +44,7 @@ class Gateways extends Component
         foreach ($this->_getGatewayTypes() as $gatewayType) {
             // type needs to be a valid path to an existing class
             if (class_exists($gatewayType) === false) {
-                throw new GatewayNotFoundException(/* TODO: more precise message */);
+                throw new GatewayNotFoundException(Craft::t('videos', 'Gateway class {gatewayType} not found.', ['gatewayType' => $gatewayType]));
             }
 
             $gateway = new $gatewayType();
@@ -101,7 +102,7 @@ class Gateways extends Component
             }
         }
 
-        throw new GatewayNotFoundException(/* TODO: more precise message */);
+        throw new GatewayNotFoundException(Craft::t('videos', 'Gateway with handle {gatewayHandle} and enabled status to {enabled} not found.', ['gatewayHandle' => $gatewayHandle, 'enabled' => var_export($enabled, true)]));
     }
 
     /**

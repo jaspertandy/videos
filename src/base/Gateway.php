@@ -8,6 +8,7 @@
 namespace dukt\videos\base;
 
 use Craft;
+use craft\errors\SiteNotFoundException;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use dukt\videos\errors\ApiClientCreateException;
@@ -30,7 +31,6 @@ use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use ReflectionClass;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use yii\base\InvalidConfigException;
 
 /**
  * Gateway is the base class for classes representing video gateways.
@@ -68,7 +68,6 @@ abstract class Gateway implements JsonSerializable
      * Returns the handle of the gateway based on its class name.
      *
      * @return string
-     * @throws ReflectionException
      *
      * @since 3.0.0
      */
@@ -92,24 +91,28 @@ abstract class Gateway implements JsonSerializable
      * Returns the icon URL.
      *
      * @return null|string
-     * @throws InvalidArgumentException
      *
      * @since 3.0.0
      */
     final public function getIconUrl(): ?string
     {
-        $iconAlias = $this->getIconAlias();
-        $iconUrl = null;
+        try {
+            $iconAlias = $this->getIconAlias();
+            $iconUrl = null;
 
-        if (file_exists(Craft::getAlias($iconAlias)) === true) {
-            $iconUrl = Craft::$app->assetManager->getPublishedUrl($iconAlias, true);
+            if (file_exists(Craft::getAlias($iconAlias)) === true) {
+                $iconUrl = Craft::$app->assetManager->getPublishedUrl($iconAlias, true);
 
-            if ($iconUrl === false) {
-                return null;
+                if ($iconUrl === false) {
+                    return null;
+                }
             }
-        }
 
-        return $iconUrl;
+            return $iconUrl;
+        } catch (Exception $e) {
+            // TODO: log
+            return null;
+        }
     }
 
     /**
@@ -129,7 +132,6 @@ abstract class Gateway implements JsonSerializable
      *
      * @param bool $parseEnv
      * @return array
-     * @throws InvalidConfigException
      *
      * @since 2.0.0
      */
@@ -152,7 +154,6 @@ abstract class Gateway implements JsonSerializable
      * Returns the OAuth provider.
      *
      * @return AbstractProvider
-     * @throws InvalidConfigException
      *
      * @since 3.0.0
      */
@@ -242,7 +243,6 @@ abstract class Gateway implements JsonSerializable
      * Returns the OAuth authorization URL.
      *
      * @return string
-     * @throws InvalidConfigException
      *
      * @since 3.0.0
      */
@@ -295,7 +295,7 @@ abstract class Gateway implements JsonSerializable
 
             VideosPlugin::$plugin->getOauth()->saveOauthAccessTokenByGateway($accessToken, $this);
         } catch (Exception $e) {
-            throw new OauthLoginException(/* TODO: more precise message */);
+            throw new OauthLoginException(Craft::t('videos', 'An error occured during {gatewayName} oauth login.', ['gatewayName' => $this->getName()]), 0, $e);
         }
     }
 
@@ -330,7 +330,7 @@ abstract class Gateway implements JsonSerializable
         try {
             VideosPlugin::$plugin->getOauth()->deleteOauthAccessTokenByGateway($this);
         } catch (Exception $e) {
-            throw new OauthLogoutException(/* TODO: more precise message */);
+            throw new OauthLogoutException(Craft::t('videos', 'An error occured during {gatewayName} oauth logout.', ['gatewayName' => $this->getName()]), 0, $e);
         }
     }
 
@@ -366,7 +366,7 @@ abstract class Gateway implements JsonSerializable
 
             return $oauthAccount;
         } catch (Exception $e) {
-            throw new OauthAccountNotFoundException(/* TODO: more precise message */);
+            throw new OauthAccountNotFoundException(Craft::t('videos', 'OAuth account not found for {gatewayName}.', ['gatewayName' => $this->getName()]), 0, $e);
         }
     }
 
@@ -424,7 +424,7 @@ abstract class Gateway implements JsonSerializable
 
             return $this->getVideoById($videoId);
         } catch (VideoIdExtractException $e) {
-            throw new VideoNotFoundException(/* TODO: more precise message */);
+            throw new VideoNotFoundException(Craft::t('videos', 'Video not found for URL {videoUrl}.', ['videoUrl' => $videoUrl]), 0, $e);
         }
     }
 
@@ -456,7 +456,7 @@ abstract class Gateway implements JsonSerializable
 
             return $video;
         } catch (Exception $e) {
-            throw new VideoNotFoundException(/* TODO: more precise message */);
+            throw new VideoNotFoundException(Craft::t('videos', 'Video not found for ID {videoId} on {gatewayName}.', ['videoId' => $videoId, 'gatewayName' => $this->getName()]), 0, $e);
         }
     }
 
@@ -528,7 +528,7 @@ abstract class Gateway implements JsonSerializable
             return $this->{$realMethod}($options);
         }
 
-        throw new GatewayMethodNotFoundException(/* TODO: more precise message */);
+        throw new GatewayMethodNotFoundException(Craft::t('videos', 'Method {method} not found on {gatewayName}.', ['method' => $method, 'gatewayName' => $this->getName()]));
     }
 
     /**
@@ -557,7 +557,6 @@ abstract class Gateway implements JsonSerializable
      * Returns the videos'explorer.
      *
      * @return VideoExplorer
-     * @throws ApiResponseException
      *
      * @since 3.0.0
      */
@@ -599,7 +598,7 @@ abstract class Gateway implements JsonSerializable
 
             return Json::decode($responseBody);
         } catch (Exception $e) {
-            throw new ApiResponseException(/* TODO: more precise message */);
+            throw new ApiResponseException(Craft::t('videos', 'Fetch on {gatewayName} API not working for URI {apiUri}.', ['gatewayName' => $this->getName(), 'apiUri' => $uri]), 0, $e);
         }
     }
 

@@ -12,7 +12,6 @@ use dukt\videos\services\Cache;
 use dukt\videos\services\Gateways;
 use dukt\videos\services\Oauth;
 use dukt\videos\services\Videos;
-use yii\base\InvalidConfigException;
 
 /**
  * PluginTrait implements the common methods and properties for plugin classes.
@@ -26,7 +25,6 @@ trait PluginTrait
      * Returns the asset service.
      *
      * @return Cache
-     * @throws InvalidConfigException
      *
      * @since 3.0.0
      */
@@ -39,7 +37,6 @@ trait PluginTrait
      * Returns the cache service.
      *
      * @return Cache
-     * @throws InvalidConfigException
      *
      * @since 2.0.0
      */
@@ -52,7 +49,6 @@ trait PluginTrait
      * Returns the gateways service.
      *
      * @return Gateways
-     * @throws InvalidConfigException
      *
      * @since 2.0.0
      */
@@ -65,7 +61,6 @@ trait PluginTrait
      * Returns the oauth service.
      *
      * @return Oauth
-     * @throws InvalidConfigException
      *
      * @since 2.0.0
      */
@@ -78,7 +73,6 @@ trait PluginTrait
      * Returns the videos service.
      *
      * @return Videos
-     * @throws InvalidConfigException
      *
      * @since 2.0.0
      */

@@ -7,13 +7,14 @@
 
 namespace dukt\videos\gateways;
 
+use Craft;
 use DateInterval;
 use DateTime;
 use dukt\videos\base\Gateway;
 use dukt\videos\errors\ApiClientCreateException;
+use dukt\videos\errors\ApiResponseException;
 use dukt\videos\errors\VideoIdExtractException;
 use dukt\videos\errors\VideoNotFoundException;
-use dukt\videos\models\Section;
 use dukt\videos\models\Video;
 use dukt\videos\models\VideoAuthor;
 use dukt\videos\models\VideoExplorer;
@@ -138,7 +139,7 @@ class YouTube extends Gateway
             return $videoId;
         }
 
-        throw new VideoIdExtractException(/* TODO: more precise message */);
+        throw new VideoIdExtractException(Craft::t('videos', 'Extract ID from URL {videoUrl} on {gatewayName} not working.', ['videoUrl' => $videoUrl, 'gatewayName' => $this->getName()]));
     }
 
     /**
@@ -158,7 +159,7 @@ class YouTube extends Gateway
 
             return new Client($options);
         } catch (Exception $e) {
-            throw new ApiClientCreateException(/* TODO: more precise message */);
+            throw new ApiClientCreateException(Craft::t('videos', 'An occured during creation of API client for {gatewayName}.', ['gatewayName' => $this->getName()]), 0, $e);
         }
     }
 
@@ -178,12 +179,12 @@ class YouTube extends Gateway
             ]);
 
             if (count($data['items']) !== 1) {
-                throw new VideoNotFoundException(/* TODO: more precise message */);
+                throw new VideoNotFoundException(Craft::t('videos', 'Fetch video with ID {videoId} on {gatewayName} not working.', ['videoId' => $videoId, 'gatewayName' => $this->getName()]));
             }
 
             return $this->_parseVideo($data['items'][0]);
         } catch (Exception $e) {
-            throw new VideoNotFoundException(/* TODO: more precise message */);
+            throw new VideoNotFoundException(Craft::t('videos', 'Fetch video with ID {videoId} on {gatewayName} not working.', ['videoId' => $videoId, 'gatewayName' => $this->getName()]), 0, $e);
         }
     }
 
@@ -234,23 +235,27 @@ class YouTube extends Gateway
         ]);
 
         // playlists section
-        $playlistsData = $this->_fetchPlaylists();
+        try {
+            $playlistsData = $this->_fetchPlaylists();
 
-        if (count($playlistsData) > 0) {
-            $section = new VideoExplorerSection([
-                'name' => 'Playlists',
-            ]);
-
-            foreach ($playlistsData as $playlistData) {
-                $section->collections[] = new VideoExplorerCollection([
-                    'name' => $playlistData['snippet']['title'],
-                    'method' => 'playlist',
-                    'options' => ['id' => $playlistData['id']],
-                    'icon' => 'list',
+            if (count($playlistsData) > 0) {
+                $section = new VideoExplorerSection([
+                    'name' => 'Playlists',
                 ]);
-            }
 
-            $explorer->sections[] = $section;
+                foreach ($playlistsData as $playlistData) {
+                    $section->collections[] = new VideoExplorerCollection([
+                        'name' => $playlistData['snippet']['title'],
+                        'method' => 'playlist',
+                        'options' => ['id' => $playlistData['id']],
+                        'icon' => 'list',
+                    ]);
+                }
+
+                $explorer->sections[] = $section;
+            }
+        } catch (ApiResponseException $e) {
+            // TODO: log
         }
 
         return $explorer;

@@ -82,13 +82,13 @@ class Oauth extends Component
             $token = Token::findOne(['gateway' => $gateway->getHandle()]);
 
             if ($token === null) {
-                throw new TokenNotFoundException(/* TODO: more precise message */);
+                throw new TokenNotFoundException(Craft::t('videos', 'Token record not found for {gatewayName}.', ['gatewayName' => $gateway->getName()]));
             }
 
             $accessTokenData = Json::decode($token->accessToken);
 
             if (isset($accessTokenData['accessToken']) === false) {
-                throw new TokenInvalidException(/* TODO: more precise message */);
+                throw new TokenInvalidException(Craft::t('videos', 'Token record for {gatewayName} is invalid.', ['gatewayName' => $gateway->getName()]));
             }
 
             $accessToken = new AccessToken([
@@ -101,7 +101,7 @@ class Oauth extends Component
 
             return $this->refreshOauthAccessTokenByGateway($accessToken, $gateway);
         } catch (Exception $e) {
-            throw new OauthAccessTokenNotFoundException(/* TODO: more precise message */);
+            throw new OauthAccessTokenNotFoundException(Craft::t('videos', 'OAuth access token for {gatewayName} not found.', ['gatewayName' => $gateway->getName()]), 0, $e);
         }
     }
 
@@ -122,7 +122,7 @@ class Oauth extends Component
                 $newAccessToken = $gateway->getOauthProvider()->getAccessToken(new RefreshToken(), ['refresh_token' => $accessToken->getRefreshToken()]);
 
                 if (!$newAccessToken instanceof AccessToken) {
-                    throw new OauthRefreshAccessTokenException(/* TODO: more precise message */);
+                    throw new OauthRefreshAccessTokenException(Craft::t('videos', 'An error occured trying to refresh OAuth token for {gatewayName}.', ['gatewayName' => $gateway->getName()]));
                 }
 
                 $this->saveOauthAccessTokenByGateway(new AccessToken([
@@ -138,7 +138,7 @@ class Oauth extends Component
 
             return $accessToken;
         } catch (Exception $e) {
-            throw new OauthRefreshAccessTokenException(/* TODO: more precise message */);
+            throw new OauthRefreshAccessTokenException(Craft::t('videos', 'An error occured trying to refresh OAuth token for {gatewayName}.', ['gatewayName' => $gateway->getName()]), 0, $e);
         }
     }
 
@@ -170,12 +170,15 @@ class Oauth extends Component
                 'values' => $accessToken->getValues(),
             ];
 
+            if ($token->validate() === false) {
+                throw new TokenInvalidException(Craft::t('videos', 'Token record for {gatewayName} is invalid.', ['gatewayName' => $gateway->getName()]));
+            }
+
             if ($token->save() === false) {
-                //throw new TokenInvalidException(/* TODO: more precise message */);
-                throw new TokenSaveException(/* TODO: more precise message */);
+                throw new TokenSaveException(Craft::t('videos', 'An error occured trying to save token record for {gatewayName}.', ['gatewayName' => $gateway->getName()]));
             }
         } catch (Exception $e) {
-            throw new OauthSaveAccessTokenException(/* TODO: more precise message */);
+            throw new OauthSaveAccessTokenException(Craft::t('videos', 'An error occured trying to save OAuth access token for {gatewayName}.', ['gatewayName' => $gateway->getName()]), 0, $e);
         }
     }
 
@@ -194,14 +197,14 @@ class Oauth extends Component
             $token = Token::findOne(['gateway' => $gateway->getHandle()]);
 
             if ($token === null) {
-                throw new TokenNotFoundException(/* TODO: more precise message */);
+                throw new TokenNotFoundException(Craft::t('videos', 'Token record not found for {gatewayName}.', ['gatewayName' => $gateway->getName()]));
             }
 
             if ($token->delete() === false) {
-                throw new TokenDeleteException(/* TODO: more precise message */);
+                throw new TokenDeleteException(Craft::t('videos', 'An error occured trying to delete token record for {gatewayName}.', ['gatewayName' => $gateway->getName()]));
             }
         } catch (Exception $e) {
-            throw new OauthDeleteAccessTokenException(/* TODO: more precise message */);
+            throw new OauthDeleteAccessTokenException(Craft::t('videos', 'An error occured trying to delete OAuth access token for {gatewayName}.', ['gatewayName' => $gateway->getName()]), 0, $e);
         }
     }
 }

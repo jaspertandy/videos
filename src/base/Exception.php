@@ -7,8 +7,6 @@
 
 namespace dukt\videos\base;
 
-use Throwable;
-
 /**
  * Base exception.
  *
@@ -17,15 +15,4 @@ use Throwable;
  */
 abstract class Exception extends \Exception
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function __construct(?string $message = null, ?Throwable $previous = null)
-    {
-        if ($previous !== null) {
-            parent::__construct($message, $previous->getCode(), $previous);
-        } else {
-            parent::__construct($message);
-        }
-    }
 }

@@ -1,4 +1,5 @@
 <?php
+
 return [
     'Browse videos…' => 'Browse videos…',
     'Cancel' => 'Cancel',
@@ -7,4 +8,25 @@ return [
     'Search {gateway} videos…' => 'Search {gateway} videos…',
     'Select' => 'Select',
     '{plays} plays' => '{plays} plays',
+
+    'Gateway class {gatewayType} not found.' => 'Gateway class {gatewayType} not found.',
+    'Gateway with handle {gatewayHandle} and enabled status to {enabled} not found.' => 'Gateway with handle {gatewayHandle} and enabled status to {enabled} not found.',
+    'An error occured during {gatewayName} oauth login.' => 'An error occured during {gatewayName} oauth login.',
+    'An error occured during {gatewayName} oauth logout.' => 'An error occured during {gatewayName} oauth logout.',
+    'OAuth account not found for {gatewayName}.' => 'OAuth account not found for {gatewayName}.',
+    'Video not found for URL {videoUrl}.' => 'Video not found for URL {videoUrl}.',
+    'Video not found for ID {videoId} on {gatewayName}.' => 'Video not found for ID {videoId} on {gatewayName}.',
+    'Method {method} not found on {gatewayName}.' => 'Method {method} not found on {gatewayName}.',
+    'Fetch on {gatewayName} API not working for URI {apiUri}.' => 'Fetch on {gatewayName} API not working for URI {apiUri}.',
+    'Extract ID from URL {videoUrl} on {gatewayName} not working.' => 'Extract ID from URL {videoUrl} on {gatewayName} not working.',
+    'An occured during creation of API client for {gatewayName}.' => 'An occured during creation of API client for {gatewayName}.',
+    'Fetch video with ID {videoId} on {gatewayName} not working.' => 'Fetch video with ID {videoId} on {gatewayName} not working.',
+    'Token record not found for {gatewayName}.' => 'Token record not found for {gatewayName}.',
+    'Token record for {gatewayName} is invalid.' => 'Token record for {gatewayName} is invalid.',
+    'OAuth access token for {gatewayName} not found.' => 'OAuth access token for {gatewayName} not found.',
+    'An error occured trying to refresh OAuth token for {gatewayName}.' => 'An error occured trying to refresh OAuth token for {gatewayName}.',
+    'An error occured trying to save token record for {gatewayName}.' => 'An error occured trying to save token record for {gatewayName}.',
+    'An error occured trying to save OAuth access token for {gatewayName}.' => 'An error occured trying to save OAuth access token for {gatewayName}.',
+    'An error occured trying to delete token record for {gatewayName}.' => 'An error occured trying to delete token record for {gatewayName}.',
+    'An error occured trying to delete OAuth access token for {gatewayName}.' => 'An error occured trying to delete OAuth access token for {gatewayName}.',
 ];

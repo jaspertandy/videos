@@ -7,6 +7,7 @@
 
 namespace dukt\videos\services;
 
+use Craft;
 use dukt\videos\errors\VideoNotFoundException;
 use dukt\videos\models\Video;
 use dukt\videos\Plugin as VideosPlugin;
@@ -43,6 +44,6 @@ class Videos extends Component
             }
         }
 
-        throw new VideoNotFoundException(/* TODO: more precise message */);
+        throw new VideoNotFoundException(Craft::t('videos', 'Video not found for URL {videoUrl}.', ['videoUrl' => $videoUrl]));
     }
 }

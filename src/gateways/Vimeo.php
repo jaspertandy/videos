@@ -7,13 +7,14 @@
 
 namespace dukt\videos\gateways;
 
+use Craft;
 use DateTime;
 use Dukt\OAuth2\Client\Provider\Vimeo as VimeoProvider;
 use dukt\videos\base\Gateway;
 use dukt\videos\errors\ApiClientCreateException;
+use dukt\videos\errors\ApiResponseException;
 use dukt\videos\errors\VideoIdExtractException;
 use dukt\videos\errors\VideoNotFoundException;
-use dukt\videos\models\Section;
 use dukt\videos\models\Video;
 use dukt\videos\models\VideoAuthor;
 use dukt\videos\models\VideoExplorer;
@@ -90,7 +91,7 @@ class Vimeo extends Gateway
             return $matches[2][0];
         }
 
-        throw new VideoIdExtractException(/* TODO: more precise message */);
+        throw new VideoIdExtractException(Craft::t('videos', 'Extract ID from URL {videoUrl} on {gatewayName} not working.', ['videoUrl' => $videoUrl, 'gatewayName' => $this->getName()]));
     }
 
     /**
@@ -111,7 +112,7 @@ class Vimeo extends Gateway
 
             return new Client($options);
         } catch (Exception $e) {
-            throw new ApiClientCreateException(/* TODO: more precise message */);
+            throw new ApiClientCreateException(Craft::t('videos', 'An occured during creation of API client for {gatewayName}.', ['gatewayName' => $this->getName()]), 0, $e);
         }
     }
 
@@ -131,7 +132,7 @@ class Vimeo extends Gateway
 
             return $this->_parseVideo($data);
         } catch (Exception $e) {
-            throw new VideoNotFoundException(/* TODO: more precise message */);
+            throw new VideoNotFoundException(Craft::t('videos', 'Fetch video with ID {videoId} on {gatewayName} not working.', ['videoId' => $videoId, 'gatewayName' => $this->getName()]), 0, $e);
         }
     }
 
@@ -182,62 +183,74 @@ class Vimeo extends Gateway
         ]);
 
         // folders section
-        $foldersData = $this->_fetchFolders();
+        try {
+            $foldersData = $this->_fetchFolders();
 
-        if (count($foldersData) > 0) {
-            $section = new VideoExplorerSection([
-                'name' => 'Folders',
-            ]);
-
-            foreach ($foldersData as $folder) {
-                $section->collections[] = new VideoExplorerCollection([
-                    'name' => $folder['name'],
-                    'method' => 'folder',
-                    'options' => ['id' => substr($folder['uri'], strrpos($folder['uri'], '/') + 1)],
-                    'icon' => 'folder',
+            if (count($foldersData) > 0) {
+                $section = new VideoExplorerSection([
+                    'name' => 'Folders',
                 ]);
-            }
 
-            $explorer->sections[] = $section;
+                foreach ($foldersData as $folder) {
+                    $section->collections[] = new VideoExplorerCollection([
+                        'name' => $folder['name'],
+                        'method' => 'folder',
+                        'options' => ['id' => substr($folder['uri'], strrpos($folder['uri'], '/') + 1)],
+                        'icon' => 'folder',
+                    ]);
+                }
+
+                $explorer->sections[] = $section;
+            }
+        } catch (ApiResponseException $e) {
+            // TODO: log
         }
 
         // albums section
-        $albumsData = $this->_fetchAlbums();
+        try {
+            $albumsData = $this->_fetchAlbums();
 
-        if (count($albumsData) > 0) {
-            $section = new VideoExplorerSection([
-                'name' => 'Albums',
-            ]);
-
-            foreach ($albumsData as $albumData) {
-                $section->collections[] = new VideoExplorerCollection([
-                    'name' => $albumData['name'],
-                    'method' => 'album',
-                    'icon' => 'layout',
-                    'options' => ['id' => substr($albumData['uri'], strpos($albumData['uri'], '/albums/') + strlen('/albums/'))],
+            if (count($albumsData) > 0) {
+                $section = new VideoExplorerSection([
+                    'name' => 'Albums',
                 ]);
-            }
 
-            $explorer->sections[] = $section;
+                foreach ($albumsData as $albumData) {
+                    $section->collections[] = new VideoExplorerCollection([
+                        'name' => $albumData['name'],
+                        'method' => 'album',
+                        'icon' => 'layout',
+                        'options' => ['id' => substr($albumData['uri'], strpos($albumData['uri'], '/albums/') + strlen('/albums/'))],
+                    ]);
+                }
+
+                $explorer->sections[] = $section;
+            }
+        } catch (ApiResponseException $e) {
+            // TODO: log
         }
 
         // channels section
-        $channelsData = $this->_fetchChannels();
+        try {
+            $channelsData = $this->_fetchChannels();
 
-        if (count($channelsData) > 0) {
-            $section = new VideoExplorerSection([
-                'name' => 'Channels',
-            ]);
-
-            foreach ($channelsData as $channelData) {
-                $section->collections[] = new VideoExplorerCollection([
-                    'name' => $channelData['name'],
-                    'method' => 'channel',
-                    'options' => ['id' => substr($channelData['uri'], strpos($channelData['uri'], '/channels/') + strlen('/channels/'))],
+            if (count($channelsData) > 0) {
+                $section = new VideoExplorerSection([
+                    'name' => 'Channels',
                 ]);
-            }
 
-            $explorer->sections[] = $section;
+                foreach ($channelsData as $channelData) {
+                    $section->collections[] = new VideoExplorerCollection([
+                        'name' => $channelData['name'],
+                        'method' => 'channel',
+                        'options' => ['id' => substr($channelData['uri'], strpos($channelData['uri'], '/channels/') + strlen('/channels/'))],
+                    ]);
+                }
+
+                $explorer->sections[] = $section;
+            }
+        } catch (ApiResponseException $e) {
+            // TODO: log
         }
 
         return $explorer;
