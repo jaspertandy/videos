@@ -15,11 +15,11 @@ use dukt\videos\errors\ApiClientCreateException;
 use dukt\videos\errors\ApiResponseException;
 use dukt\videos\errors\VideoIdExtractException;
 use dukt\videos\errors\VideoNotFoundException;
+use dukt\videos\models\GatewayExplorer;
+use dukt\videos\models\GatewayExplorerCollection;
+use dukt\videos\models\GatewayExplorerSection;
 use dukt\videos\models\Video;
 use dukt\videos\models\VideoAuthor;
-use dukt\videos\models\VideoExplorer;
-use dukt\videos\models\VideoExplorerCollection;
-use dukt\videos\models\VideoExplorerSection;
 use dukt\videos\models\VideoSize;
 use dukt\videos\models\VideoStatistic;
 use dukt\videos\models\VideoThumbnail;
@@ -161,20 +161,20 @@ class Vimeo extends Gateway
      *
      * @since 3.0.0
      */
-    public function getExplorer(): VideoExplorer
+    public function getExplorer(): GatewayExplorer
     {
-        $explorer = new VideoExplorer();
+        $explorer = new GatewayExplorer();
 
         // library section
-        $explorer->sections[] = new VideoExplorerSection([
+        $explorer->sections[] = new GatewayExplorerSection([
             'name' => Craft::t('videos', 'explorer.section.library.title'),
             'collections' => [
-                new VideoExplorerCollection([
+                new GatewayExplorerCollection([
                     'name' => Craft::t('videos', 'explorer.collection.upload.title'),
                     'method' => 'uploads',
                     'icon' => 'video-camera',
                 ]),
-                new VideoExplorerCollection([
+                new GatewayExplorerCollection([
                     'name' => Craft::t('videos', 'explorer.collection.favorite.title'),
                     'method' => 'favorites',
                     'icon' => 'thumb-up',
@@ -187,12 +187,12 @@ class Vimeo extends Gateway
             $foldersData = $this->_fetchFolders();
 
             if (count($foldersData) > 0) {
-                $section = new VideoExplorerSection([
+                $section = new GatewayExplorerSection([
                     'name' => Craft::t('videos', 'explorer.section.folder.title'),
                 ]);
 
                 foreach ($foldersData as $folder) {
-                    $section->collections[] = new VideoExplorerCollection([
+                    $section->collections[] = new GatewayExplorerCollection([
                         'name' => $folder['name'],
                         'method' => 'folder',
                         'options' => ['id' => substr($folder['uri'], strrpos($folder['uri'], '/') + 1)],
@@ -211,12 +211,12 @@ class Vimeo extends Gateway
             $albumsData = $this->_fetchAlbums();
 
             if (count($albumsData) > 0) {
-                $section = new VideoExplorerSection([
+                $section = new GatewayExplorerSection([
                     'name' => Craft::t('videos', 'explorer.section.album.title'),
                 ]);
 
                 foreach ($albumsData as $albumData) {
-                    $section->collections[] = new VideoExplorerCollection([
+                    $section->collections[] = new GatewayExplorerCollection([
                         'name' => $albumData['name'],
                         'method' => 'album',
                         'icon' => 'layout',
@@ -235,12 +235,12 @@ class Vimeo extends Gateway
             $channelsData = $this->_fetchChannels();
 
             if (count($channelsData) > 0) {
-                $section = new VideoExplorerSection([
+                $section = new GatewayExplorerSection([
                     'name' => Craft::t('videos', 'explorer.section.channel.title'),
                 ]);
 
                 foreach ($channelsData as $channelData) {
-                    $section->collections[] = new VideoExplorerCollection([
+                    $section->collections[] = new GatewayExplorerCollection([
                         'name' => $channelData['name'],
                         'method' => 'channel',
                         'options' => ['id' => substr($channelData['uri'], strpos($channelData['uri'], '/channels/') + strlen('/channels/'))],

@@ -17,7 +17,7 @@
 </template>
 
 <script>
-    /* global VideoExplorerConstructor */
+    /* global GatewayExplorerConstructor */
     /* global VideoSelectorActionsConstructor */
     /* global VideoPlayerConstructor */
     /* global Garnish */
@@ -97,7 +97,7 @@
                         },
                     }
 
-                    new VideoExplorerConstructor(options).$mount($explorerContainer.get(0))
+                    new GatewayExplorerConstructor(options).$mount($explorerContainer.get(0))
                     new VideoSelectorActionsConstructor(options).$mount($selectorActions.get(0))
                 })
             },

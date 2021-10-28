@@ -15,11 +15,11 @@ use dukt\videos\errors\ApiClientCreateException;
 use dukt\videos\errors\ApiResponseException;
 use dukt\videos\errors\VideoIdExtractException;
 use dukt\videos\errors\VideoNotFoundException;
+use dukt\videos\models\GatewayExplorer;
+use dukt\videos\models\GatewayExplorerCollection;
+use dukt\videos\models\GatewayExplorerSection;
 use dukt\videos\models\Video;
 use dukt\videos\models\VideoAuthor;
-use dukt\videos\models\VideoExplorer;
-use dukt\videos\models\VideoExplorerCollection;
-use dukt\videos\models\VideoExplorerSection;
 use dukt\videos\models\VideoStatistic;
 use dukt\videos\models\VideoThumbnail;
 use Exception;
@@ -213,20 +213,20 @@ class YouTube extends Gateway
      *
      * @since 3.0.0
      */
-    public function getExplorer(): VideoExplorer
+    public function getExplorer(): GatewayExplorer
     {
-        $explorer = new VideoExplorer();
+        $explorer = new GatewayExplorer();
 
         // library section
-        $explorer->sections[] = new VideoExplorerSection([
+        $explorer->sections[] = new GatewayExplorerSection([
             'name' => Craft::t('videos', 'explorer.section.library.title'),
             'collections' => [
-                new VideoExplorerCollection([
+                new GatewayExplorerCollection([
                     'name' => Craft::t('videos', 'explorer.collection.upload.title'),
                     'method' => 'uploads',
                     'icon' => 'video-camera',
                 ]),
-                new VideoExplorerCollection([
+                new GatewayExplorerCollection([
                     'name' => Craft::t('videos', 'explorer.collection.like.title'),
                     'method' => 'likes',
                     'icon' => 'thumb-up',
@@ -239,12 +239,12 @@ class YouTube extends Gateway
             $playlistsData = $this->_fetchPlaylists();
 
             if (count($playlistsData) > 0) {
-                $section = new VideoExplorerSection([
+                $section = new GatewayExplorerSection([
                     'name' => Craft::t('videos', 'explorer.section.playlist.title'),
                 ]);
 
                 foreach ($playlistsData as $playlistData) {
-                    $section->collections[] = new VideoExplorerCollection([
+                    $section->collections[] = new GatewayExplorerCollection([
                         'name' => $playlistData['snippet']['title'],
                         'method' => 'playlist',
                         'options' => ['id' => $playlistData['id']],

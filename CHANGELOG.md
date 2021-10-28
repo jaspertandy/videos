@@ -51,10 +51,10 @@ Changelog
 - Added `dukt\videos\models\AbstractVideo` as parent video model class
 - Added `dukt\videos\models\FailedVideo` returns when Video can’t be load for technical reason (api call failed, gateway disconnected and so on)
 - Added `dukt\videos\models\GatewayAccount` used for keep Gateway account information
+- Added `dukt\videos\models\GatewayExplorer` the new explorer object
+- Added `dukt\videos\models\GatewayExplorerCollection` used by new explorer
+- Added `dukt\videos\models\GatewayExplorerSection` used by new explorer
 - Added `dukt\videos\models\VideoAuthor` used for Video object author property
-- Added `dukt\videos\models\VideoExplorer` the new explorer object
-- Added `dukt\videos\models\VideoExplorerCollection` used by new explorer
-- Added `dukt\videos\models\VideoExplorerSection` used by new explorer
 - Added `dukt\videos\models\VideoSize` used for Video object size property
 - Added `dukt\videos\models\VideoStatistic` used for Video object statistic property
 - Added `dukt\videos\models\VideoThumbnail` used for Video object thumbnail property
@@ -101,8 +101,8 @@ Changelog
 - Removed `dukt\videos\controllers\ExplorerController::actionPlayer()`
 - Removed `dukt\videos\errors\CollectionParsingException`
 - Removed `dukt\videos\errors\JsonParsingException`
-- Moved `dukt\videos\models\Collection` to `dukt\videos\models\VideoExplorerCollection`
-- Moved `dukt\videos\models\Section` to `dukt\videos\models\VideoExplorerSection`
+- Moved `dukt\videos\models\Collection` to `dukt\videos\models\GatewayExplorerCollection`
+- Moved `dukt\videos\models\Section` to `dukt\videos\models\GatewayExplorerSection`
 - Changed `dukt\videos\models\Settings::$cacheDuration` is now integer of seconds before the cache will expire
 - Moved `dukt\videos\models\Video::$date` to `dukt\videos\models\Video::$publishedAt`
 - Moved `dukt\videos\models\Video::$plays` to `dukt\videos\models\Video::$statistic::$playCount` $statistic is a `dukt\videos\models\VideoStatistic` instance

@@ -10,15 +10,15 @@ namespace dukt\videos\models;
 use craft\base\Model;
 
 /**
- * Video explorer model class.
+ * Gateway explorer model class.
  *
  * @author Dukt <support@dukt.net>
  * @since 3.0.0
  */
-class VideoExplorer extends Model
+class GatewayExplorer extends Model
 {
     /**
-     * @var VideoExplorerSection[] the section's collections
+     * @var GatewayExplorerSection[] the section's collections
      *
      * @since 3.0.0
      */

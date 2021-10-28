@@ -10,7 +10,7 @@ Vue.config.productionTip = false
 
 Vue.mixin(utils)
 
-window.VideoExplorerConstructor = Vue.extend({
+window.GatewayExplorerConstructor = Vue.extend({
     render: h => h(Explorer),
     store: createStore(),
 })

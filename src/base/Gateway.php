@@ -21,8 +21,8 @@ use dukt\videos\errors\OauthLogoutException;
 use dukt\videos\errors\VideoIdExtractException;
 use dukt\videos\errors\VideoNotFoundException;
 use dukt\videos\models\GatewayAccount;
+use dukt\videos\models\GatewayExplorer;
 use dukt\videos\models\Video;
-use dukt\videos\models\VideoExplorer;
 use dukt\videos\Plugin as VideosPlugin;
 use Exception;
 use GuzzleHttp\Client;
@@ -556,11 +556,11 @@ abstract class Gateway implements JsonSerializable
     /**
      * Returns the videos'explorer.
      *
-     * @return VideoExplorer
+     * @return GatewayExplorer
      *
      * @since 3.0.0
      */
-    abstract public function getExplorer(): VideoExplorer;
+    abstract public function getExplorer(): GatewayExplorer;
 
     /**
      * {@inheritdoc}
