@@ -14,10 +14,10 @@
                     <a h:ref="previewVideo.author.url" class="light">{{ previewVideo.author.name }}</a>
                 </li>
                 <li class="truncate block">
-                    {{ t('videos', '{playCount} plays', { playCount: previewVideo.statistic.playCount }) }}
+                    {{ t('videos', 'field.preview.play_count', {playCount: previewVideo.statistic.playCount}) }}
                 </li>
                 <li class="truncate block">
-                    <a @click.prevent="$emit('removeVideo')">{{ t('videos', "Remove") }}</a>
+                    <a @click.prevent="$emit('removeVideo')">{{ t('videos', 'field.preview.remove') }}</a>
                 </li>
             </ul>
         </div>

@@ -3,13 +3,13 @@
 {% set fullPageForm = true %}
 
 {% set crumbs = [
-    { label: "Settings"|t('videos'), url: url('settings') },
-    { label: "Plugins"|t('videos'), url: url('settings/plugins') },
-    { label: "Videos"|t('videos'), url: url('videos/settings') },
+    { label: "setting.breadcrumb.setting"|t('videos'), url: url('settings') },
+    { label: "setting.breadcrumb.plugin"|t('videos'), url: url('settings/plugins') },
+    { label: "setting.breadcrumb.plugin.video"|t('videos'), url: url('videos/settings') },
     { label: gateway.name, url: url('videos/settings/'~gateway.handle) }
 ] %}
 
-{% set title = "{gateway} OAuth Settings"|t('videos', { gateway: gateway.name }) %}
+{% set title = "setting.oauth.title"|t('videos', { gatewayName: gateway.name }) %}
 
 {% import "_includes/forms" as forms %}
 
@@ -18,23 +18,22 @@
     {{ redirectInput('videos/settings/'~gateway.handle) }}
     <input type="hidden" name="gatewayHandle" value="{{ gateway.handle }}">
 
-    <h2 class="first">{{ 'Create the OAuth application'|t('videos') }}</h2>
-    <p>{{ 'Go to the {link} and create a new app.'|t('videos', {link: '<a href="'~gateway.getOauthProviderApiConsoleUrl()~'">'~'{oauthProvider} API Console'|t('videos', { oauthProvider: gateway.oauthProviderName })~'</a>'})|raw }}</p>
-    <p>{{ "Setup the app OAuth settings with the following parameters:"|t('videos') }}</p>
+    <h2 class="first">{{ "setting.oauth.create.title"|t('videos') }}</h2>
+    <p>{{ "setting.oauth.create.help"|t('videos', {oauthProviderApiConsoleUrl: gateway.getOauthProviderApiConsoleUrl(), oauthProviderName: gateway.oauthProviderName })|raw }}</p>
+    
+    <p>{{ "setting.oauth.create.params.title"|t('videos') }}</p>
 
     <ul class="bullets">
-        <li><strong>Javascript Origin:</strong>
-            <code>{{ gateway.oauthJavascriptOrigin }}</code></li>
-        <li><strong>Redirect URI:</strong>
-            <code>{{ gateway.oauthRedirectUrl }}</code></li>
+        <li>{{ "setting.oauth.create.params.oauth_javascript_origin"|t('videos', {oauthJavascriptOrigin: gateway.oauthJavascriptOrigin})|raw }}</li>
+        <li>{{ "setting.oauth.create.params.oauth_redirect_url"|t('videos', {oauthRedirectUrl: gateway.oauthRedirectUrl})|raw }}</li>
     </ul>
 
-    <h2>{{ 'Configure the OAuth client'|t('videos') }}</h2>
-    <p>{{ '{oauthProvider} will provide you with a client ID and secret, paste them below and save.'|t('videos', { oauthProvider: gateway.oauthProviderName }) }}</p>
+    <h2>{{ "setting.oauth.configure.title"|t('videos') }}</h2>
+    <p>{{ "setting.oauth.configure.help"|t('videos', { oauthProviderName: gateway.oauthProviderName }) }}</p>
 
     {{ forms.autosuggestField({
         name: 'clientId',
-        label: "Client ID"|t('videos'),
+        label: "setting.oauth.configure.field.id"|t('videos'),
         value: (gateway.getOauthProviderOptions(false).clientId ?? null),
         suggestions: craft.cp.getEnvSuggestions(),
         suggestEnvVars: true,
@@ -42,7 +41,7 @@
 
     {{ forms.autosuggestField({
         name: 'clientSecret',
-        label: "Client Secret"|t('videos'),
+        label: "setting.oauth.configure.field.secret"|t('videos'),
         value: (gateway.getOauthProviderOptions(false).clientSecret ?? null),
         suggestions: craft.cp.getEnvSuggestions(),
         suggestEnvVars: true,
@@ -50,5 +49,5 @@
 
     <hr />
 
-    <p><em>{{ 'Check the {link} for more details on how to setup OAuth.'|t('social', { link: '<a href="https://dukt.net/docs/videos/v2/" target="_blank">documentation</a>'})|raw }}</em></p>
+    <p><em>{{ "setting.oauth.help"|t('videos')|raw }}</em></p>
 {% endset %}

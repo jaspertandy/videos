@@ -167,15 +167,15 @@ class Vimeo extends Gateway
 
         // library section
         $explorer->sections[] = new VideoExplorerSection([
-            'name' => 'Library',
+            'name' => Craft::t('videos', 'explorer.section.library.title'),
             'collections' => [
                 new VideoExplorerCollection([
-                    'name' => 'Uploads',
+                    'name' => Craft::t('videos', 'explorer.collection.upload.title'),
                     'method' => 'uploads',
                     'icon' => 'video-camera',
                 ]),
                 new VideoExplorerCollection([
-                    'name' => 'Favorites',
+                    'name' => Craft::t('videos', 'explorer.collection.favorite.title'),
                     'method' => 'favorites',
                     'icon' => 'thumb-up',
                 ]),
@@ -188,7 +188,7 @@ class Vimeo extends Gateway
 
             if (count($foldersData) > 0) {
                 $section = new VideoExplorerSection([
-                    'name' => 'Folders',
+                    'name' => Craft::t('videos', 'explorer.section.folder.title'),
                 ]);
 
                 foreach ($foldersData as $folder) {
@@ -212,7 +212,7 @@ class Vimeo extends Gateway
 
             if (count($albumsData) > 0) {
                 $section = new VideoExplorerSection([
-                    'name' => 'Albums',
+                    'name' => Craft::t('videos', 'explorer.section.album.title'),
                 ]);
 
                 foreach ($albumsData as $albumData) {
@@ -236,7 +236,7 @@ class Vimeo extends Gateway
 
             if (count($channelsData) > 0) {
                 $section = new VideoExplorerSection([
-                    'name' => 'Channels',
+                    'name' => Craft::t('videos', 'explorer.section.channel.title'),
                 ]);
 
                 foreach ($channelsData as $channelData) {

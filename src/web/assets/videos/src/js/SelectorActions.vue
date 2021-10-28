@@ -1,8 +1,8 @@
 <template>
     <div>
         <div class="buttons right">
-            <div class="btn" @click="cancel()">{{ t('videos', 'Cancel') }}</div>
-            <div class="btn submit" :class="{disabled: !hasSelectedVideo}" @click="useSelectedVideo()">{{ t('videos', 'Select') }}</div>
+            <div class="btn" @click="cancel()">{{ t('videos', 'explorer.cancel') }}</div>
+            <div class="btn submit" :class="{disabled: !hasSelectedVideo}" @click="useSelectedVideo()">{{ t('videos', 'explorer.select') }}</div>
         </div>
     </div>
 </template>

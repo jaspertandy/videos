@@ -32,6 +32,8 @@
 </template>
 
 <script>
+    /* global Craft */
+
     import {mapState, mapGetters} from 'vuex'
     import ThumbUp from '@/icons/ThumbUp';
     import Folder from '@/icons/Folder';
@@ -86,7 +88,7 @@
                     })
                     .catch(() => {
                         this.$store.commit('updateVideosLoading', false)
-                        this.$store.dispatch('displayError', 'Couldn’t get videos.')
+                        this.$store.dispatch('displayError', Craft.t('videos', 'explorer.error.fetch_videos'))
                     })
             },
 

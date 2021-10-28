@@ -1,9 +1,9 @@
 {% extends "_layouts/cp" %}
 
 {% set crumbs = [
-    { label: "Settings"|t('videos'), url: url('settings') },
-    { label: "Plugins"|t('videos'), url: url('settings/plugins') },
-    { label: "Videos"|t('videos'), url: url('videos/settings') }
+    { label: "setting.breadcrumb.setting"|t('videos'), url: url('settings') },
+    { label: "setting.breadcrumb.plugin"|t('videos'), url: url('settings/plugins') },
+    { label: "setting.breadcrumb.plugin.video"|t('videos'), url: url('videos/settings') }
 ] %}
 
 {% set title = gateway.name %}
@@ -13,25 +13,24 @@
 {% set content %}
     <img src="{{ gateway.iconUrl }}" width="36"/>
 
-    <h2>{{ gateway.name }} account</h2>
+    <h2>{{ "setting.gateway.account.title"|t('videos', {gatewayName: gateway.name}) }}</h2>
 
     {% if gateway.enabled %}
         <ul>
-            <li><strong>Name:</strong> {{ gateway.oauthAccount.name }}</li>
-            <li><strong>Account ID:</strong> <code>{{ gateway.oauthAccount.id }}</code>
-            </li>
+            <li>{{ "setting.gateway.account.name"|t('videos', {accountName: gateway.oauthAccount.name})|raw }}</li>
+            <li>{{ "setting.gateway.account.id"|t('videos', {accountId: gateway.oauthAccount.id})|raw }}</li>
         </ul>
 
         <p>
             <a class="btn small" href="{{ gateway.oauthLogoutUrl }}">
-                {{ 'Disconnect'|t('videos') }}
+                {{ "setting.gateway.logout"|t('videos', {gatewayName: gateway.name}) }}
             </a>
         </p>
     {% else %}
-        <p>{{ 'Gettings errors trying to connect? Check your {link}.'|t('videos', { link: '<a href="'~url('videos/settings/'~gateway.handle~'/oauth')~'">OAuth settings</a>' })|raw }}</p>
+        <p>{{ "setting.gateway.login.help"|t('videos', {oauthSettingURL: url('videos/settings/'~gateway.handle~'/oauth')})|raw }}</p>
         <p>
             <a class="btn submit" href="{{ gateway.oauthLoginUrl }}">
-                {{ "Connect to {gateway}"|t('videos', { gateway: gateway.name }) }}
+                {{ "setting.gateway.login"|t('videos', {gatewayName: gateway.name}) }}
             </a>
         </p>
     {% endif %}

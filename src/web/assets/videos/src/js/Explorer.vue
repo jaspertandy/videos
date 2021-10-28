@@ -25,7 +25,7 @@
 
                             <div v-if="videosMoreToken">
                                 <template v-if="!loadingMore">
-                                    <button class="btn" @click="loadMore()">Load More</button>
+                                    <button class="btn" @click="loadMore()">{{ t('videos', 'explorer.more') }}</button>
                                 </template>
                                 <template v-else>
                                     <div class="spinner"></div>

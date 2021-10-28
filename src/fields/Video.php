@@ -73,17 +73,20 @@ class Video extends Field
             'value' => $value,
             'preview' => $preview,
             'hasEnabledGateways' => VideosPlugin::$plugin->getGateways()->hasEnabledGateways(),
+            'gateways' => VideosPlugin::$plugin->getGateways()->getGateways(true),
         ];
 
         // Translations
         $view->registerTranslations('videos', [
-            'Browse videos…',
-            'Cancel',
-            'Enter a video URL from YouTube or Vimeo',
-            'Remove',
-            'Search {gatewayName} videos…',
-            'Select',
-            '{playCount} plays',
+            'field.placeholder',
+            'field.preview.play_count',
+            'field.preview.remove',
+            'explorer.cta',
+            'explorer.search.placeholder',
+            'explorer.select',
+            'explorer.cancel',
+            'explorer.more',
+            'explorer.error.fetch_videos',
         ]);
 
         if (VideosPlugin::$plugin->getGateways()->hasEnabledGateways()) {

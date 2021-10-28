@@ -1,12 +1,14 @@
 <template>
     <div v-if="currentGateway">
         <input type="search" class="text fullwidth" v-model="query"
-               :placeholder="t('videos', 'Search {gatewayName} videos…', { gatewayName: currentGateway.name })"
+               :placeholder="t('videos', 'explorer.search.placeholder', {gatewayName: currentGateway.name})"
                @input="debouncedSearch" @keyup.enter="search"/>
     </div>
 </template>
 
 <script>
+    /* global Craft */
+    
     import debounce from 'lodash.debounce'
 
     import {mapGetters} from 'vuex'
@@ -49,7 +51,7 @@
                     })
                     .catch(() => {
                         this.$store.commit('updateVideosLoading', false)
-                        this.$store.dispatch('displayError', 'Couldn’t get videos.')
+                        this.$store.dispatch('displayError', Craft.t('videos', 'explorer.error.fetch_videos'))
                     })
             }
         }

@@ -1,8 +1,8 @@
 <template>
     <div>
         <div class="relative">
-            <input class="text fullwidth" :name="inputName" :placeholder="t('videos', 'Enter a video URL from YouTube or Vimeo')" v-model="videoUrl" @input="preview()">
-            <a class="absolute top-2.5 right-4 text-xs" href="#" @click.prevent="browse()">{{ t('videos', 'Browse videos…') }}</a>
+            <input class="text fullwidth" :name="inputName" :placeholder="t('videos', 'field.placeholder', {gatewayNames: gatewayNames})" v-model="videoUrl" @input="preview()">
+            <a class="absolute top-2.5 right-4 text-xs" href="#" @click.prevent="browse()">{{ t('videos', 'explorer.cta') }}</a>
         </div>
 
         <template v-if="previewLoading">
@@ -60,6 +60,16 @@
                 }
 
                 return this.fieldVariables.name
+            },
+
+            gatewayNames() {
+                if (!this.fieldVariables || !this.fieldVariables.gateways) {
+                    return ''
+                }
+
+                const gatewayNames = this.fieldVariables.gateways.map(x => x.name)
+
+                return gatewayNames.join(' | ')
             }
         },
 

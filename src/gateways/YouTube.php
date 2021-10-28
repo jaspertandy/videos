@@ -219,15 +219,15 @@ class YouTube extends Gateway
 
         // library section
         $explorer->sections[] = new VideoExplorerSection([
-            'name' => 'Library',
+            'name' => Craft::t('videos', 'explorer.section.library.title'),
             'collections' => [
                 new VideoExplorerCollection([
-                    'name' => 'Uploads',
+                    'name' => Craft::t('videos', 'explorer.collection.upload.title'),
                     'method' => 'uploads',
                     'icon' => 'video-camera',
                 ]),
                 new VideoExplorerCollection([
-                    'name' => 'Liked videos',
+                    'name' => Craft::t('videos', 'explorer.collection.like.title'),
                     'method' => 'likes',
                     'icon' => 'thumb-up',
                 ]),
@@ -240,7 +240,7 @@ class YouTube extends Gateway
 
             if (count($playlistsData) > 0) {
                 $section = new VideoExplorerSection([
-                    'name' => 'Playlists',
+                    'name' => Craft::t('videos', 'explorer.section.playlist.title'),
                 ]);
 
                 foreach ($playlistsData as $playlistData) {
