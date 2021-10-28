@@ -10,6 +10,7 @@ namespace dukt\videos\controllers;
 use craft\web\Controller;
 use dukt\videos\helpers\ThumbnailHelper;
 use dukt\videos\Plugin as VideosPlugin;
+use Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -33,16 +34,20 @@ class ThumbnailController extends Controller
      */
     public function actionGetSize(string $gatewayHandle, string $videoId, int $size = 300): Response
     {
-        $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
-        $video = $gateway->getVideoById($videoId);
+        try {
+            $gateway = VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle);
+            $video = $gateway->getVideoById($videoId);
 
-        $thumbnail = ThumbnailHelper::getByVideoAndSize($video, $size);
+            $thumbnail = ThumbnailHelper::getByVideoAndSize($video, $size);
 
-        return $this->response
-            ->setCacheHeaders()
-            ->sendFile($thumbnail->getRealPath(), $thumbnail->getFilename(), [
-                'inline' => true,
-            ])
-        ;
+            return $this->response
+                ->setCacheHeaders()
+                ->sendFile($thumbnail->getRealPath(), $thumbnail->getFilename(), [
+                    'inline' => true,
+                ])
+            ;
+        } catch (Exception $e) {
+            throw new BadRequestHttpException($e->getMessage(), $e->getCode(), $e);
+        }
     }
 }

@@ -115,14 +115,15 @@
                 
                 videosApi.getVideo(this.videoUrl)
                     .then((response) => {
-                        if (response.data.error) {
-                            this.previewLoading = false
-                            this.previewVideo = null
-                            this.previewError = response.data.error
-                        }
-
                         this.previewLoading = false
                         this.previewVideo = response.data.video
+                    })
+                    .catch((error) => {
+                        if (error.response.data.error) {
+                            this.previewLoading = false
+                            this.previewVideo = null
+                            this.previewError = error.response.data.error
+                        }
                     })
             }, 1000),
 

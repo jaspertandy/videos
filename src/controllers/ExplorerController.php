@@ -37,14 +37,10 @@ class ExplorerController extends Controller
 
         try {
             return $this->asJson([
-                'success' => true,
                 'gateways' => VideosPlugin::$plugin->getGateways()->getGateways(true),
             ]);
         } catch (Exception $e) {
-            // TODO: throw BadRequestHttpException
-            // TODO: exception message
-
-            return $this->asJson(['success' => false]);
+            throw new BadRequestHttpException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -70,16 +66,12 @@ class ExplorerController extends Controller
             $videosResponse = $gateway->getVideos($method, $options);
 
             return $this->asJson([
-                'success' => true,
                 'videos' => $videosResponse['videos'],
                 'more' => $videosResponse['pagination']['more'],
                 'moreToken' => $videosResponse['pagination']['moreToken'],
             ]);
         } catch (Exception $e) {
-            // TODO: throw BadRequestHttpException
-            // TODO: exception message
-
-            return $this->asJson(['success' => false]);
+            throw new BadRequestHttpException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -100,14 +92,10 @@ class ExplorerController extends Controller
             $video = Plugin::getInstance()->getVideos()->getVideoByUrl($videoUrl);
 
             return $this->asJson([
-                'success' => true,
                 'video' => $video,
             ]);
         } catch (Exception $e) {
-            // TODO: throw BadRequestHttpException
-            // TODO: exception message
-
-            return $this->asJson(['success' => false]);
+            throw new BadRequestHttpException($e->getMessage(), $e->getCode(), $e);
         }
     }
 }

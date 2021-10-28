@@ -16,6 +16,7 @@ use dukt\videos\errors\GatewayNotFoundException;
 use dukt\videos\models\FailedVideo;
 use dukt\videos\Plugin as VideosPlugin;
 use dukt\videos\web\assets\videos\VideosAsset;
+use Exception;
 
 /**
  * Video field.
@@ -122,15 +123,11 @@ class Video extends Field
 
         try {
             return VideosPlugin::$plugin->getVideos()->getVideoByUrl($value);
-        } catch (\Exception $e) {
-            $errorMessage = "Couldn't get video in field normalizeValue: ".$e->getMessage();
-
-            Craft::info($errorMessage, __METHOD__);
-
+        } catch (Exception $e) {
             return new FailedVideo([
                 'url' => $value,
                 'errors' => [
-                    $errorMessage,
+                    $e->getMessage(),
                 ],
             ]);
         }

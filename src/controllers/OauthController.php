@@ -41,8 +41,7 @@ class OauthController extends Controller
             return Craft::$app->getResponse()->redirect($gateway->getOauthAuthorizationUrl());
         } catch (Exception $e) {
             // send flash message
-            // TODO: improve message (translation ?)
-            Craft::$app->getSession()->setError('An error occured: '.$e->getMessage());
+            Craft::$app->getSession()->setError($e->getMessage());
         }
 
         return $this->redirect(Craft::$app->getRequest()->referrer);
@@ -67,12 +66,10 @@ class OauthController extends Controller
             $gateway->oauthLogin($code);
 
             // send flash message
-            // TODO: improve message (translation ?)
-            Craft::$app->getSession()->setNotice(Craft::t('videos', 'Connected to {gateway}.', ['gateway' => $gateway->getName()]));
+            Craft::$app->getSession()->setNotice(Craft::t('videos', 'setting.gateway.login.success', ['gatewayName' => $gateway->getName()]));
         } catch (Exception $e) {
             // send flash message
-            // TODO: improve message (translation ?)
-            Craft::$app->getSession()->setError('An error occured: '.$e->getMessage());
+            Craft::$app->getSession()->setError($e->getMessage());
         }
 
         return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('videos/settings/'.$gatewayHandle));
@@ -94,12 +91,10 @@ class OauthController extends Controller
             $gateway->oauthLogout();
 
             // send flash message
-            // TODO: improve message (translation ?)
-            Craft::$app->getSession()->setNotice(Craft::t('videos', 'Disconnected.'));
+            Craft::$app->getSession()->setNotice(Craft::t('videos', 'setting.gateway.logout.success', ['gatewayName' => $gateway->getName()]));
         } catch (Exception $e) {
             // send flash message
-            // TODO: improve message (translation ?)
-            Craft::$app->getSession()->setError('An error occured: '.$e->getMessage());
+            Craft::$app->getSession()->setError($e->getMessage());
         }
 
         return $this->redirect(Craft::$app->getRequest()->referrer);

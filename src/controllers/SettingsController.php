@@ -8,6 +8,7 @@
 namespace dukt\videos\controllers;
 
 use Craft;
+use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use dukt\videos\Plugin as VideosPlugin;
 use dukt\videos\web\assets\videos\VideosAsset;
@@ -33,17 +34,13 @@ class SettingsController extends Controller
      */
     public function actionIndex(): Response
     {
-        try {
-            $gateways = VideosPlugin::$plugin->getGateways()->getGateways();
+        $gateways = VideosPlugin::$plugin->getGateways()->getGateways();
 
-            Craft::$app->getView()->registerAssetBundle(VideosAsset::class);
+        Craft::$app->getView()->registerAssetBundle(VideosAsset::class);
 
-            return $this->renderTemplate('videos/settings/_index', [
-                'gateways' => $gateways,
-            ]);
-        } catch (Exception $e) {
-            // TODO: exception message
-        }
+        return $this->renderTemplate('videos/settings/_index', [
+            'gateways' => $gateways,
+        ]);
     }
 
     /**
@@ -61,7 +58,10 @@ class SettingsController extends Controller
                 'gateway' => VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle),
             ]);
         } catch (Exception $e) {
-            // TODO: exception message
+            // send flash message
+            Craft::$app->getSession()->setError($e->getMessage());
+
+            return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('videos/settings'));
         }
     }
 
@@ -80,7 +80,10 @@ class SettingsController extends Controller
                 'gateway' => VideosPlugin::$plugin->getGateways()->getGatewayByHandle($gatewayHandle),
             ]);
         } catch (Exception $e) {
-            // TODO: exception message
+            // send flash message
+            Craft::$app->getSession()->setError($e->getMessage());
+
+            return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('videos/settings'));
         }
     }
 
@@ -110,13 +113,13 @@ class SettingsController extends Controller
             $key = 'plugins.videos.settings.oauthProviderOptions';
             $configPath = $key.'.'.$gateway->getHandle();
 
-            Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$gateway->getHandle()}” integration");
+            Craft::$app->getProjectConfig()->set($configPath, $configData, Craft::t('videos', 'setting.oauth.configure.save.info', ['gatewayName' => $gateway->getName()]));
 
-            Craft::$app->getSession()->setNotice(Craft::t('videos', 'Gateway’s OAuth settings saved.'));
+            // send flash message
+            Craft::$app->getSession()->setNotice(Craft::t('videos', 'setting.oauth.configure.save.success', ['gatewayName' => $gateway->getName()]));
         } catch (Exception $e) {
-            // TODO: exception message
-
-            Craft::$app->getSession()->setError('An error occured: '.$e->getMessage());
+            // send flash message
+            Craft::$app->getSession()->setError($e->getMessage());
         }
 
         return $this->redirectToPostedUrl();
