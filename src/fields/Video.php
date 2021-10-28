@@ -67,7 +67,6 @@ class Video extends Field
         $preview = $view->renderTemplate('videos/_elements/fieldPreview', ['video' => $value]);
 
         // Variables
-
         $variables = [
             'id' => $id,
             'name' => $view->namespaceInputName($id),
@@ -76,21 +75,21 @@ class Video extends Field
             'hasEnabledGateways' => VideosPlugin::$plugin->getGateways()->hasEnabledGateways(),
         ];
 
-        if (VideosPlugin::$plugin->getGateways()->hasEnabledGateways()) {
-            // Instantiate Videos Field
-            $view->registerJs('new VideoFieldConstructor({data: {fieldVariables: '.\json_encode($variables).'}}).$mount("#'.$view->namespaceInputId($id).'-vue");');
-        }
-
         // Translations
         $view->registerTranslations('videos', [
             'Browse videos…',
             'Cancel',
             'Enter a video URL from YouTube or Vimeo',
             'Remove',
-            'Search {gateway} videos…',
+            'Search {gatewayName} videos…',
             'Select',
-            '{plays} plays',
+            '{playCount} plays',
         ]);
+
+        if (VideosPlugin::$plugin->getGateways()->hasEnabledGateways()) {
+            // Instantiate Videos Field
+            $view->registerJs('new VideoFieldConstructor({data: {fieldVariables: '.\json_encode($variables).'}}).$mount("#'.$view->namespaceInputId($id).'-vue");');
+        }
 
         return $view->renderTemplate('videos/_components/fieldtypes/Video/input', $variables);
     }

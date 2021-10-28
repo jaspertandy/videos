@@ -1,7 +1,7 @@
 <template>
     <div v-if="currentGateway">
         <input type="search" class="text fullwidth" v-model="query"
-               :placeholder="t('videos', 'Search {gateway} videos…', { gateway: currentGateway.name })"
+               :placeholder="t('videos', 'Search {gatewayName} videos…', { gatewayName: currentGateway.name })"
                @input="debouncedSearch" @keyup.enter="search"/>
     </div>
 </template>

@@ -5,10 +5,9 @@ return [
     'Cancel' => 'Cancel',
     'Enter a video URL from YouTube or Vimeo' => 'Enter a video URL from YouTube or Vimeo',
     'Remove' => 'Remove',
-    'Search {gateway} videos…' => 'Search {gateway} videos…',
+    'Search {gatewayName} videos…' => 'Search {gatewayName} videos…',
     'Select' => 'Select',
-    '{plays} plays' => '{plays} plays',
-
+    '{playCount} plays' => '{playCount} plays',
     'Gateway class {gatewayType} not found.' => 'Gateway class {gatewayType} not found.',
     'Gateway with handle {gatewayHandle} and enabled status to {enabled} not found.' => 'Gateway with handle {gatewayHandle} and enabled status to {enabled} not found.',
     'An error occured during {gatewayName} oauth login.' => 'An error occured during {gatewayName} oauth login.',
