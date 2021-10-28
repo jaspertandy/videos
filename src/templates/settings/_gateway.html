@@ -17,8 +17,8 @@
 
     {% if gateway.enabled %}
         <ul>
-            <li>{{ "setting.gateway.account.name"|t('videos', {accountName: gateway.oauthAccount.name})|raw }}</li>
-            <li>{{ "setting.gateway.account.id"|t('videos', {accountId: gateway.oauthAccount.id})|raw }}</li>
+            <li>{{ "setting.gateway.account.name"|t('videos', {accountName: gateway.account.name})|raw }}</li>
+            <li>{{ "setting.gateway.account.id"|t('videos', {accountId: gateway.account.id})|raw }}</li>
         </ul>
 
         <p>

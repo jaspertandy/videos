@@ -10,11 +10,11 @@ namespace dukt\videos\errors;
 use dukt\videos\base\Exception;
 
 /**
- * OAuth account not found exception.
+ * Gateway account not found exception.
  *
  * @author Dukt <support@dukt.net>
  * @since 3.0.0
  */
-class OauthAccountNotFoundException extends Exception
+class GatewayAccountNotFoundException extends Exception
 {
 }

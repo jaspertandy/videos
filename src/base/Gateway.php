@@ -13,14 +13,14 @@ use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use dukt\videos\errors\ApiClientCreateException;
 use dukt\videos\errors\ApiResponseException;
+use dukt\videos\errors\GatewayAccountNotFoundException;
 use dukt\videos\errors\GatewayMethodNotFoundException;
 use dukt\videos\errors\OauthAccessTokenNotFoundException;
-use dukt\videos\errors\OauthAccountNotFoundException;
 use dukt\videos\errors\OauthLoginException;
 use dukt\videos\errors\OauthLogoutException;
 use dukt\videos\errors\VideoIdExtractException;
 use dukt\videos\errors\VideoNotFoundException;
-use dukt\videos\models\OauthAccount;
+use dukt\videos\models\GatewayAccount;
 use dukt\videos\models\Video;
 use dukt\videos\models\VideoExplorer;
 use dukt\videos\Plugin as VideosPlugin;
@@ -335,38 +335,38 @@ abstract class Gateway implements JsonSerializable
     }
 
     /**
-     * Returns the OAuth account.
+     * Returns the account.
      *
-     * @return OauthAccount
-     * @throws OauthAccountNotFoundException
+     * @return GatewayAccount
+     * @throws GatewayAccountNotFoundException
      *
      * @since 3.0.0
      */
-    final public function getOauthAccount(): OauthAccount
+    final public function getAccount(): GatewayAccount
     {
         try {
             if (VideosPlugin::$plugin->getCache()->isEnabled() === true) {
-                $oauthAccount = VideosPlugin::$plugin->getCache()->get(OauthAccount::generateCacheKey(['gateway_handle' => $this->getHandle()]));
+                $account = VideosPlugin::$plugin->getCache()->get(GatewayAccount::generateCacheKey(['gateway_handle' => $this->getHandle()]));
 
-                if ($oauthAccount instanceof OauthAccount) {
-                    return $oauthAccount;
+                if ($account instanceof GatewayAccount) {
+                    return $account;
                 }
             }
 
             $resourceOwner = $this->getOauthProvider()->getResourceOwner($this->getOauthAccessToken());
 
-            $oauthAccount = new OauthAccount([
+            $account = new GatewayAccount([
                 'id' => $resourceOwner->getId(),
                 'name' => $resourceOwner->toArray()['name'] ?? '',
             ]);
 
             if (VideosPlugin::$plugin->getCache()->isEnabled() === true) {
-                VideosPlugin::$plugin->getCache()->set(OauthAccount::generateCacheKey(['gateway_handle' => $this->getHandle()]), $oauthAccount);
+                VideosPlugin::$plugin->getCache()->set(GatewayAccount::generateCacheKey(['gateway_handle' => $this->getHandle()]), $account);
             }
 
-            return $oauthAccount;
+            return $account;
         } catch (Exception $e) {
-            throw new OauthAccountNotFoundException(Craft::t('videos', 'OAuth account not found for {gatewayName}.', ['gatewayName' => $this->getName()]), 0, $e);
+            throw new GatewayAccountNotFoundException(Craft::t('videos', 'Account not found for {gatewayName}.', ['gatewayName' => $this->getName()]), 0, $e);
         }
     }
 

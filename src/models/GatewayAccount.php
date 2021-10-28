@@ -12,19 +12,19 @@ use dukt\videos\base\Cacheable;
 use dukt\videos\Plugin as VideosPlugin;
 
 /**
- * Oauth account model class.
+ * Gateway account model class.
  *
  * @author Dukt <support@dukt.net>
  * @since 3.0.0
  */
-class OauthAccount extends Model implements Cacheable
+class GatewayAccount extends Model implements Cacheable
 {
     /**
      * @var string prefix for cache key
      *
      * @since 3.0.0
      */
-    public const CACHE_KEY_PREFIX = 'oauth_account';
+    public const CACHE_KEY_PREFIX = 'gateway_account';
 
     /**
      * @var int the account's ID

@@ -47,7 +47,7 @@ return [
     'Gateway with handle {gatewayHandle} and enabled status to {enabled} not found.' => 'Gateway with handle {gatewayHandle} and enabled status to {enabled} not found.',
     'An error occured during {gatewayName} oauth login.' => 'An error occured during {gatewayName} oauth login.',
     'An error occured during {gatewayName} oauth logout.' => 'An error occured during {gatewayName} oauth logout.',
-    'OAuth account not found for {gatewayName}.' => 'OAuth account not found for {gatewayName}.',
+    'Account not found for {gatewayName}.' => 'Account not found for {gatewayName}.',
     'Video not found for URL {videoUrl}.' => 'Video not found for URL {videoUrl}.',
     'Video not found for ID {videoId} on {gatewayName}.' => 'Video not found for ID {videoId} on {gatewayName}.',
     'Method {method} not found on {gatewayName}.' => 'Method {method} not found on {gatewayName}.',

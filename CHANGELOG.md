@@ -18,7 +18,6 @@ Changelog
 - Added `dukt\videos\base\Gateway::oauthLogin()` login to oauth provider and save token in database
 - Added `dukt\videos\base\Gateway::isEnabled()` check if gateway is enable (= logged in to oauth provider)
 - Added `dukt\videos\base\Gateway::oauthLogout()` remove token from database and so logout to oauth provider
-- Added `dukt\videos\base\Gateway::getOauthAccount()` returns oauth account information (in a `dukt\videos\models\OAuthAccount`instance)
 - Added `dukt\videos\base\Gateway::extractVideoIdFromVideoUrl()` to extracts the video ID from the video URL
 - Added `dukt\videos\base\Gateway::createApiClient()` to creates an authenticated guzzle client
 - Added `dukt\videos\base\Gateway::getApiClient()` returns api client
@@ -32,8 +31,8 @@ Changelog
 - Added `dukt\videos\controllers\ExplorerController::actionGetVideo()` returns a video by url
 - Added `dukt\videos\controllers\ThumbnailController` to show thumbnail
 - Added `dukt\videos\errors\ApiClientCreateException`
+- Added `dukt\videos\errors\GatewayAccountNotFoundException`
 - Added `dukt\videos\errors\OauthAccessTokenNotFoundException`
-- Added `dukt\videos\errors\OauthAccountNotFoundException`
 - Added `dukt\videos\errors\OauthDeleteAccessTokenException`
 - Added `dukt\videos\errors\OauthLoginException`
 - Added `dukt\videos\errors\OauthLogoutException`
@@ -51,7 +50,7 @@ Changelog
 - Added `dukt\videos\helpers\UrlHelper`
 - Added `dukt\videos\models\AbstractVideo` as parent video model class
 - Added `dukt\videos\models\FailedVideo` returns when Video can’t be load for technical reason (api call failed, gateway disconnected and so on)
-- Added `dukt\videos\models\OauthAccount` used for keep Gateway account information
+- Added `dukt\videos\models\GatewayAccount` used for keep Gateway account information
 - Added `dukt\videos\models\VideoAuthor` used for Video object author property
 - Added `dukt\videos\models\VideoExplorer` the new explorer object
 - Added `dukt\videos\models\VideoExplorerCollection` used by new explorer
@@ -81,7 +80,7 @@ Changelog
 - Changed `dukt\videos\base\Gateway::getOauthAuthorizationOptions()` always returns an array
 - Moved `dukt\videos\base\Gateway::getOauthToken()` to `dukt\videos\base\Gateway::getOauthAccessToken()`
 - Moved `dukt\videos\base\Gateway::hasToken()` to `dukt\videos\base\Gateway::isEnabled()`
-- Moved `dukt\videos\base\Gateway::getAccount()` to `dukt\videos\base\Gateway::getOauthAccount()`
+- Changed `dukt\videos\base\Gateway::getAccount()` is now final and return a `dukt\videos\models\GatewayAccount` instance
 - Changed `dukt\videos\base\Gateway::getVideoByUrl()` is now final
 - Changed `dukt\videos\base\Gateway::getVideoById()` is now final ; use `dukt\videos\base\Gateway::fetchVideoById()` to get video from the gateway API
 - Moved `dukt\videos\base\Gateway::getEmbedFormat()` to `dukt\videos\base\Gateway::getEmbedUrlFormat()`
