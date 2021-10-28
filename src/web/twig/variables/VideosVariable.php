@@ -56,7 +56,8 @@ class VideosVariable
         try {
             return VideosPlugin::$plugin->getVideos()->getVideoByUrl($videoUrl);
         } catch (Exception $e) {
-            Craft::info('Couldn’t get video from its url ('.$videoUrl.'): '.$e->getMessage(), __METHOD__);
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
         }
 
         return null;
@@ -70,7 +71,7 @@ class VideosVariable
      *
      * @since 3.0.0
      */
-    public function url($videoUrl): ?Video
+    public function url(string $videoUrl): ?Video
     {
         return $this->getVideoByUrl($videoUrl);
     }

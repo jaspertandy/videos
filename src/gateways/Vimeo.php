@@ -112,6 +112,9 @@ class Vimeo extends Gateway
 
             return new Client($options);
         } catch (Exception $e) {
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
+
             throw new ApiClientCreateException(Craft::t('videos', 'An occured during creation of API client for {gatewayName}.', ['gatewayName' => $this->getName()]), 0, $e);
         }
     }
@@ -132,6 +135,9 @@ class Vimeo extends Gateway
 
             return $this->_parseVideo($data);
         } catch (Exception $e) {
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
+
             throw new VideoNotFoundException(Craft::t('videos', 'Fetch video with ID {videoId} on {gatewayName} not working.', ['videoId' => $videoId, 'gatewayName' => $this->getName()]), 0, $e);
         }
     }
@@ -203,7 +209,8 @@ class Vimeo extends Gateway
                 $explorer->sections[] = $section;
             }
         } catch (ApiResponseException $e) {
-            // TODO: log
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
         }
 
         // albums section
@@ -227,7 +234,8 @@ class Vimeo extends Gateway
                 $explorer->sections[] = $section;
             }
         } catch (ApiResponseException $e) {
-            // TODO: log
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
         }
 
         // channels section
@@ -250,7 +258,8 @@ class Vimeo extends Gateway
                 $explorer->sections[] = $section;
             }
         } catch (ApiResponseException $e) {
-            // TODO: log
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
         }
 
         return $explorer;

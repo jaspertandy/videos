@@ -13,7 +13,6 @@ use craft\web\Controller;
 use dukt\videos\Plugin as VideosPlugin;
 use dukt\videos\web\assets\videos\VideosAsset;
 use Exception;
-use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -93,7 +92,6 @@ class SettingsController extends Controller
      * @return Response
      *
      * @throws BadRequestHttpException
-     * @throws InvalidConfigException
      * @throws \craft\errors\MissingComponentException
      */
     public function actionSaveGateway(): Response

@@ -159,6 +159,9 @@ class YouTube extends Gateway
 
             return new Client($options);
         } catch (Exception $e) {
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
+
             throw new ApiClientCreateException(Craft::t('videos', 'An occured during creation of API client for {gatewayName}.', ['gatewayName' => $this->getName()]), 0, $e);
         }
     }
@@ -184,6 +187,9 @@ class YouTube extends Gateway
 
             return $this->_parseVideo($data['items'][0]);
         } catch (Exception $e) {
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
+
             throw new VideoNotFoundException(Craft::t('videos', 'Fetch video with ID {videoId} on {gatewayName} not working.', ['videoId' => $videoId, 'gatewayName' => $this->getName()]), 0, $e);
         }
     }
@@ -255,7 +261,8 @@ class YouTube extends Gateway
                 $explorer->sections[] = $section;
             }
         } catch (ApiResponseException $e) {
-            // TODO: log
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
         }
 
         return $explorer;

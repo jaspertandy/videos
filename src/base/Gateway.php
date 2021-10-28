@@ -110,7 +110,9 @@ abstract class Gateway implements JsonSerializable
 
             return $iconUrl;
         } catch (Exception $e) {
-            // TODO: log
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
+
             return null;
         }
     }
@@ -295,6 +297,9 @@ abstract class Gateway implements JsonSerializable
 
             VideosPlugin::$plugin->getOauth()->saveOauthAccessTokenByGateway($accessToken, $this);
         } catch (Exception $e) {
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
+
             throw new OauthLoginException(Craft::t('videos', 'An error occured during {gatewayName} oauth login.', ['gatewayName' => $this->getName()]), 0, $e);
         }
     }
@@ -330,6 +335,9 @@ abstract class Gateway implements JsonSerializable
         try {
             VideosPlugin::$plugin->getOauth()->deleteOauthAccessTokenByGateway($this);
         } catch (Exception $e) {
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
+
             throw new OauthLogoutException(Craft::t('videos', 'An error occured during {gatewayName} oauth logout.', ['gatewayName' => $this->getName()]), 0, $e);
         }
     }
@@ -366,6 +374,9 @@ abstract class Gateway implements JsonSerializable
 
             return $account;
         } catch (Exception $e) {
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
+
             throw new GatewayAccountNotFoundException(Craft::t('videos', 'Account not found for {gatewayName}.', ['gatewayName' => $this->getName()]), 0, $e);
         }
     }
@@ -424,6 +435,9 @@ abstract class Gateway implements JsonSerializable
 
             return $this->getVideoById($videoId);
         } catch (VideoIdExtractException $e) {
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
+
             throw new VideoNotFoundException(Craft::t('videos', 'Video not found for URL {videoUrl}.', ['videoUrl' => $videoUrl]), 0, $e);
         }
     }
@@ -456,6 +470,9 @@ abstract class Gateway implements JsonSerializable
 
             return $video;
         } catch (Exception $e) {
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
+
             throw new VideoNotFoundException(Craft::t('videos', 'Video not found for ID {videoId} on {gatewayName}.', ['videoId' => $videoId, 'gatewayName' => $this->getName()]), 0, $e);
         }
     }
@@ -598,6 +615,9 @@ abstract class Gateway implements JsonSerializable
 
             return Json::decode($responseBody);
         } catch (Exception $e) {
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
+
             throw new ApiResponseException(Craft::t('videos', 'Fetch on {gatewayName} API not working for URI {apiUri}.', ['gatewayName' => $this->getName(), 'apiUri' => $uri]), 0, $e);
         }
     }

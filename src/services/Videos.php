@@ -12,7 +12,6 @@ use dukt\videos\errors\VideoNotFoundException;
 use dukt\videos\models\Video;
 use dukt\videos\Plugin as VideosPlugin;
 use yii\base\Component;
-use yii\base\InvalidConfigException;
 
 /**
  * Videos service.
@@ -29,7 +28,6 @@ class Videos extends Component
      *
      * @param string $videoUrl
      * @return Video
-     * @throws InvalidConfigException
      * @throws VideoNotFoundException
      *
      * @since 3.0.0

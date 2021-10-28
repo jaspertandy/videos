@@ -42,10 +42,6 @@ class Video extends Field
      * {@inheritdoc}
      *
      * @since 2.0.0
-     *
-     * @throws \Twig_Error_Loader
-     * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
      */
     public function getInputHtml($value, ?ElementInterface $element = null): string
     {
@@ -124,6 +120,9 @@ class Video extends Field
         try {
             return VideosPlugin::$plugin->getVideos()->getVideoByUrl($value);
         } catch (Exception $e) {
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
+
             return new FailedVideo([
                 'url' => $value,
                 'errors' => [

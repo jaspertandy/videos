@@ -101,6 +101,9 @@ class Oauth extends Component
 
             return $this->refreshOauthAccessTokenByGateway($accessToken, $gateway);
         } catch (Exception $e) {
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
+
             throw new OauthAccessTokenNotFoundException(Craft::t('videos', 'OAuth access token for {gatewayName} not found.', ['gatewayName' => $gateway->getName()]), 0, $e);
         }
     }
@@ -138,6 +141,9 @@ class Oauth extends Component
 
             return $accessToken;
         } catch (Exception $e) {
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
+
             throw new OauthRefreshAccessTokenException(Craft::t('videos', 'An error occured trying to refresh OAuth token for {gatewayName}.', ['gatewayName' => $gateway->getName()]), 0, $e);
         }
     }
@@ -178,6 +184,9 @@ class Oauth extends Component
                 throw new TokenSaveException(Craft::t('videos', 'An error occured trying to save token record for {gatewayName}.', ['gatewayName' => $gateway->getName()]));
             }
         } catch (Exception $e) {
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
+
             throw new OauthSaveAccessTokenException(Craft::t('videos', 'An error occured trying to save OAuth access token for {gatewayName}.', ['gatewayName' => $gateway->getName()]), 0, $e);
         }
     }
@@ -204,6 +213,9 @@ class Oauth extends Component
                 throw new TokenDeleteException(Craft::t('videos', 'An error occured trying to delete token record for {gatewayName}.', ['gatewayName' => $gateway->getName()]));
             }
         } catch (Exception $e) {
+            // log exception
+            Craft::error($e->getMessage(), __METHOD__);
+
             throw new OauthDeleteAccessTokenException(Craft::t('videos', 'An error occured trying to delete OAuth access token for {gatewayName}.', ['gatewayName' => $gateway->getName()]), 0, $e);
         }
     }
