@@ -34,7 +34,7 @@ class Video extends Field
      */
     public function getName(): string
     {
-        return Craft::t('videos', 'Videos');
+        return Craft::t('videos', 'field.title');
     }
 
     /**
@@ -51,32 +51,19 @@ class Video extends Field
         $view = Craft::$app->getView();
         $name = $this->handle;
 
-        // Reformat the input name into something that looks more like an ID
+        // reformat the input name into something that looks more like an ID
         $id = $view->formatInputId($name);
 
-        // Init CSRF Token
+        // init CSRF token
         $jsTemplate = 'window.csrfTokenName = "'.Craft::$app->getConfig()->getGeneral()->csrfTokenName.'";';
         $jsTemplate .= 'window.csrfTokenValue = "'.Craft::$app->getRequest()->getCsrfToken().'";';
         $js = $view->renderString($jsTemplate);
         $view->registerJs($js);
 
-        // Asset bundle
+        // register assets
         $view->registerAssetBundle(VideosAsset::class);
 
-        // Preview
-        $preview = $view->renderTemplate('videos/_elements/fieldPreview', ['video' => $value]);
-
-        // Variables
-        $variables = [
-            'id' => $id,
-            'name' => $view->namespaceInputName($id),
-            'value' => $value,
-            'preview' => $preview,
-            'hasEnabledGateways' => VideosPlugin::$plugin->getGateways()->hasEnabledGateways(),
-            'gateways' => VideosPlugin::$plugin->getGateways()->getGateways(true),
-        ];
-
-        // Translations
+        // register translations
         $view->registerTranslations('videos', [
             'field.placeholder',
             'field.preview.play_count',
@@ -90,11 +77,18 @@ class Video extends Field
         ]);
 
         if (VideosPlugin::$plugin->getGateways()->hasEnabledGateways()) {
-            // Instantiate Videos Field
-            $view->registerJs('new VideoFieldConstructor({data: {fieldVariables: '.\json_encode($variables).'}}).$mount("#'.$view->namespaceInputId($id).'-vue");');
+            // instantiate videos field
+            $view->registerJs('new VideoFieldConstructor({data: {fieldVariables: '.\json_encode([
+                'name' => $view->namespaceInputName($id),
+                'value' => $value,
+                'gateways' => VideosPlugin::$plugin->getGateways()->getGateways(true),
+            ]).'}}).$mount("#'.$view->namespaceInputId($id).'-vue");');
         }
 
-        return $view->renderTemplate('videos/_components/fieldtypes/Video/input', $variables);
+        return $view->renderTemplate('videos/_components/fieldtypes/Video/input', [
+            'id' => $id,
+            'hasEnabledGateways' => VideosPlugin::$plugin->getGateways()->hasEnabledGateways(),
+        ]);
     }
 
     /**
