@@ -1,7 +1,7 @@
 <template>
     <div ref="modal" class="videos-player-modal modal">
         <div class="videos-player bg-black h-full">
-            <div v-html="embed"></div>
+            <div v-html="embedHtml"></div>
         </div>
     </div>
 </template>
@@ -13,14 +13,16 @@
         data() {
             return {
                 modal: null,
-                embed: null,
+                embedHtml: null,
             }
         },
 
         mounted() {
             const video = this.$root.video
             
-            this.embed = video.embedHtml
+            if (video.embed.loaded) {
+                this.embedHtml = video.embed.html
+            }
 
             this.modal = new Garnish.Modal(this.$refs.modal, {
                 resizable: false,

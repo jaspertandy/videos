@@ -50,11 +50,14 @@ Changelog
 - Added `dukt\videos\helpers\UrlHelper`
 - Added `dukt\videos\models\AbstractVideo` as parent video model class
 - Added `dukt\videos\models\FailedVideo` returns when Video can’t be load for technical reason (api call failed, gateway disconnected and so on)
+- Added `dukt\videos\models\AbstractVideoEmbed` as parent video embed model class
+- Added `dukt\videos\models\FailedVideoEmbed` returns when Video embed can’t be load for technical reason
 - Added `dukt\videos\models\GatewayAccount` used for keep Gateway account information
 - Added `dukt\videos\models\GatewayExplorer` the new explorer object
 - Added `dukt\videos\models\GatewayExplorerCollection` used by new explorer
 - Added `dukt\videos\models\GatewayExplorerSection` used by new explorer
 - Added `dukt\videos\models\VideoAuthor` used for Video object author property
+- Added `dukt\videos\models\VideoEmbed` used for Video object embed property
 - Added `dukt\videos\models\VideoSize` used for Video object size property
 - Added `dukt\videos\models\VideoStatistic` used for Video object statistic property
 - Added `dukt\videos\models\VideoThumbnail` used for Video object thumbnail property
@@ -85,7 +88,7 @@ Changelog
 - Changed `dukt\videos\base\Gateway::getVideoById()` is now final ; use `dukt\videos\base\Gateway::fetchVideoById()` to get video from the gateway API
 - Moved `dukt\videos\base\Gateway::getEmbedFormat()` to `dukt\videos\base\Gateway::getEmbedUrlFormat()`
 - Moved `dukt\videos\base\Gateway::getEmbed()` to `dukt\videos\helpers\EmbedHelper::getEmbedHtml()` and need `dukt\videos\model\Video` as param (instead of video id) and there is a split of html/url options in params
-- Moved `dukt\videos\base\Gateway::getEmbedUrl()`  to `dukt\videos\helpers\EmbedHelper::getEmbedUrl()` and need `dukt\videos\model\Video` as param (instead of video id)
+- Moved `dukt\videos\base\Gateway::getEmbedUrl()` to `dukt\videos\helpers\EmbedHelper::getEmbedUrl()` and need `dukt\videos\model\Video` as param (instead of video id)
 - Changed `dukt\videos\base\Gateway::getVideos()` is now final
 - Moved `dukt\videos\base\Gateway::getExplorerSections()` to `dukt\videos\base\Gateway::getExplorer()`
 - Moved `dukt\videos\base\Gateway::extractVideoIdFromUrl()` to `dukt\videos\base\Gateway::extractVideoIdFromVideoUrl()`
@@ -118,7 +121,7 @@ Changelog
 - Moved `dukt\videos\models\Video::$duration8601` to `dukt\videos\models\Video::$duration` $duration is a `\DateInterval` instance
 - Removed `dukt\videos\models\Video::getDuration()` use `dukt\videos\models\Video::$duration` instead ; $duration is a `\DateInterval` instance (use DateTimeHelper to format and twig filter in template)
 - Changed `dukt\videos\models\Video::getGateway()` returns `dukt\videos\base\Gateway` instance or throw `dukt\videos\errors\GatewayNotFoundException` if not found
-- Moved `dukt\videos\models\Video::getEmbed()` to `dukt\videos\models\Video::getEmbedHtml()` and it returns `\Twig\Markup`
+- Changed `dukt\videos\models\Video::getEmbed()` needs separated url/html options and it returns `dukt\videos\models\VideoEmbed`
 - Moved `dukt\videos\models\Video::getThumbnail()` to `dukt\videos\models\VideoThumbnail::getUrl()`
 - Removed `dukt\videos\helpers\VideosHelper`
 - Moved `dukt\videos\helpers\VideosHelper::getDuration()` to `dukt\videos\helpers\DateTimeHelper::formatDateIntervalToReadable()`
@@ -138,9 +141,10 @@ Changelog
 - Removed `dukt\videos\services\Tokens`
 - Removed `dukt\videos\models\Token`
 - Changed `dukt\videos\services\Videos::getVideoByUrl()` signature: no more cache management inside ; throw `dukt\videos\errors\VideoNotFoundException` if no video was found with the given url
-- Removed `dukt\videos\services\Videos::getEmbed()` use `dukt\videos\models\Video::getEmbedHtml()` or dukt\videos\web\twig\variables\VideosVariable::getEmbedHtml() (in twig template) instead
+- Removed `dukt\videos\services\Videos::getEmbed()` use `dukt\videos\models\Video::getEmbedHtml()` instead
 - Removed `dukt\videos\services\Videos::getVideoById()` use `dukt\videos\base\Gateway::getVideoById()` instead
-- Changed `dukt\videos\web\twig\variables\VideosVariable::getVideoByUrl()` signature: no more cache management inside
+- Removed `dukt\videos\web\twig\variables\VideosVariable::getEmbed()` use `dukt\videos\models\Videos::getEmbed()` instead
+- Removed `dukt\videos\web\twig\variables\VideosVariable::getVideoByUrl()` use `dukt\videos\web\twig\variables\VideosVariable::url()` instead
 - Changed `dukt\videos\web\twig\variables\VideosVariable::url()` signature: no more cache management inside
 - Removed `dukt\videos\migrations\Install::removeForeignKeys()`.
 - Removed `dukt\videos\migrations\Install::removeIndexes()`.

@@ -16,10 +16,10 @@ use dukt\videos\errors\GatewayNotFoundException;
 use dukt\videos\helpers\DateTimeHelper;
 use dukt\videos\helpers\EmbedHelper;
 use dukt\videos\Plugin as VideosPlugin;
+use Exception;
 use JsonSerializable;
 use ReflectionObject;
 use ReflectionProperty;
-use Twig\Markup;
 
 /**
  * Video model class.
@@ -171,28 +171,24 @@ class Video extends AbstractVideo implements Cacheable, JsonSerializable
      *
      * @param array $htmlOptions
      * @param array $urlOptions
-     * @return Markup
-     * @throws GatewayNotFoundException
+     * @return AbstractVideoEmbed
      *
      * @since 3.0.0
      */
-    public function getEmbedHtml(array $htmlOptions = [], array $urlOptions = []): Markup
+    public function getEmbed(array $htmlOptions = [], array $urlOptions = []): AbstractVideoEmbed
     {
-        return EmbedHelper::getEmbedHtml($this, $htmlOptions, $urlOptions);
-    }
-
-    /**
-     * Returns the video’s embed URL.
-     *
-     * @param array $options
-     * @return string
-     * @throws GatewayNotFoundException
-     *
-     * @since 2.0.0
-     */
-    public function getEmbedUrl(array $options = []): string
-    {
-        return EmbedHelper::getEmbedUrl($this, $options);
+        try {
+            return new VideoEmbed([
+                'url' => EmbedHelper::getEmbedUrl($this, $urlOptions),
+                'html' => EmbedHelper::getEmbedHtml($this, $htmlOptions, $urlOptions),
+            ]);
+        } catch (Exception $e) {
+            return new FailedVideoEmbed([
+                'errors' => [
+                    $e->getMessage(),
+                ],
+            ]);
+        }
     }
 
     /**
@@ -220,12 +216,12 @@ class Video extends AbstractVideo implements Cacheable, JsonSerializable
         }
 
         $addedProps = [
-            'embedUrl' => $this->getEmbedUrl(),
+            'embed' => $this->getEmbed(),
         ];
 
         if (Craft::$app->request->getIsCpRequest() === true) {
             $addedProps['durationNumeric'] = DateTimeHelper::formatDateIntervalToReadable($this->duration);
-            $addedProps['embedHtml'] = (string)$this->getEmbedHtml([], ['autoplay' => 1]);
+            $addedProps['embed'] = $this->getEmbed([], ['autoplay' => 1]);
         }
 
         return array_merge($publicProps, $addedProps);
