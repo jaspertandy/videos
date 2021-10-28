@@ -21,6 +21,8 @@ class Extension extends AbstractExtension
 {
     /**
      * {@inheritdoc}
+     *
+     * @since 3.0.0
      */
     public function getFilters(): array
     {
