@@ -145,7 +145,7 @@ Changelog
 - Removed `dukt\videos\services\Videos::getVideoById()` use `dukt\videos\base\Gateway::getVideoById()` instead
 - Removed `dukt\videos\web\twig\variables\VideosVariable::getEmbed()` use `dukt\videos\models\Videos::getEmbed()` instead
 - Removed `dukt\videos\web\twig\variables\VideosVariable::getVideoByUrl()` use `dukt\videos\web\twig\variables\VideosVariable::url()` instead
-- Changed `dukt\videos\web\twig\variables\VideosVariable::url()` signature: no more cache management inside
+- Changed `dukt\videos\web\twig\variables\VideosVariable::url()` signature: no more cache management inside and returns `dukt\videos\models\AbstractVideo`
 - Removed `dukt\videos\migrations\Install::removeForeignKeys()`.
 - Removed `dukt\videos\migrations\Install::removeIndexes()`.
 

@@ -8,6 +8,8 @@
 namespace dukt\videos\web\twig\variables;
 
 use Craft;
+use dukt\videos\models\AbstractVideo;
+use dukt\videos\models\FailedVideo;
 use dukt\videos\models\Video;
 use dukt\videos\Plugin as VideosPlugin;
 use Exception;
@@ -24,19 +26,24 @@ class VideosVariable
      * Get a video from its URL.
      *
      * @param string $videoUrl
-     * @return null|Video
+     * @return AbstractVideo
      *
      * @since 3.0.0
      */
-    public function url(string $videoUrl): ?Video
+    public function url(string $videoUrl): AbstractVideo
     {
         try {
             return VideosPlugin::$plugin->getVideos()->getVideoByUrl($videoUrl);
         } catch (Exception $e) {
             // log exception
             Craft::error($e->getMessage(), __METHOD__);
-        }
 
-        return null;
+            return new FailedVideo([
+                'url' => $videoUrl,
+                'errors' => [
+                    $e->getMessage(),
+                ],
+            ]);
+        }
     }
 }
