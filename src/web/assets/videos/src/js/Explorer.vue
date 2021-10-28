@@ -79,8 +79,7 @@
                     return
                 }
 
-                const options = this.videosOptions ? JSON.parse(JSON.stringify(this.videosOptions)) : {}
-
+                const options = this.videosOptions ? {...this.videosOptions} : {}
                 options.moreToken = this.videosMoreToken
 
                 this.loadingMore = true
